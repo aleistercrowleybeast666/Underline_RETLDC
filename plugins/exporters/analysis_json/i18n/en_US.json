@@ -1,0 +1,5 @@
+{
+  "exporter.analysis_json.name": "Analysis JSON Exporter",
+  "export.analysis_json": "Export Analysis JSON…",
+  "diagnostic.export.json.no_analysis": "Analysis JSON requires a completed analysis."
+}

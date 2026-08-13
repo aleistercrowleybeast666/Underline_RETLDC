@@ -1,0 +1,6 @@
+{
+  "exporter.analysis_txt.name": "Analysis Text Summary Exporter",
+  "export.analysis_txt": "Analysis summary TXT",
+  "diagnostic.export.txt.no_analysis": "Analysis summary TXT requires a completed analysis.",
+  "diagnostic.export.txt.invalid_curve": "Analysis summary curve is invalid: {message}"
+}

@@ -1,0 +1,8 @@
+{
+  "plugin_id": "builtin.calibration.identity",
+  "plugin_type": "calibration",
+  "api_version": "1",
+  "version": "1.0.0",
+  "entry": "plugin:IdentityCalibration",
+  "name": "Already Calibrated"
+}

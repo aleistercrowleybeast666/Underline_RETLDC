@@ -1,0 +1,375 @@
+Underline_RETLDC 新增解析器插件通用 Prompt
+============================================
+
+用途
+----
+把本文件完整复制给编码 AI，然后在文件末尾“【本次具体要求】”下面补充你想支持的新原始数据格式、字段含义、单位、示例数据和异常处理要求。
+
+本 Prompt 只规定“怎样按 Underline_RETLDC 现有架构新增 Parser 插件”，不规定某一种具体解析器的功能。
+
+
+【任务总则】
+你正在为现有项目 Underline_RETLDC（Underline Rocket Engine Test Log Decode and Compute）新增一个 Parser 插件。
+
+这是已有工程，不允许新建另一套工程，不允许复制为新版本目录，不允许为了省事修改 Core 使新格式变成特例。
+
+项目的 Parser Plugin API 当前为 v1。官方随附插件和用户插件使用相同的目录、manifest、
+Loader、Registry、SchemaForm 和 API。不要修改 TR_F，不把新格式硬编码进 GUI。
+
+先判断你属于哪种工作模式，并严格执行对应交付方式：
+
+【模式 A：有 Agent / 可以访问并编辑仓库】
+- 在用户现有仓库内工作，不新建、复制或重置工程。
+- 先检查 git status 和 git diff，保留已有未提交修改。
+- 阅读下面列出的规范、公开接口和官方参考插件。
+- 在 plugins/parsers/<plugin_folder>/ 创建插件，补测试并使用项目 .venv 验证。
+- 原则上只修改插件自身和对应测试/文档；不能为一个 plugin_id 在 Core/GUI 写特例。
+
+【模式 B：没有 Agent / 不能访问用户仓库】
+- 不要假装已经检查或修改用户工程。
+- 依据本 Prompt 中的 Plugin API v1 语义生成一个可直接安装的 <plugin_name>.zip。
+- ZIP 顶层必须直接是 <plugin_folder>/，不能额外包含 Underline_RETLDC/plugins 层。
+- ZIP 原则上只能包含插件自身目录，不得包含 main.py、AGENTS.md、TARGETS.md、
+  src/underline_retldc/core、src/underline_retldc/gui 等覆盖平台文件。
+- 如果需求确实超出本 Prompt 描述的公开 API，明确告诉用户需要有仓库访问能力的
+  Coding Agent 扩展平台，不要用隐藏 hack 或把 Core 塞进 ZIP。
+- 如果你有文件生成能力，必须优先实际生成 ZIP，不要只给零散代码块。
+- 只有确实无法创建压缩包时，才可退化为：完整文件树 + 每个文件的完整内容；不得
+  使用“...”省略，并必须明确说明你无法实际生成 ZIP 以及每个文件的准确创建位置。
+
+模式 A 开始工作前必须先阅读当前仓库中的：
+1. AGENTS.md
+2. TARGETS.md
+3. docs/Plugin_API.md
+4. docs/Data_Formats.md
+5. docs/Architecture.md
+6. src/underline_retldc/plugin_api/parser.py
+7. src/underline_retldc/plugin_api/common.py
+8. src/underline_retldc/core/dataset.py
+9. src/underline_retldc/core/channel.py
+10. src/underline_retldc/core/diagnostics.py
+11. src/underline_retldc/plugins/manifest.py
+12. src/underline_retldc/plugins/loader.py
+13. plugins/parsers/tr_f/plugin.json
+14. plugins/parsers/tr_f/plugin.py（只作为接口参考，不要复制其具体格式语义）
+15. plugins/parsers/tr_f/i18n/zh_CN.json 和 en_US.json
+
+如果实际仓库内容与本 Prompt 的路径或 API 有差异，以当前仓库 AGENTS.md、TARGETS.md 和 Plugin API 为准，并在最终说明差异；不要凭空假设接口。
+
+
+【绝对禁止】
+1. 不得修改原始数据文件。
+2. 不得在 Parser 中做传感器校准。
+3. 不得在 Parser 中乘 K、加 B、去零、去基线、滤波、识别最终燃烧区间、算总冲、算比冲或导出 ENG。
+4. 不得把新格式写成 MainWindow / ImportPage / GUI 的 if/else 特例。
+5. 不得使用中文显示名作为程序逻辑 ID。
+6. 不得覆盖调用者传入的数组或共享 Dataset。
+7. 不得使用裸 except: pass。
+8. 不得把插件写进 .venv。
+9. 不得要求用户修改 Underline_RETLDC Core 才能加载一个本应由 Parser Plugin API 支持的普通新格式。
+10. 如果本次具体需求超出现有 Dataset 或 Parser API 能力，必须明确指出，不要用隐藏 hack 绕过架构。
+
+
+【插件安装位置】
+标准源码/便携位置为工程根目录：
+
+plugins/parsers/<你的插件目录名>/
+
+建立独立插件目录。
+
+推荐结构：
+
+plugins/parsers/<plugin_slug>/
+    plugin.json
+    plugin.py
+    i18n/
+        zh_CN.json
+        en_US.json
+
+官方参考模板是 plugins/parsers/tr_f/。用户插件与官方插件结构相同；不要在
+src/underline_retldc/ 下新增具体 Parser 实现。
+
+正式安装版还可使用 %APPDATA%\Underline_RETLDC\plugins\parsers\。插件管理安装到
+可写的用户插件根；源码/便携用户可直接复制到工程 plugins/parsers/。插件的真实类型
+来自 manifest 的 plugin_type，不依赖父文件夹名称。
+
+
+【plugin.json】
+必须建立 manifest，格式遵循当前 Plugin API v1。
+
+结构至少包含：
+
+{
+  "plugin_id": "<稳定且唯一的插件ID>",
+  "plugin_type": "parser",
+  "api_version": "1",
+  "version": "1.0.0",
+  "entry": "plugin:<Python类名>",
+  "name": "<默认英文名称>"
+}
+
+要求：
+- plugin_id 必须稳定、唯一、与语言无关。
+- 推荐使用类似 user.parser.xxx、vendor.parser.xxx 或其他不会与 builtin.* 冲突的命名。
+- plugin_type 必须是 parser。
+- api_version 必须与当前工程 Plugin API 匹配。
+- entry 格式是“模块路径:类名”，模块路径相对插件目录。
+- manifest 的 plugin_id、plugin_type、api_version、version 必须与代码 descriptor 完全一致，否则 Loader 会判定 descriptor mismatch。
+
+
+【无 Agent ZIP 的精确结构】
+模式 B 交付的 ZIP 内部必须是：
+
+<plugin_folder>/
+    plugin.json
+    plugin.py
+    i18n/
+        zh_CN.json
+        en_US.json
+
+如果需要辅助模块，只能放在同一插件文件夹内，例如 decoder.py、utils.py。相对导入应在
+Loader 创建的插件包内工作。用户把 ZIP 解压到 Underline_RETLDC/plugins/parsers/ 后，
+必须直接得到 plugins/parsers/<plugin_folder>/plugin.json，不能多一层压缩包名目录，
+也不能让 plugin.json 直接散落在 parsers/ 根部。
+
+
+【Parser 类必须实现的接口】
+Parser 类必须继承：
+
+underline_retldc.plugin_api.parser.ParserPlugin
+
+当前语义接口为：
+
+- descriptor 属性
+- probe(source, context) -> ProbeResult
+- config_schema() -> dict
+- parse(source, config, context) -> ParseResult
+- validate(dataset) -> list[Diagnostic]
+
+不要自己发明另一套接口。
+
+
+【1. descriptor】
+返回 PluginDescriptor。
+
+必须包含：
+- plugin_id
+- plugin_type=PluginType.PARSER
+- version
+- api_version
+- name
+- description
+- 如需要国际化，可提供 translation_key
+
+descriptor 的稳定字段必须和 plugin.json 一致。
+
+
+【2. probe()】
+probe 用于“自动识别解析器”，必须轻量。
+
+要求：
+- 使用 ProbeContext 给出的 max_bytes / max_records 等预算。
+- 不要为了判断格式而完整读取几百 MB / 几 GB 文件。
+- 只检查足以判断格式的文件头、少量记录、签名、列结构等。
+- 发生普通不匹配时返回低 confidence，而不是把程序炸掉。
+- 返回 ProbeResult(confidence, reason)。
+- confidence 必须在 0.0~1.0。
+- reason 要让用户/开发者能理解为什么匹配或不匹配。
+- probe 不能改变文件。
+
+如果格式存在明确 magic/header/signature，应优先利用。
+如果只能做启发式判断，要避免轻易给 1.0。
+
+
+【3. config_schema()】
+解析器可配置项必须通过 config_schema 声明，而不是在主 GUI 写死。
+
+当前桌面 GUI 的通用 SchemaForm 主要支持对象 properties 中的：
+- string
+- number
+- integer
+- boolean
+- scalar enum
+
+可使用：
+- default
+- minimum
+- maximum
+- title
+- x-i18n-key
+- x-enum-i18n-keys
+
+如果本次解析器不需要用户配置，返回：
+
+{"type": "object", "properties": {}}
+
+如果需求需要 GUI 当前不支持的复杂 schema（例如任意长度二维表、复杂嵌套数组），不要把复杂 JSON 文本偷偷塞进普通字符串字段。应先说明“当前通用 SchemaForm 不支持该交互”，并给出最小、明确的扩展方案或请求用户确认。
+
+所有配置字段必须有稳定英文 key；显示名称可翻译。
+
+
+【4. parse()】
+parse 是核心：把“外部文件语法”转换为 Underline_RETLDC 的统一 Dataset。
+
+必须：
+1. source 只读。
+2. 根据 config 解码本次格式。
+3. 对长循环定期调用 context.raise_if_cancelled()。
+4. 对耗时解析适当调用 context.report_progress(...)。
+5. 对非法行/包产生结构化 Diagnostic，或在无法继续时抛出明确异常。
+6. 不能静默吞掉坏数据。
+7. 构造统一 Dataset 与 Channel。
+8. 返回 ParseResult。
+9. 不做校准和科学分析。
+
+Dataset 当前至少需要：
+- time：NumPy 可用的一维时间数组
+- time_unit：内部明确单位（当前项目通常统一到 s）
+- channels：以稳定 channel ID 为 key
+- metadata
+- diagnostics
+
+Channel 当前至少包含：
+- id
+- quantity
+- unit
+- values
+- role
+- metadata
+
+对于“原始未校准传感器值”，通常：
+- role = "raw"
+- unit = "raw" 或当前架构约定的未校准单位
+
+channel ID 必须稳定，不要用翻译文字。
+
+如果源文件的时间单位不是秒，应按当前项目规范转换并在 metadata 中保留 source_time_unit 等来源信息。
+
+如果源格式自带已经是物理工程量的数据，不要擅自重复校准；应按本次具体需求和当前 Core 语义明确 quantity/unit，并确保后续用户仍可选择适当 Calibration 工作流。
+
+如果源格式包含多个 Channel，应全部按需求映射成独立 Channel，不要把多列拼成一个含义模糊的数组。
+
+如果本次格式无法映射到当前单一 Dataset time 轴，例如每个传感器都有完全独立异步时间轴，而当前 Core 不支持，则停止并明确报告架构缺口，不要伪造同步数据。
+
+
+【5. validate()】
+validate 负责 Parser 特有的语义/结构验证。
+
+使用结构化 Diagnostic。
+
+至少根据本次格式考虑：
+- 缺少必要字段
+- 数据长度不一致
+- 非法值
+- Parser 特有的 header/version/CRC/record 问题
+
+通用 timestamp 质量检查如果 Core 已统一实现，不要重复造一套互相矛盾的逻辑。
+
+
+【异常和 Diagnostic】
+普通可恢复问题用 Diagnostic：
+- INFO
+- WARNING
+- ERROR
+
+真正无法解析时抛出明确异常。
+
+错误信息尽可能包含：
+- source file
+- line / record / packet index
+- plugin_id
+- reason
+
+不要只 print。
+
+
+【国际化】
+插件可以提供：
+
+i18n/zh_CN.json
+i18n/en_US.json
+
+所有 key 建议以插件 ID 或插件命名空间为前缀，避免与其他插件冲突。
+
+至少保证：
+- 英文 fallback 存在
+- 缺少中文时不会影响插件逻辑
+- 稳定 ID 不受语言切换影响
+
+如果新增 config_schema 字段，应为 title / enum 提供合理 i18n key。
+
+
+【不得修改 GUI 的原则】
+正常 Parser 插件必须能通过：
+- Plugin Loader
+- Registry
+- Parser ComboBox
+- SchemaForm
+
+自动出现。
+
+如果为了一个普通标量配置 Parser 必须修改 MainWindow，这通常说明实现方式错了。
+
+只有“当前公共 SchemaForm 明确不支持的新型交互控件”才允许提出通用 GUI 扩展，而且该扩展必须对所有插件通用，不能只识别你的 plugin_id。
+
+
+【测试要求】
+必须为插件写测试或最少提供可运行验证。
+
+至少验证：
+1. plugin.json 能被 PluginLoader 识别。
+2. descriptor 与 manifest 完全匹配。
+3. probe 对正确样本有合理 confidence。
+4. probe 对明显错误格式 confidence 很低。
+5. parse 能正确生成 Dataset。
+6. time 数量和 Channel values 数量一致。
+7. 关键单位/quantity/role 正确。
+8. malformed input 按设计产生 Diagnostic 或明确异常。
+9. parse 不做校准。
+10. 原始文件未被修改。
+11. 插件刷新后 GUI Parser 列表能出现该插件。
+
+如果项目已有 pytest，使用项目 .venv 执行测试。
+
+Windows 推荐：
+.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m ruff check .
+
+不要使用全局 Python 代替项目 .venv。
+
+
+【实现完成后的人工验证】
+1. 启动 Underline_RETLDC。
+2. 打开“插件管理”，确认插件状态为已加载。
+3. 在 Project/工程页面选择一份符合本格式的原始文件。
+4. Parser 下拉框中应出现新插件。
+5. Auto Detect 若应支持，应能给出合理推荐。
+6. 选择新 Parser 后，其 config_schema 控件应正确出现。
+7. 点击解析，数据摘要和 Diagnostic 应正常。
+8. 后续 Calibration/Analysis 不应因为新 Parser 而需要 Parser-specific GUI hack。
+
+
+【最终汇报要求】
+最终请明确列出：
+- 创建/修改了哪些文件
+- plugin_id
+- plugin version
+- manifest 内容
+- Parser API 每个函数的实现逻辑
+- config_schema 字段
+- 生成的 Dataset Channel 列表、quantity、unit、role
+- probe 规则
+- malformed data 处理规则
+- i18n 状态
+- pytest / Ruff 结果
+- 是否修改 Core；如修改，为什么 Plugin API 无法直接满足
+- 当前已知限制
+
+不要只回复“完成”。
+
+
+============================================================
+【本次具体要求】
+============================================================
+请从这里开始追加本次要支持的原始数据格式的具体需求。
+建议至少写清楚：文件示例、每个字段含义、时间单位、传感器字段、是否有 header、分隔方式/二进制结构、非法数据如何处理、希望 Auto Detect 根据什么识别。

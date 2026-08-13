@@ -1,0 +1,5 @@
+{
+  "calibration.linear.name": "线性校准",
+  "setup.k": "K",
+  "setup.b": "B"
+}

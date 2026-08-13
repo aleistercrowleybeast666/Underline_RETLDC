@@ -1,0 +1,8 @@
+{
+  "plugin_id": "builtin.analyzer.thrust",
+  "plugin_type": "analyzer",
+  "api_version": "1",
+  "version": "1.0.0",
+  "entry": "plugin:ThrustAnalyzer",
+  "name": "Thrust Analyzer"
+}

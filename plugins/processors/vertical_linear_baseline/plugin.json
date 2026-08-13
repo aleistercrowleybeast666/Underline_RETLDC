@@ -1,0 +1,8 @@
+{
+  "plugin_id": "builtin.processor.vertical_linear_baseline",
+  "plugin_type": "processor",
+  "api_version": "1",
+  "version": "1.0.0",
+  "entry": "plugin:VerticalLinearBaselineProcessor",
+  "name": "Vertical Linear Baseline Compensation"
+}

@@ -1,0 +1,8 @@
+{
+  "plugin_id": "builtin.calibration.linear",
+  "plugin_type": "calibration",
+  "api_version": "1",
+  "version": "1.0.0",
+  "entry": "plugin:LinearCalibration",
+  "name": "Linear Calibration"
+}

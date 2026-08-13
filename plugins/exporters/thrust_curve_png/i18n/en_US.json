@@ -1,0 +1,5 @@
+{
+  "exporter.thrust_png.name": "Thrust Curve PNG Exporter",
+  "export.thrust_png": "Thrust curve PNG",
+  "diagnostic.export.png.invalid_curve": "Thrust PNG curve is invalid: {message}"
+}

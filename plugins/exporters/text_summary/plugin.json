@@ -1,0 +1,8 @@
+{
+  "plugin_id": "builtin.exporter.analysis_txt",
+  "plugin_type": "exporter",
+  "api_version": "1",
+  "version": "1.0.0",
+  "entry": "plugin:AnalysisTextExporter",
+  "name": "Analysis Text Summary Exporter"
+}

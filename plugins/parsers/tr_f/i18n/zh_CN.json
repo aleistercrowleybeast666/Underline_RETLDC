@@ -1,0 +1,8 @@
+{
+  "parser.tr_f.name": "TR_F（时间 / 原始力）",
+  "schema.parser.delimiter": "分隔符",
+  "schema.parser.time_unit": "源时间单位",
+  "schema.parser.invalid_row_policy": "无效行处理策略",
+  "schema.parser.invalid_row_policy.skip": "跳过并记录诊断",
+  "schema.parser.invalid_row_policy.error": "报错并停止"
+}

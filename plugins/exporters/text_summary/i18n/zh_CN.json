@@ -1,0 +1,6 @@
+{
+  "exporter.analysis_txt.name": "分析文本摘要导出器",
+  "export.analysis_txt": "分析摘要 TXT",
+  "diagnostic.export.txt.no_analysis": "分析摘要 TXT 需要先完成分析。",
+  "diagnostic.export.txt.invalid_curve": "分析摘要曲线无效：{message}"
+}

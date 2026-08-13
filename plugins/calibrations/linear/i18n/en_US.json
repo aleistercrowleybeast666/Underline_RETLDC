@@ -1,0 +1,5 @@
+{
+  "calibration.linear.name": "Linear Calibration",
+  "setup.k": "K",
+  "setup.b": "B"
+}

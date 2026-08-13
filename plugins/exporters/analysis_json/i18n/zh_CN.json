@@ -1,0 +1,5 @@
+{
+  "exporter.analysis_json.name": "分析 JSON 导出器",
+  "export.analysis_json": "导出分析 JSON…",
+  "diagnostic.export.json.no_analysis": "分析 JSON 需要先完成分析。"
+}

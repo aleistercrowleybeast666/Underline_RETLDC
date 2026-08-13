@@ -1,0 +1,338 @@
+Underline_RETLDC 新增校准模型插件通用 Prompt
+==============================================
+
+用途
+----
+把本文件完整复制给编码 AI，然后在文件末尾“【本次具体要求】”下面补充你想新增的校准模型公式、参数、输入/输出含义和单位要求。
+
+本 Prompt 只规定“怎样按 Underline_RETLDC 现有架构新增 Calibration Model 插件”，不规定某一种具体校准功能。
+
+
+【任务总则】
+你正在为现有项目 Underline_RETLDC（Underline Rocket Engine Test Log Decode and Compute）新增一个 Calibration Model 插件。
+
+这是已有工程。不要新建另一套工程，不要复制成新版本目录，不要为了一个校准模型在 GUI 或 Core 中写 plugin_id 特例。
+
+当前 Calibration Plugin API 为 v1。官方随附插件和用户插件使用同一目录结构、manifest、
+Loader、Registry、SchemaForm 和 API；正常新模型应在现有 Calibration 下拉框中自动可选。
+
+先判断你属于哪种工作模式，并严格执行对应交付方式：
+
+【模式 A：有 Agent / 可以访问并编辑仓库】
+- 在用户现有仓库内工作，不新建、复制、checkout 或 reset 工程。
+- 先检查 git status 和 git diff，保留已有未提交修改。
+- 阅读下面列出的规范、公开接口和官方参考插件。
+- 在 plugins/calibrations/<plugin_folder>/ 创建插件，补测试并使用项目 .venv 验证。
+- 原则上只修改插件自身和对应测试/文档；不能为一个 plugin_id 在 Core/GUI 写特例。
+
+【模式 B：没有 Agent / 不能访问用户仓库】
+- 不要假装已经检查或修改用户工程。
+- 依据本 Prompt 中的 Plugin API v1 语义生成可直接安装的 <calibration_name>.zip。
+- ZIP 顶层必须直接是 <plugin_folder>/，不能额外包含 Underline_RETLDC/plugins 层。
+- ZIP 原则上只能包含插件自身目录，不得包含 main.py、AGENTS.md、TARGETS.md、
+  src/underline_retldc/core、src/underline_retldc/gui 等覆盖平台文件。
+- 如果需求确实超出公开 API，明确告诉用户需要有仓库访问能力的 Coding Agent 扩展
+  平台，不要用隐藏 hack 或把 Core 塞进 ZIP。
+- 如果你有文件生成能力，必须优先实际生成 ZIP，不要只给零散代码块。
+- 只有确实无法创建压缩包时，才可退化为：完整文件树 + 每个文件的完整内容；不得
+  使用“...”省略，并必须明确说明无法实际生成 ZIP 以及每个文件的准确创建位置。
+
+模式 A 开始工作前必须先阅读当前仓库中的：
+1. AGENTS.md
+2. TARGETS.md
+3. docs/Plugin_API.md
+4. docs/Calibration.md
+5. docs/Architecture.md
+6. src/underline_retldc/plugin_api/calibration.py
+7. src/underline_retldc/plugin_api/common.py
+8. src/underline_retldc/core/calibration.py
+9. src/underline_retldc/core/pipeline.py
+10. src/underline_retldc/gui/schema_form.py
+11. src/underline_retldc/plugins/manifest.py
+12. src/underline_retldc/plugins/loader.py
+13. plugins/calibrations/linear/plugin.json 和 plugin.py
+14. plugins/calibrations/identity/plugin.json 和 plugin.py
+15. 上述两个官方插件各自的 i18n/zh_CN.json 和 i18n/en_US.json
+
+如果当前工程实际 API 与本 Prompt 文字存在差异，以当前 AGENTS.md、TARGETS.md 和 Plugin API 源码为准，并在最终报告说明差异。
+
+
+【绝对禁止】
+1. 不得在 Calibration 插件中解析原始文件。
+2. 不得在 Calibration 插件中识别点火/燃烧区间。
+3. 不得在 Calibration 插件中做发动机自重变化补偿、baseline/tare 处理。
+4. 不得在 Calibration 插件中滤波、积分、计算总冲或比冲。
+5. 不得导出 CSV/TXT/PNG/ENG。
+6. 不得修改传入 raw 数组。
+7. 不得使用翻译后的显示名作为逻辑 ID。
+8. 不得为了一个普通标量参数修改 MainWindow/SetupPage 写专用 if plugin_id。
+9. 不得写进 .venv。
+10. 不得使用裸 except: pass。
+
+Calibration 的唯一核心职责是：
+
+“把已经由 Parser 得到的一组传感器数值，根据用户选择的校准模型和参数，计算出新的工程量数组。”
+
+
+【插件安装位置】
+标准源码/便携位置为工程根目录：
+
+plugins/calibrations/<你的插件目录名>/
+
+建立：
+
+plugins/calibrations/<plugin_slug>/
+    plugin.json
+    plugin.py
+    i18n/
+        zh_CN.json
+        en_US.json
+
+官方参考模板是 plugins/calibrations/linear/ 和 identity/。用户插件与官方插件结构相同；
+不要在 src/underline_retldc/ 下新增具体 Calibration 实现。
+
+正式安装版还可使用 %APPDATA%\Underline_RETLDC\plugins\calibrations\。插件管理安装到
+可写的用户插件根；源码/便携用户可直接复制到工程 plugins/calibrations/。插件真实类型
+来自 manifest 的 plugin_type，不依赖父文件夹名称。
+
+
+【plugin.json】
+至少：
+
+{
+  "plugin_id": "<稳定且唯一的插件ID>",
+  "plugin_type": "calibration",
+  "api_version": "1",
+  "version": "1.0.0",
+  "entry": "plugin:<Python类名>",
+  "name": "<默认英文名称>"
+}
+
+要求：
+- plugin_id 稳定、唯一、与语言无关。
+- 推荐 user.calibration.xxx、vendor.calibration.xxx 等命名，不与 builtin.* 冲突。
+- plugin_type 必须是 calibration。
+- api_version 与当前工程一致。
+- manifest 与代码 descriptor 的 ID、类型、API 版本、插件版本必须完全一致。
+
+
+【无 Agent ZIP 的精确结构】
+模式 B 交付的 ZIP 内部必须是：
+
+<plugin_folder>/
+    plugin.json
+    plugin.py
+    i18n/
+        zh_CN.json
+        en_US.json
+
+如果需要辅助模块，只能放在同一插件文件夹内。用户把 ZIP 解压到
+Underline_RETLDC/plugins/calibrations/ 后，必须直接得到
+plugins/calibrations/<plugin_folder>/plugin.json，不能多一层压缩包名目录，也不能让
+plugin.json 直接散落在 calibrations/ 根部。
+
+
+【Calibration 类必须实现的接口】
+类必须继承：
+
+underline_retldc.plugin_api.calibration.CalibrationModelPlugin
+
+当前核心接口：
+- descriptor 属性
+- parameter_schema() -> dict
+- evaluate(raw, parameters) -> np.ndarray
+
+不要自己造另一套入口。
+
+
+【1. descriptor】
+返回 PluginDescriptor。
+
+必须包含：
+- plugin_id
+- plugin_type=PluginType.CALIBRATION
+- version
+- api_version
+- name
+- description
+- 可选 translation_key
+
+稳定字段必须与 plugin.json 一致。
+
+
+【2. parameter_schema()】
+所有用户可调模型参数都应由 parameter_schema 描述，让现有通用 GUI 自动生成控件。
+
+当前 SchemaForm 主要支持：
+- string
+- number
+- integer
+- boolean
+- scalar enum
+
+常用属性：
+- default
+- minimum
+- maximum
+- title
+- x-i18n-key
+- x-enum-i18n-keys
+
+模型参数必须使用稳定英文 key。
+
+不要把 quantity 和 output unit 强行塞进模型公式参数，除非当前具体模型本身确实需要它们。当前 Underline_RETLDC 工作流会在 Calibration Model 参数之外管理 quantity 和输出单位。
+
+如果模型不需要参数，返回空 properties。
+
+如果具体模型需要 GUI 当前不支持的复杂输入，例如任意数量标定点、二维表、文件选择器等：
+- 不要把整个复杂数据硬塞成一个普通字符串并让用户手写 JSON；
+- 先说明当前 SchemaForm 能力不足；
+- 优先设计可复用的通用 SchemaForm 扩展；
+- 不得写“只对这个 plugin_id 生效”的 GUI 特例，除非用户明确批准。
+
+
+【3. evaluate()】
+evaluate 是校准插件的核心。
+
+输入：
+- raw：NumPy float 数组（视当前接口类型）
+- parameters：用户配置参数 Mapping
+
+输出：
+- 新的 NumPy 数组
+
+要求：
+1. 不修改 raw。
+2. 返回与 raw shape 兼容的新数组。
+3. 对参数做明确校验。
+4. 对非法参数抛出清晰 ValueError 等异常。
+5. 对 NaN/Inf 的策略必须和本次具体需求及当前项目规范一致，不要隐式吞掉。
+6. 计算应尽量向量化；如必须长循环，要说明原因。
+7. 不读取 GUI 控件。
+8. 不读取 Project 全局状态。
+9. 不做 baseline compensation。
+10. 不做科学分析。
+
+校准模型应尽可能是确定性的：相同 raw + 相同 parameters 得到相同输出。
+
+
+【quantity 与单位】
+Calibration Model 负责数学映射；当前 GUI/工作流另外管理：
+- output quantity
+- output unit
+
+实现时必须确认当前 Calibration_Apply / Setup 工作流如何把模型输出包装为 Channel，不要自行重复造 Channel 语义。
+
+不要在模型中把某个单位字符串写死，除非该模型物理定义明确只适用于该单位，并且这是本次具体需求的一部分。
+
+如果模型对输入/输出单位有严格约束，应通过文档、参数校验或当前 Plugin API 能表达的 metadata/description 清楚说明；不要静默换算未知单位。
+
+
+【Calibration JSON 兼容】
+Underline_RETLDC 会保存校准配置 JSON。新插件应能通过稳定 plugin_id、version、parameters 被现有 Calibration JSON 机制记录和重新加载。
+
+不要自己另外发明一个平行的校准配置文件系统，除非现有 core/calibration.py 明确无法满足具体需求。
+
+测试至少验证：
+- 保存模型 ID/version/parameters 后可重新加载
+- 重新计算结果一致
+
+如果你的模型有 schema 版本或额外外部文件依赖，必须在最终报告中说明可复现性方案。
+
+
+【国际化】
+插件可提供：
+
+i18n/zh_CN.json
+i18n/en_US.json
+
+建议 key 以插件命名空间开头。
+
+为：
+- 插件名称
+- 参数名称
+- enum 选项
+
+提供翻译。
+
+英文应作为 fallback。
+
+显示文本变化不得改变 plugin_id 或参数 key。
+
+
+【GUI 集成原则】
+正确的普通 Calibration 插件应当：
+1. 被 PluginLoader 加载。
+2. 出现在 Calibration 下拉列表。
+3. 选择后由 parameter_schema 自动生成参数控件。
+4. 不修改 MainWindow 就可使用。
+
+如果当前 GUI 没出现插件，先检查：
+- plugin.json
+- descriptor mismatch
+- api_version
+- duplicate ID
+- Plugin Loader diagnostics
+- Registry 是否包含 PluginType.CALIBRATION
+
+不要第一反应就在 GUI 硬编码插件名。
+
+
+【测试要求】
+至少测试：
+1. manifest 可加载。
+2. descriptor 与 manifest 一致。
+3. parameter_schema 可被当前 SchemaForm 支持。
+4. evaluate 对正常参数数值结果正确。
+5. evaluate 不修改输入 raw。
+6. 输出 shape 正确。
+7. 错误参数有明确异常。
+8. Calibration JSON 可保存并恢复本插件参数。
+9. GUI Calibration ComboBox 能出现插件。
+10. 运行时切换中英文不会改变模型逻辑。
+
+对于数学模型，必须使用手算可验证的简单输入建立单元测试，不要只测试“程序不报错”。
+
+项目命令优先使用当前 .venv：
+.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m ruff check .
+
+
+【实现完成后的人工验证】
+1. 启动 Underline_RETLDC。
+2. 插件管理中确认本插件已加载。
+3. 导入任意能够产生兼容 raw Channel 的测试数据。
+4. Calibration 下拉框选择新模型。
+5. 参数表单应由 schema 正常生成。
+6. 输入参数，应用校准。
+7. 确认新 calibrated Channel 正确生成。
+8. 修改参数重新应用，raw 数据不能变化。
+9. 保存 Calibration JSON。
+10. 重新加载 Calibration JSON，结果应一致。
+
+
+【最终汇报要求】
+最终请明确列出：
+- 创建/修改文件
+- plugin_id
+- plugin version
+- plugin.json
+- parameter_schema 全部字段及含义
+- evaluate 数学定义
+- 参数校验规则
+- 输入数组和输出数组行为
+- quantity/unit 如何由当前工作流处理
+- Calibration JSON 兼容情况
+- i18n 状态
+- pytest / Ruff 结果
+- 是否修改 Core/GUI；如果修改，为什么普通 Calibration Plugin API 不足
+- 已知限制
+
+不要只回复“完成”。
+
+
+============================================================
+【本次具体要求】
+============================================================
+请从这里开始追加本次校准模型的具体要求。
+建议至少写清楚：数学关系、参数名称和意义、参数单位/范围、输入数值代表什么、输出物理量和单位、边界/异常数据如何处理。

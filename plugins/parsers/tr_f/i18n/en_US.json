@@ -1,0 +1,8 @@
+{
+  "parser.tr_f.name": "TR_F (Time / Raw Force)",
+  "schema.parser.delimiter": "Delimiter",
+  "schema.parser.time_unit": "Source Time Unit",
+  "schema.parser.invalid_row_policy": "Invalid Row Policy",
+  "schema.parser.invalid_row_policy.skip": "Skip and diagnose",
+  "schema.parser.invalid_row_policy.error": "Stop with error"
+}

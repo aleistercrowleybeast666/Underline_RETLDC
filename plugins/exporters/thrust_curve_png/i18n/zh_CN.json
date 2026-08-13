@@ -1,0 +1,5 @@
+{
+  "exporter.thrust_png.name": "推力曲线 PNG 导出器",
+  "export.thrust_png": "推力曲线 PNG",
+  "diagnostic.export.png.invalid_curve": "推力 PNG 曲线无效：{message}"
+}
