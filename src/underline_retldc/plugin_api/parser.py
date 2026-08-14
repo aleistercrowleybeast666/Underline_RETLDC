@@ -7,6 +7,7 @@ from typing import Any
 
 from underline_retldc.core.dataset import Dataset
 from underline_retldc.core.diagnostics import Diagnostic
+from underline_retldc.core.tabular import TabularPreview
 from underline_retldc.plugin_api.common import (
     ParseResult,
     PluginDescriptor,
@@ -35,3 +36,15 @@ class ParserPlugin(ABC):
     @abstractmethod
     def validate(self, dataset: Dataset) -> list[Diagnostic]: ...
 
+
+class TabularParserPlugin(ParserPlugin):
+    """Optional Parser API v1 capability for bounded, read-only table previews."""
+
+    @abstractmethod
+    def preview(
+        self,
+        source: Path,
+        config: Mapping[str, Any],
+        *,
+        maximum_rows: int = 50,
+    ) -> TabularPreview: ...

@@ -12,9 +12,11 @@ Plugin API: 1
 The directory name is never versioned. Application versions, Git tags, and schema versions are
 independent identifiers.
 
-Version `0.1.0` currently uses the two-workspace Project/Thrust Analysis desktop workflow with
-stable workspace and export-analysis dependency IDs, Plugin API v1, Project schema
-`underline-retldc-project/1` with backward-compatible nullable stages, Calibration schema
+Version `0.1.0` uses the five-workspace Project/Thrust Analysis/Chamber Pressure/Temperature/Data
+Explorer desktop workflow with stable workspace and export-analysis dependency IDs, centralized
+Quantity/Data Unit/Display Unit handling, multi-Source Stream offsets, Plugin API v1, Project schema
+`underline-retldc-project/2` (with `/1` migration) and backward-compatible nullable stages,
+Calibration schema
 `underline-retldc-calibration/1`, and Analysis JSON schema `underline-retldc-analysis/1`.
 
 All official concrete plugins are recursively discovered from repository-root `plugins/` through

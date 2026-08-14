@@ -2,6 +2,7 @@ from pathlib import Path
 
 from underline_retldc.core.diagnostics import Diagnostic, DiagnosticSeverity
 from underline_retldc.core.project import (
+    PROJECT_SCHEMA,
     PluginReference,
     Project_DefaultExportDirectory,
     Project_Load,
@@ -10,6 +11,8 @@ from underline_retldc.core.project import (
     Project_SourceResolve,
     ProjectDocument,
     ProjectSourceResolveResult,
+    ProjectSourceState,
+    ProjectStreamState,
 )
 
 
@@ -115,6 +118,27 @@ def test_saved_project_default_export_directory() -> None:
     )
 
 
+def test_project_round_trip_preserves_multiple_sources_and_stream_offsets(
+    tmp_path: Path,
+) -> None:
+    parser = PluginReference("builtin.parser.tr_f", "1.0.0", "1", {})
+    document = ProjectDocument(
+        sources=(
+            ProjectSourceState("source_1", "D:/data/thrust.txt", "a" * 64, parser),
+            ProjectSourceState("source_2", "D:/data/pressure.txt", "b" * 64, parser),
+        ),
+        streams=(
+            ProjectStreamState("stream_1", "source_1", 0.0, "Thrust"),
+            ProjectStreamState("stream_2", "source_2", -1.25, "Pressure"),
+        ),
+    )
+    destination = tmp_path / "multi.retldc.json"
+    Project_Save(document, destination)
+    loaded = Project_Load(destination)
+    assert loaded == document
+    assert loaded.streams[1].time_offset_s == -1.25
+
+
 def test_legacy_project_without_workflow_state_infers_completed_stages(
     tmp_path: Path,
 ) -> None:
@@ -138,3 +162,44 @@ def test_legacy_project_without_workflow_state_infers_completed_stages(
         "processed": True,
         "analyzed": True,
     }
+
+
+def test_project_v2_preserves_source_tabular_mapping_and_reads_v1() -> None:
+    mapping = {
+        "sheet_name": "Sheet1",
+        "header_row": 1,
+        "data_start_row": 2,
+        "time": {"mode": "column", "column": 0, "unit": "s"},
+        "columns": [
+            {"column": 0, "usage": "time", "unit": "s"},
+            {
+                "column": 1,
+                "usage": "data",
+                "channel_id": "pc",
+                "quantity": "pressure",
+                "role": "chamber_pressure",
+                "unit": "MPa",
+                "expected_header": "Pc",
+            },
+        ],
+    }
+    parser = PluginReference(
+        "builtin.parser.generic_xlsx",
+        "1.0.0",
+        "1",
+        mapping,
+    )
+    document = ProjectDocument(
+        sources=(ProjectSourceState("source_1", "D:/data/result.xlsx", None, parser),),
+        streams=(ProjectStreamState("stream_1", "source_1"),),
+        parser=parser,
+    )
+    payload = document.to_dict()
+    assert payload["schema"] == PROJECT_SCHEMA == "underline-retldc-project/2"
+    assert ProjectDocument.from_dict(payload).sources[0].parser == parser
+
+    payload["schema"] = "underline-retldc-project/1"
+    migrated = ProjectDocument.from_dict(payload)
+    assert migrated.sources[0].parser is not None
+    assert migrated.sources[0].parser.config["columns"][1]["channel_id"] == "pc"
+    assert migrated.to_dict()["schema"] == PROJECT_SCHEMA

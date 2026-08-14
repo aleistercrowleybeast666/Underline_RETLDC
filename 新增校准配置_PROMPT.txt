@@ -9,7 +9,7 @@ Underline_RETLDC 新增校准模型插件通用 Prompt
 
 
 【任务总则】
-你正在为现有项目 Underline_RETLDC（Underline Rocket Engine Test Log Decode and Compute）新增一个 Calibration Model 插件。
+你正在为现有项目 Underline_RETLDC（Underline Rocket Engine Test Log Decoder and Calculator）新增一个 Calibration Model 插件。
 
 这是已有工程。不要新建另一套工程，不要复制成新版本目录，不要为了一个校准模型在 GUI 或 Core 中写 plugin_id 特例。
 
@@ -140,6 +140,7 @@ underline_retldc.plugin_api.calibration.CalibrationModelPlugin
 当前核心接口：
 - descriptor 属性
 - parameter_schema() -> dict
+- requirements() -> Mapping[str, Any]
 - evaluate(raw, parameters) -> np.ndarray
 
 不要自己造另一套入口。
@@ -180,7 +181,10 @@ underline_retldc.plugin_api.calibration.CalibrationModelPlugin
 
 模型参数必须使用稳定英文 key。
 
-不要把 quantity 和 output unit 强行塞进模型公式参数，除非当前具体模型本身确实需要它们。当前 Underline_RETLDC 工作流会在 Calibration Model 参数之外管理 quantity 和输出单位。
+Calibration 必须明确输出 Quantity 和 Unit 行为。如果两者固定，可在 requirements() 中
+声明固定值；如果由用户配置，必须在 parameter_schema() 中暴露 output_quantity 和
+output_unit（或当前公开 API 约定的等价稳定字段）。不要只在 description 里写一句而让
+工作流无法持久化。
 
 如果模型不需要参数，返回空 properties。
 
@@ -217,15 +221,29 @@ evaluate 是校准插件的核心。
 
 
 【quantity 与单位】
-Calibration Model 负责数学映射；当前 GUI/工作流另外管理：
-- output quantity
-- output unit
+Unit 与 Calibration 是两个独立概念：
 
-实现时必须确认当前 Calibration_Apply / Setup 工作流如何把模型输出包装为 Channel，不要自行重复造 Channel 语义。
+- Calibration 是数学变换，可做 raw→N、count→Pa、V→N。
+- Unit Conversion 是同一物理维度的表示换算，例如 Pa→MPa、K→°C。
+- Calibration 不能只把 unit label 从 raw 改成 N；必须真正执行已定义的数学映射。
+- Unit Conversion 也不能替代传感器 Calibration；raw/count/ADC 不允许直接物理换算。
 
-不要在模型中把某个单位字符串写死，除非该模型物理定义明确只适用于该单位，并且这是本次具体需求的一部分。
+requirements() 至少应清楚声明：
+- input_quantity requirements（若有）
+- input_unit requirements（若有）
+- output_quantity：固定、same_as_input 或 parameter:<field>
+- output_unit：固定、same_as_input 或 parameter:<field>
 
-如果模型对输入/输出单位有严格约束，应通过文档、参数校验或当前 Plugin API 能表达的 metadata/description 清楚说明；不要静默换算未知单位。
+例如 Identity 应声明 output Quantity/Unit 与输入相同；Linear 若允许用户指定输出，应把
+output_quantity/output_unit 放在 parameter_schema()。实现时必须确认 Calibration_Apply
+怎样创建全新的 calibrated Channel；原 raw Channel 的 values、Quantity 和 Unit 都不得覆盖。
+
+所有新 Channel 的平台 Factory Default 都是 builtin.calibration.identity，无论输入 Unit
+是 N、MPa、None/default SI、raw、count 还是 ADC。Identity/“Already Calibrated”只表示不做
+额外变换，不是软件认证传感器标定有效。不得根据 Unit 自动切换或阻塞 Calibration。
+
+Calibration 选择优先级是：Project explicit > matched user profile > factory Identity。
+Calibration JSON 中的 sensor_id 可用于可信用户 profile 匹配；显式 Project 选择始终优先。
 
 
 【Calibration JSON 兼容】
@@ -290,6 +308,9 @@ i18n/en_US.json
 8. Calibration JSON 可保存并恢复本插件参数。
 9. GUI Calibration ComboBox 能出现插件。
 10. 运行时切换中英文不会改变模型逻辑。
+11. requirements() 准确声明输入兼容性和输出 Quantity/Unit 行为。
+12. raw→工程单位测试确认数学变换和 output_unit 都正确，原 raw Channel 不变。
+13. 改变显示单位只走 Unit Conversion，不重复执行 Calibration。
 
 对于数学模型，必须使用手算可验证的简单输入建立单元测试，不要只测试“程序不报错”。
 

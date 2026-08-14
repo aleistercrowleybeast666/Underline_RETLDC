@@ -1,5 +1,5 @@
 {
-  "parser.tr_f.name": "TR_F（时间 / 原始力）",
+  "parser.tr_f.name": "TR_F — 时间 / 原始推力",
   "schema.parser.delimiter": "分隔符",
   "schema.parser.time_unit": "源时间单位",
   "schema.parser.invalid_row_policy": "无效行处理策略",

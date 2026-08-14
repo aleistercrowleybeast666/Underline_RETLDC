@@ -4,4 +4,3 @@ PRODUCT_NAME = "Underline RETLDC"
 FULL_NAME = "Underline Rocket Engine Test Log Decode and Compute"
 __version__ = "0.1.0"
 PLUGIN_API_VERSION = "1"
-

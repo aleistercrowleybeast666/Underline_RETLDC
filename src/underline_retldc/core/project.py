@@ -11,8 +11,10 @@ from typing import Any
 
 from underline_retldc.app.version import __version__
 from underline_retldc.core.diagnostics import Diagnostic
+from underline_retldc.core.project_data import PrimaryChannelBindings
 
-PROJECT_SCHEMA = "underline-retldc-project/1"
+PROJECT_SCHEMA = "underline-retldc-project/2"
+PROJECT_LEGACY_SCHEMAS = ("underline-retldc-project/1",)
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,13 +43,162 @@ class PluginReference:
 
 
 @dataclass(frozen=True, slots=True)
+class ProjectSourceState:
+    source_id: str
+    path: str
+    sha256: str | None = None
+    parser: PluginReference | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "source_id": self.source_id,
+            "path": self.path,
+            "sha256": self.sha256,
+            "parser": self.parser.to_dict() if self.parser is not None else None,
+        }
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> ProjectSourceState:
+        parser_payload = payload.get("parser")
+        if parser_payload is not None and not isinstance(parser_payload, Mapping):
+            raise ValueError("Project Source parser must be an object or null")
+        return cls(
+            source_id=str(payload["source_id"]),
+            path=str(payload["path"]),
+            sha256=(
+                str(payload["sha256"])
+                if payload.get("sha256") not in (None, "")
+                else None
+            ),
+            parser=(
+                PluginReference.from_dict(parser_payload)
+                if isinstance(parser_payload, Mapping)
+                else None
+            ),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectStreamState:
+    stream_id: str
+    source_id: str
+    time_offset_s: float = 0.0
+    name: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "stream_id": self.stream_id,
+            "source_id": self.source_id,
+            "time_offset_s": self.time_offset_s,
+            "name": self.name,
+        }
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> ProjectStreamState:
+        return cls(
+            stream_id=str(payload["stream_id"]),
+            source_id=str(payload["source_id"]),
+            time_offset_s=float(payload.get("time_offset_s", 0.0)),
+            name=(str(payload["name"]) if payload.get("name") else None),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ChannelProjectState:
+    channel_id: str
+    quantity: str
+    data_unit: str
+    unit_source: str
+    display_unit: str | None = None
+    semantic_role: str | None = None
+    calibration: PluginReference | None = None
+    output_channel_id: str | None = None
+    source_id: str | None = None
+    stream_id: str | None = None
+
+    @property
+    def persistent_key(self) -> str:
+        if self.source_id is not None and self.stream_id is not None:
+            return f"{self.source_id}/{self.stream_id}/{self.channel_id}"
+        return self.channel_id
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "channel_id": self.channel_id,
+            "quantity": self.quantity,
+            "data_unit": self.data_unit,
+            "unit_source": self.unit_source,
+            "source_id": self.source_id,
+            "stream_id": self.stream_id,
+            "display_unit": self.display_unit,
+            "semantic_role": self.semantic_role,
+            "calibration": (
+                self.calibration.to_dict() if self.calibration is not None else None
+            ),
+            "output_channel_id": self.output_channel_id,
+        }
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> ChannelProjectState:
+        calibration = payload.get("calibration")
+        if calibration is not None and not isinstance(calibration, Mapping):
+            raise ValueError("Channel calibration must be an object or null")
+        return cls(
+            channel_id=str(payload["channel_id"]),
+            quantity=str(payload["quantity"]),
+            data_unit=str(payload["data_unit"]),
+            unit_source=str(payload["unit_source"]),
+            source_id=(
+                str(payload["source_id"])
+                if payload.get("source_id") not in (None, "")
+                else None
+            ),
+            stream_id=(
+                str(payload["stream_id"])
+                if payload.get("stream_id") not in (None, "")
+                else None
+            ),
+            display_unit=(
+                str(payload["display_unit"])
+                if payload.get("display_unit") not in (None, "")
+                else None
+            ),
+            semantic_role=(
+                str(payload["semantic_role"])
+                if payload.get("semantic_role") not in (None, "")
+                else None
+            ),
+            calibration=(
+                PluginReference.from_dict(calibration)
+                if isinstance(calibration, Mapping)
+                else None
+            ),
+            output_channel_id=(
+                str(payload["output_channel_id"])
+                if payload.get("output_channel_id") not in (None, "")
+                else None
+            ),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class ProjectDocument:
     source_path: str | None = None
     source_hash: str | None = None
+    sources: tuple[ProjectSourceState, ...] = field(default_factory=tuple)
+    streams: tuple[ProjectStreamState, ...] = field(default_factory=tuple)
     parser: PluginReference | None = None
     calibration: PluginReference | None = None
     processors: tuple[PluginReference, ...] = field(default_factory=tuple)
-    regions: Mapping[str, tuple[float, float] | list[float]] = field(default_factory=dict)
+    regions: Mapping[str, tuple[float, float] | list[float] | None] = field(
+        default_factory=dict
+    )
+    channels: Mapping[str, ChannelProjectState] = field(default_factory=dict)
+    primary_channels: PrimaryChannelBindings = field(
+        default_factory=PrimaryChannelBindings
+    )
+    primary_channels_explicit: bool = True
+    processing_metadata: Mapping[str, Any] = field(default_factory=dict)
     analyzer: PluginReference | None = None
     motor_metadata: Mapping[str, Any] = field(default_factory=dict)
     export_settings: Mapping[str, Any] = field(default_factory=dict)
@@ -55,6 +206,13 @@ class ProjectDocument:
     locale: str = "zh_CN"
     diagnostics: tuple[Diagnostic, ...] = field(default_factory=tuple)
     software_version: str = __version__
+
+    def __post_init__(self) -> None:
+        regions = dict(self.regions)
+        if "active_test" not in regions and "burn" in regions:
+            regions["active_test"] = regions["burn"]
+        regions.pop("burn", None)
+        object.__setattr__(self, "regions", regions)
 
     def to_dict(self) -> dict[str, Any]:
         source = None
@@ -64,12 +222,22 @@ class ProjectDocument:
             "schema": PROJECT_SCHEMA,
             "software_version": self.software_version,
             "source": source,
+            "sources": [item.to_dict() for item in self.sources],
+            "streams": [item.to_dict() for item in self.streams],
             "parser": self.parser.to_dict() if self.parser is not None else None,
             "calibration": (
                 self.calibration.to_dict() if self.calibration is not None else None
             ),
             "processors": [item.to_dict() for item in self.processors],
-            "regions": {key: list(value) for key, value in self.regions.items()},
+            "regions": {
+                key: list(value) if value is not None else None
+                for key, value in self.regions.items()
+            },
+            "channels": {
+                key: value.to_dict() for key, value in self.channels.items()
+            },
+            "primary_channels": self.primary_channels.to_dict(),
+            "processing_metadata": dict(self.processing_metadata),
             "analyzer": self.analyzer.to_dict() if self.analyzer is not None else None,
             "motor_metadata": dict(self.motor_metadata),
             "export_settings": dict(self.export_settings),
@@ -80,24 +248,76 @@ class ProjectDocument:
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> ProjectDocument:
-        if payload.get("schema") != PROJECT_SCHEMA:
+        if payload.get("schema") not in (PROJECT_SCHEMA, *PROJECT_LEGACY_SCHEMAS):
             raise ValueError(f"Unsupported project schema: {payload.get('schema')!r}")
         source = payload.get("source")
         if source is not None and not isinstance(source, Mapping):
             raise ValueError("Project source must be an object or null")
+        sources_payload = payload.get("sources", [])
+        streams_payload = payload.get("streams", [])
+        if not isinstance(sources_payload, (list, tuple)):
+            raise ValueError("Project sources must be an array")
+        if not isinstance(streams_payload, (list, tuple)):
+            raise ValueError("Project streams must be an array")
+        if any(not isinstance(item, Mapping) for item in sources_payload):
+            raise ValueError("Every Project Source must be an object")
+        if any(not isinstance(item, Mapping) for item in streams_payload):
+            raise ValueError("Every Project Stream must be an object")
+        sources = tuple(ProjectSourceState.from_dict(item) for item in sources_payload)
+        streams = tuple(ProjectStreamState.from_dict(item) for item in streams_payload)
+        source_ids = {item.source_id for item in sources}
+        if len(source_ids) != len(sources):
+            raise ValueError("Project Source IDs must be unique")
+        stream_ids = {item.stream_id for item in streams}
+        if len(stream_ids) != len(streams):
+            raise ValueError("Project Stream IDs must be unique")
+        if any(item.source_id not in source_ids for item in streams):
+            raise ValueError("Project Stream refers to an unknown Source")
         regions_payload = payload.get("regions", {})
         if not isinstance(regions_payload, Mapping):
             raise ValueError("Project regions must be an object")
-        regions: dict[str, tuple[float, float]] = {}
+        regions: dict[str, tuple[float, float] | None] = {}
         if regions_payload:
-            for key in ("pre", "burn", "post"):
-                value = regions_payload.get(key)
+            normalized_regions = dict(regions_payload)
+            if "active_test" not in normalized_regions and "burn" in normalized_regions:
+                normalized_regions["active_test"] = normalized_regions["burn"]
+            for key in ("pre", "active_test", "post"):
+                value = normalized_regions.get(key)
+                if value is None and key != "active_test":
+                    if key in regions_payload:
+                        regions[key] = None
+                    continue
                 if not isinstance(value, (list, tuple)) or len(value) != 2:
                     raise ValueError(f"Project region {key!r} must contain start/end")
                 start, end = float(value[0]), float(value[1])
                 if start >= end:
                     raise ValueError(f"Project region {key!r} is invalid")
                 regions[key] = (start, end)
+
+        channels_payload = payload.get("channels", {})
+        if not isinstance(channels_payload, Mapping):
+            raise ValueError("Project channels must be an object")
+        channels: dict[str, ChannelProjectState] = {}
+        for channel_id, channel_payload in channels_payload.items():
+            if not isinstance(channel_payload, Mapping):
+                raise ValueError(f"Project Channel {channel_id!r} must be an object")
+            state = ChannelProjectState.from_dict(channel_payload)
+            if str(channel_id) not in {state.channel_id, state.persistent_key}:
+                raise ValueError(f"Project Channel key {channel_id!r} does not match channel_id")
+            channels[str(channel_id)] = state
+        primary_channels_payload = payload.get("primary_channels")
+        primary_channels_explicit = "primary_channels" in payload
+        if primary_channels_payload is None:
+            primary_channels = PrimaryChannelBindings()
+        elif isinstance(primary_channels_payload, Mapping):
+            primary_channels = PrimaryChannelBindings.from_dict(
+                primary_channels_payload
+            )
+        else:
+            raise ValueError("Project primary_channels must be an object")
+        processing_metadata_payload = payload.get("processing_metadata", {})
+        if not isinstance(processing_metadata_payload, Mapping):
+            raise ValueError("Project processing_metadata must be an object")
 
         processors_payload = payload.get("processors", [])
         if not isinstance(processors_payload, (list, tuple)):
@@ -147,6 +367,8 @@ class ProjectDocument:
                 if source is None or source.get("sha256") in (None, "")
                 else str(source["sha256"])
             ),
+            sources=sources,
+            streams=streams,
             parser=(
                 PluginReference.from_dict(parser_payload)
                 if isinstance(parser_payload, Mapping)
@@ -161,6 +383,10 @@ class ProjectDocument:
                 PluginReference.from_dict(item) for item in processors_payload
             ),
             regions=regions,
+            channels=channels,
+            primary_channels=primary_channels,
+            primary_channels_explicit=primary_channels_explicit,
+            processing_metadata=dict(processing_metadata_payload),
             analyzer=(
                 PluginReference.from_dict(analyzer_payload)
                 if isinstance(analyzer_payload, Mapping)

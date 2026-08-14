@@ -69,7 +69,11 @@ class ThrustCurvePngExporter(ExporterPlugin):
             EXPORTER_UI_SCHEMA_KEY: {
                 "filename": "thrust_curve.png",
                 "translation_key": "export.thrust_png",
-                "required_analysis_ids": ["builtin.analyzer.thrust"],
+                "required_analysis_ids": [],
+                "required_capability_ids": ["thrust_ready"],
+                "group_id": "thrust",
+                "group_order": 10,
+                "format_order": 20,
                 "locale_qualified": True,
                 "supports_metric_annotation": True,
             },

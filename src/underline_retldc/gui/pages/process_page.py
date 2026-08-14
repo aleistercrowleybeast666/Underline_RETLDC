@@ -4,25 +4,26 @@ from collections.abc import Mapping
 from typing import Any
 
 import numpy as np
-import pyqtgraph as pg
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QCheckBox,
-    QDoubleSpinBox,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QPushButton,
-    QSplitter,
     QVBoxLayout,
     QWidget,
 )
 
-from underline_retldc.app.settings import THEME_DARK, THEME_LIGHT, Theme_Normalize
+from underline_retldc.app.settings import THEME_LIGHT, Theme_Normalize
 from underline_retldc.core.dataset import Dataset
-from underline_retldc.core.regions import BurnCandidate, RegionSelection, TimeRegion
+from underline_retldc.core.project_data import ChannelReference
+from underline_retldc.core.regions import BurnCandidate
+from underline_retldc.core.units import UnitDisplayMode, UnitDisplayMode_Normalize
+from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
 from underline_retldc.gui.schema_form import SchemaForm
+from underline_retldc.gui.test_interval_widget import TestIntervalEditor
 from underline_retldc.gui.widgets import StandardComboBox
 from underline_retldc.i18n.service import TranslationService
 
@@ -31,7 +32,10 @@ class ProcessPage(QWidget):
     detect_requested = Signal()
     apply_requested = Signal()
     plugins_requested = Signal()
-    regions_changed = Signal()
+    regions_changed = Signal(object)
+    candidate_selected = Signal(int)
+    primary_thrust_changed = Signal(object)
+    select_thrust_requested = Signal()
 
     def __init__(self, translations: TranslationService) -> None:
         super().__init__()
@@ -39,47 +43,50 @@ class ProcessPage(QWidget):
         self._raw_dataset: Dataset | None = None
         self._calibrated_dataset: Dataset | None = None
         self._processed_dataset: Dataset | None = None
+        self._input_channel_id: str | None = None
+        self._thrust_references: dict[str, ChannelReference] = {}
         self._candidates: list[BurnCandidate] = []
         self._processors: tuple[Any, ...] = ()
         self._curve_items: list[Any] = []
         self._regions_syncing = False
         self._theme = THEME_LIGHT
+        self._display_preferences: dict[str, str] = {}
+        self._display_mode = UnitDisplayMode.ENGINEERING
 
-        self.plot_widget = pg.PlotWidget(background="#0b1f3a")
-        self.plot_widget.setObjectName("analysisPlot")
-        self.plot_widget.setLabel("bottom", "Time", units="s")
-        self.plot_widget.setLabel("left", "Value")
-        self.plot_widget.showGrid(x=True, y=True, alpha=0.22)
-        self.plot_legend = self.plot_widget.addLegend(offset=(12, 12))
-        self.plot_legend.setBrush(pg.mkBrush(11, 31, 58, 210))
-        self.plot_legend.setPen(pg.mkPen("#7f9bc2"))
-        self.plot_legend.setLabelTextColor("#ffffff")
-        for axis_name in ("bottom", "left"):
-            axis = self.plot_widget.getAxis(axis_name)
-            axis.setPen(pg.mkPen("#ffffff"))
-            axis.setTextPen(pg.mkPen("#ffffff"))
-        self.plot_widget.setDownsampling(auto=True, mode="peak")
-        self.plot_widget.setClipToView(True)
-
-        self.pre_region = pg.LinearRegionItem(
-            [0.0, 1.0], brush=pg.mkBrush(70, 130, 180, 45), pen=pg.mkPen("#4682b4")
+        self.analysis_plot = AnalysisPlotWidget(
+            translations,
+            regions_movable=True,
         )
-        self.burn_region = pg.LinearRegionItem(
-            [1.0, 2.0], brush=pg.mkBrush(255, 140, 70, 55), pen=pg.mkPen("#ff8c46")
-        )
-        self.post_region = pg.LinearRegionItem(
-            [2.0, 3.0], brush=pg.mkBrush(90, 180, 120, 45), pen=pg.mkPen("#5ab478")
-        )
+        # Compatibility aliases retained for extensions and existing tests.
+        self.plot_widget = self.analysis_plot.plot_widget
+        self.plot_legend = self.analysis_plot.legend
+        self.pre_region = self.analysis_plot.pre_region
+        self.burn_region = self.analysis_plot.active_region
+        self.post_region = self.analysis_plot.post_region
         for region in (self.pre_region, self.burn_region, self.post_region):
-            region.setVisible(False)
             region.sigRegionChanged.connect(self._region_edits_refresh)
-            region.sigRegionChangeFinished.connect(self.regions_changed)
-            self.plot_widget.addItem(region)
+            region.sigRegionChangeFinished.connect(self._plot_regions_finished)
+        self.analysis_plot.select_channel_requested.connect(
+            self.select_thrust_requested
+        )
 
         controls = QWidget()
-        controls.setMinimumWidth(310)
-        controls.setMaximumWidth(380)
+        controls.setMinimumWidth(300)
         controls_layout = QVBoxLayout(controls)
+        self.input_group = QGroupBox()
+        input_layout = QVBoxLayout(self.input_group)
+        self.input_label = QLabel()
+        self.input_combo = StandardComboBox()
+        self.input_combo.currentIndexChanged.connect(self._input_selection_changed)
+        self.select_input_button = QPushButton()
+        self.select_input_button.clicked.connect(self.select_thrust_requested)
+        self.input_hint = QLabel()
+        self.input_hint.setWordWrap(True)
+        input_layout.addWidget(self.input_label)
+        input_layout.addWidget(self.input_combo)
+        input_layout.addWidget(self.select_input_button)
+        input_layout.addWidget(self.input_hint)
+        controls_layout.addWidget(self.input_group)
         self.curves_group = QGroupBox()
         curves_layout = QVBoxLayout(self.curves_group)
         self.curve_checks: dict[str, QCheckBox] = {}
@@ -91,50 +98,35 @@ class ProcessPage(QWidget):
             curves_layout.addWidget(checkbox)
         controls_layout.addWidget(self.curves_group)
 
-        self.candidates_group = QGroupBox()
-        candidates_layout = QVBoxLayout(self.candidates_group)
-        self.detect_button = QPushButton()
-        self.detect_button.clicked.connect(self.detect_requested)
-        self.fit_button = QPushButton()
-        self.fit_button.clicked.connect(self._regions_view_fit)
-        self.candidate_combo = StandardComboBox()
-        self.candidate_combo.currentIndexChanged.connect(self._candidate_selected)
-        self.region_hint = QLabel()
-        self.region_hint.setWordWrap(True)
-        candidate_buttons = QHBoxLayout()
-        candidate_buttons.addWidget(self.detect_button)
-        candidate_buttons.addWidget(self.fit_button)
-        candidates_layout.addLayout(candidate_buttons)
-        candidates_layout.addWidget(self.candidate_combo)
-        candidates_layout.addWidget(self.region_hint)
-        controls_layout.addWidget(self.candidates_group)
+        self.interval_editor = TestIntervalEditor(translations)
+        self.interval_editor.detect_requested.connect(self.detect_requested.emit)
+        self.interval_editor.fit_requested.connect(self._regions_view_fit)
+        self.interval_editor.candidate_selected.connect(self.candidate_selected.emit)
+        self.interval_editor.regions_changed.connect(
+            self._interval_regions_changed
+        )
+        controls_layout.addWidget(self.interval_editor)
+        # Compatibility aliases retained for existing extensions and tests.
+        self.candidates_group = self.interval_editor
+        self.regions_group = self.interval_editor
+        self.detect_button = self.interval_editor.detect_button
+        self.fit_button = self.interval_editor.fit_button
+        self.candidate_combo = self.interval_editor.candidate_combo
+        self.region_hint = self.interval_editor.region_hint
+        self.region_labels = self.interval_editor.region_labels
+        self.region_edits = dict(self.interval_editor.region_edits)
+        self.region_edits["burn"] = self.region_edits["active_test"]
+        self.region_use_checks = self.interval_editor.region_use_checks
 
-        self.regions_group = QGroupBox()
-        regions_layout = QFormLayout(self.regions_group)
-        self.region_labels: dict[str, QLabel] = {}
-        self.region_edits: dict[str, tuple[QDoubleSpinBox, QDoubleSpinBox]] = {}
-        for region_name in ("pre", "burn", "post"):
-            label = QLabel()
-            start_edit = QDoubleSpinBox()
-            end_edit = QDoubleSpinBox()
-            for edit in (start_edit, end_edit):
-                edit.setDecimals(8)
-                edit.setRange(-1.0e12, 1.0e12)
-                edit.setMinimumWidth(122)
-                edit.setMaximumWidth(145)
-                edit.setAlignment(Qt.AlignmentFlag.AlignRight)
-                edit.setSuffix(" s")
-                edit.setKeyboardTracking(False)
-                edit.setStepType(QDoubleSpinBox.StepType.AdaptiveDecimalStepType)
-                edit.valueChanged.connect(self._regions_update_from_edits)
-            row = QHBoxLayout()
-            row.addWidget(start_edit)
-            row.addWidget(QLabel("→"))
-            row.addWidget(end_edit)
-            self.region_labels[region_name] = label
-            self.region_edits[region_name] = (start_edit, end_edit)
-            regions_layout.addRow(label, row)
-        controls_layout.addWidget(self.regions_group)
+        self.baseline_status_group = QGroupBox()
+        baseline_status_layout = QFormLayout(self.baseline_status_group)
+        self.baseline_status_labels = {"pre": QLabel(), "post": QLabel()}
+        self.baseline_status_values = {"pre": QLabel("—"), "post": QLabel("—")}
+        for name in ("pre", "post"):
+            baseline_status_layout.addRow(
+                self.baseline_status_labels[name], self.baseline_status_values[name]
+            )
+        controls_layout.addWidget(self.baseline_status_group)
 
         self.processing_group = QGroupBox()
         processing_layout = QFormLayout(self.processing_group)
@@ -156,34 +148,33 @@ class ProcessPage(QWidget):
         controls_layout.addWidget(self.processing_group)
         controls_layout.addStretch(1)
 
-        splitter = QSplitter()
-        splitter.addWidget(controls)
-        splitter.addWidget(self.plot_widget)
-        splitter.setStretchFactor(0, 0)
-        splitter.setStretchFactor(1, 1)
-        splitter.setSizes([350, 700])
-        layout = QHBoxLayout(self)
-        layout.addWidget(splitter)
+        self.controls_widget = controls
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(controls)
         self.retranslate()
 
     def retranslate(self) -> None:
         t = self._translations.translate
         self.curves_group.setTitle(t("process.curves"))
+        self.input_group.setTitle(t("primary_channels.title"))
+        self.input_label.setText(t("workspace.thrust_data"))
+        self.select_input_button.setText(t("workspace.select_thrust"))
         for key, checkbox in self.curve_checks.items():
             checkbox.setText(t(f"process.{key}"))
-        self.candidates_group.setTitle(t("process.candidates"))
-        self.detect_button.setText(t("process.detect_candidates"))
-        self.fit_button.setText(t("process.fit_regions"))
+        self.interval_editor.retranslate()
         self.processing_group.setTitle(t("page.process"))
         self.compensation_label.setText(t("process.enable_baseline"))
         self.plugins_button.setText(t("process.plugins"))
         self.apply_button.setText(t("process.apply"))
-        self.region_hint.setText(t("process.region_hint"))
-        self.regions_group.setTitle(t("process.manual_regions"))
-        for region_name, label in self.region_labels.items():
-            label.setText(t(f"process.{region_name}"))
-        self.plot_widget.setLabel("bottom", t("common.time"), units="s")
-        self.plot_widget.setLabel("left", t("common.value"))
+        self.baseline_status_group.setTitle(t("process.baseline_status"))
+        self.baseline_status_labels["pre"].setText(t("process.pre_baseline"))
+        self.baseline_status_labels["post"].setText(t("process.post_baseline"))
+        self.analysis_plot.set_axis(
+            x_label=t("common.time"),
+            y_label=t("primary_channels.thrust"),
+        )
+        self.analysis_plot.empty_button.setText(t("workspace.select_thrust"))
         selected_processor = self.processor_id()
         processor_values = (
             self.processor_form.values() if self.processor_form.field_names else {}
@@ -191,7 +182,6 @@ class ProcessPage(QWidget):
         self._processors_populate(selected_processor)
         self.processor_form.set_values(processor_values)
         self.processor_form.retranslate()
-        self._candidate_labels_update()
         self._plot_refresh()
 
     def set_datasets(
@@ -199,147 +189,128 @@ class ProcessPage(QWidget):
         raw_dataset: Dataset | None,
         calibrated_dataset: Dataset | None,
         processed_dataset: Dataset | None,
+        *,
+        input_channel_id: str | None = None,
     ) -> None:
         self._raw_dataset = raw_dataset
         self._calibrated_dataset = calibrated_dataset
         self._processed_dataset = processed_dataset
+        self._input_channel_id = input_channel_id
+        self.input_hint.setText(
+            ""
+            if input_channel_id is not None
+            else self._translations.translate("workspace.no_primary_thrust")
+        )
+        self.apply_button.setEnabled(input_channel_id is not None)
+        self.interval_editor.set_detection_enabled(input_channel_id is not None)
         self._plot_refresh()
-        dataset = calibrated_dataset or raw_dataset
-        if dataset is not None and dataset.sample_count >= 2:
-            finite_time = dataset.time[np.isfinite(dataset.time)]
-            if finite_time.size >= 2 and not self.pre_region.isVisible():
-                start = float(np.min(finite_time))
-                end = float(np.max(finite_time))
-                span = end - start
-                self.set_regions(
-                    {
-                        "pre": [start, start + 0.2 * span],
-                        "burn": [start + 0.3 * span, start + 0.7 * span],
-                        "post": [start + 0.8 * span, end],
-                    }
-                )
 
-    def set_candidates(self, candidates: list[BurnCandidate]) -> None:
+    def set_thrust_choices(
+        self,
+        choices: tuple[tuple[str, object], ...],
+        selected: object | None,
+    ) -> None:
+        self.input_combo.blockSignals(True)
+        self.input_combo.clear()
+        self._thrust_references.clear()
+        self.input_combo.addItem(
+            self._translations.translate("primary_channels.none"),
+            None,
+        )
+        for label, reference in choices:
+            if not isinstance(reference, ChannelReference):
+                continue
+            self._thrust_references[reference.stable_id] = reference
+            self.input_combo.addItem(label, reference.stable_id)
+        selected_id = selected.stable_id if isinstance(selected, ChannelReference) else None
+        index = self.input_combo.findData(selected_id)
+        self.input_combo.setCurrentIndex(max(0, index))
+        self.input_combo.blockSignals(False)
+
+    def _input_selection_changed(self, _index: int) -> None:
+        stable_id = self.input_combo.currentData()
+        self.primary_thrust_changed.emit(
+            self._thrust_references.get(str(stable_id)) if stable_id else None
+        )
+
+    def set_candidates(
+        self,
+        candidates: list[BurnCandidate],
+        *,
+        selected_index: int = 0,
+    ) -> None:
         self._candidates = list(candidates)
-        self._candidate_labels_update()
-        if candidates:
-            self.candidate_combo.setCurrentIndex(0)
-            self._candidate_selected(0)
+        self.interval_editor.set_candidates(
+            candidates,
+            selected_index=selected_index,
+        )
 
     def _candidate_labels_update(self) -> None:
-        current = self.candidate_combo.currentIndex()
-        self.candidate_combo.blockSignals(True)
-        self.candidate_combo.clear()
-        if not self._candidates:
-            self.candidate_combo.addItem(
-                self._translations.translate("process.not_detected"), None
-            )
-        for index, candidate in enumerate(self._candidates):
-            prefix = (
-                self._translations.translate("process.recommended") + " — "
-                if index == 0
-                else ""
-            )
-            self.candidate_combo.addItem(
-                self._translations.translate(
-                    "process.candidate_line",
-                    prefix=prefix,
-                    start=f"{candidate.start:.5g}",
-                    end=f"{candidate.end:.5g}",
-                    peak=f"{candidate.peak:.5g}",
-                    score=f"{candidate.score:.4g}",
-                ),
-                index,
-            )
-        if self._candidates:
-            self.candidate_combo.setCurrentIndex(min(max(current, 0), len(self._candidates) - 1))
-        self.candidate_combo.blockSignals(False)
+        self.interval_editor.set_candidates(
+            self._candidates,
+            selected_index=max(0, self.candidate_combo.currentIndex()),
+        )
 
     def _candidate_selected(self, index: int) -> None:
         if index < 0 or index >= len(self._candidates):
             return
-        dataset = self._calibrated_dataset or self._raw_dataset
-        if dataset is None:
-            return
-        candidate = self._candidates[index]
-        finite_time = dataset.time[np.isfinite(dataset.time)]
-        if finite_time.size < 2:
-            return
-        data_start = float(np.min(finite_time))
-        data_end = float(np.max(finite_time))
-        data_span = data_end - data_start
-        burn_span = max(candidate.duration, data_span * 0.02)
-        gap = max(data_span * 0.005, np.finfo(float).eps)
-        pre_end = max(data_start + gap, candidate.start - gap)
-        pre_start = max(data_start, pre_end - burn_span)
-        post_start = min(data_end - gap, candidate.end + gap)
-        post_end = min(data_end, post_start + burn_span)
-        if pre_start < pre_end <= candidate.start and candidate.end <= post_start < post_end:
-            self.set_regions(
-                {
-                    "pre": [pre_start, pre_end],
-                    "burn": [candidate.start, candidate.end],
-                    "post": [post_start, post_end],
-                }
-            )
+        self.candidate_selected.emit(index)
 
-    def set_regions(self, regions: dict[str, list[float] | tuple[float, float]]) -> None:
-        selection = RegionSelection.from_dict(
-            {key: list(map(float, regions[key])) for key in ("pre", "burn", "post")}
-        )
+    def set_regions(
+        self,
+        regions: Mapping[str, list[float] | tuple[float, float] | None],
+        *,
+        emit: bool = False,
+    ) -> None:
+        self.interval_editor.set_regions(regions)
+        payload = self.interval_editor.regions()
         self._regions_syncing = True
-        self.pre_region.setRegion(selection.pre.to_list())
-        self.burn_region.setRegion(selection.burn.to_list())
-        self.post_region.setRegion(selection.post.to_list())
-        for region in (self.pre_region, self.burn_region, self.post_region):
-            region.setVisible(True)
+        self.analysis_plot.set_regions(payload)
         self._regions_syncing = False
-        self._region_edits_refresh()
-        self.regions_changed.emit()
+        if emit:
+            self.regions_changed.emit(payload)
+
+    def _interval_regions_changed(
+        self,
+        regions: Mapping[str, list[float] | tuple[float, float] | None],
+    ) -> None:
+        if self._regions_syncing:
+            return
+        self._regions_syncing = True
+        self.analysis_plot.set_regions(regions)
+        self._regions_syncing = False
+        self.regions_changed.emit(dict(regions))
 
     def _region_edits_refresh(self) -> None:
-        if self._regions_syncing:
+        if self._regions_syncing or not self.burn_region.isVisible():
             return
         self._regions_syncing = True
-        for region_name, region in (
-            ("pre", self.pre_region),
-            ("burn", self.burn_region),
-            ("post", self.post_region),
-        ):
-            start_edit, end_edit = self.region_edits[region_name]
-            start, end = map(float, region.getRegion())
-            start_edit.setValue(start)
-            end_edit.setValue(end)
-        self._regions_syncing = False
-
-    def _regions_update_from_edits(self) -> None:
-        if self._regions_syncing:
-            return
-        payload = {
-            region_name: [start_edit.value(), end_edit.value()]
-            for region_name, (start_edit, end_edit) in self.region_edits.items()
-        }
-        try:
-            selection = RegionSelection.from_dict(payload)
-        except ValueError:
-            self._region_edits_refresh()
-            return
-        self._regions_syncing = True
-        self.pre_region.setRegion(selection.pre.to_list())
-        self.burn_region.setRegion(selection.burn.to_list())
-        self.post_region.setRegion(selection.post.to_list())
-        for region in (self.pre_region, self.burn_region, self.post_region):
-            region.setVisible(True)
-        self._regions_syncing = False
-        self.regions_changed.emit()
-
-    def regions(self) -> dict[str, list[float]]:
-        selection = RegionSelection(
-            pre=TimeRegion(*map(float, self.pre_region.getRegion())),
-            burn=TimeRegion(*map(float, self.burn_region.getRegion())),
-            post=TimeRegion(*map(float, self.post_region.getRegion())),
+        self.interval_editor.set_regions(
+            {
+                "pre": (
+                    list(map(float, self.pre_region.getRegion()))
+                    if self.pre_region.isVisible()
+                    else None
+                ),
+                "active_test": list(map(float, self.burn_region.getRegion())),
+                "post": (
+                    list(map(float, self.post_region.getRegion()))
+                    if self.post_region.isVisible()
+                    else None
+                ),
+            }
         )
-        return selection.to_dict()
+        self._regions_syncing = False
+
+    def _plot_regions_finished(self) -> None:
+        self._region_edits_refresh()
+        self.interval_editor.mark_manually_modified()
+        payload = self.interval_editor.regions()
+        if payload:
+            self.regions_changed.emit(payload)
+
+    def regions(self) -> dict[str, list[float] | None]:
+        return self.interval_editor.regions()
 
     def set_processors(
         self,
@@ -397,6 +368,10 @@ class ProcessPage(QWidget):
         plugin_id = self.processor_combo.currentData()
         return str(plugin_id) if plugin_id else None
 
+    @property
+    def input_channel_id(self) -> str | None:
+        return self._input_channel_id
+
     def processing_config(self) -> dict[str, Any]:
         processor = self._selected_processor()
         if processor is None:
@@ -406,11 +381,19 @@ class ProcessPage(QWidget):
         if not isinstance(raw_properties, Mapping):
             raise ValueError("Processor config schema properties must be an object")
         config = self.processor_form.values()
+        regions = self.regions()
+        processor_regions = {
+            "pre": regions.get("pre"),
+            "burn": regions.get("active_test"),
+            "post": regions.get("post"),
+        }
         injected = {
             "processor.selection": True,
-            "thrust_analysis.input_channel": "force_calibrated",
-            "thrust_analysis.regions": self.regions(),
+            "thrust_analysis.input_channel": self._input_channel_id,
+            "thrust_analysis.regions": processor_regions,
         }
+        if self._input_channel_id is None:
+            raise ValueError("The Project has no Primary Thrust Channel")
         for field_name, raw_property in raw_properties.items():
             if not isinstance(raw_property, Mapping):
                 raise ValueError(f"Processor schema field {field_name!r} must be an object")
@@ -444,97 +427,110 @@ class ProcessPage(QWidget):
 
     def set_theme(self, theme: str) -> None:
         self._theme = Theme_Normalize(theme)
-        if self._theme == THEME_DARK:
-            background = "#0b1220"
-            axis_color = "#cbd5e1"
-            legend_background = pg.mkBrush(15, 23, 42, 220)
-            legend_border = "#475569"
-        else:
-            background = "#0b1f3a"
-            axis_color = "#ffffff"
-            legend_background = pg.mkBrush(11, 31, 58, 210)
-            legend_border = "#7f9bc2"
-        self.plot_widget.setBackground(background)
-        self.plot_legend.setBrush(legend_background)
-        self.plot_legend.setPen(pg.mkPen(legend_border))
-        self.plot_legend.setLabelTextColor(axis_color)
-        for axis_name in ("bottom", "left"):
-            axis = self.plot_widget.getAxis(axis_name)
-            axis.setPen(pg.mkPen(axis_color))
-            axis.setTextPen(pg.mkPen(axis_color))
-        self.pre_region.setBrush(pg.mkBrush(70, 130, 180, 48))
-        self.burn_region.setBrush(pg.mkBrush(255, 140, 70, 58))
-        self.post_region.setBrush(pg.mkBrush(90, 180, 120, 48))
-        for region, color in (
-            (self.pre_region, "#60a5fa"),
-            (self.burn_region, "#fb923c"),
-            (self.post_region, "#4ade80"),
-        ):
-            for boundary in region.lines:
-                boundary.setPen(pg.mkPen(color))
-        self.plot_widget.update()
+        self.analysis_plot.apply_theme(self._theme)
+
+    def set_display_preferences(self, preferences: Mapping[str, str]) -> None:
+        self._display_preferences = dict(preferences)
+        self._plot_refresh()
+
+    def set_display_mode(self, mode: UnitDisplayMode | str) -> None:
+        self._display_mode = UnitDisplayMode_Normalize(mode)
+        self.analysis_plot.set_display_mode(self._display_mode)
+        self._plot_refresh()
+
+    def set_segmentation_reference(
+        self,
+        reference_name: str,
+        *,
+        manually_modified: bool,
+    ) -> None:
+        self.interval_editor.set_reference(
+            reference_name,
+            manually_modified=manually_modified,
+        )
 
     def _plot_refresh(self) -> None:
-        for item in self._curve_items:
-            self.plot_widget.removeItem(item)
+        self.analysis_plot.clear_series()
         self._curve_items.clear()
         uncorrected_dataset = self._calibrated_dataset or self._raw_dataset
-        uncorrected_channel = (
-            "force_calibrated"
-            if uncorrected_dataset is not None
-            and "force_calibrated" in uncorrected_dataset.channels
-            else "thrust_raw"
-        )
+        uncorrected_channel = self._input_channel_id or ""
         corrected_channel = (
             "thrust_processed"
             if self._processed_dataset is not None
             and "thrust_processed" in self._processed_dataset.channels
             else "thrust_corrected"
         )
-        curves: list[tuple[str, Dataset | None, str, str]] = [
-            ("uncorrected", uncorrected_dataset, uncorrected_channel, "#4cc9f0"),
-            ("corrected", self._processed_dataset, corrected_channel, "#ff9f43"),
+        curves: list[tuple[str, Dataset | None, str, int]] = [
+            ("uncorrected", uncorrected_dataset, uncorrected_channel, 0),
+            ("corrected", self._processed_dataset, corrected_channel, 1),
         ]
-        for key, dataset, channel_id, color in curves:
+        for key, dataset, channel_id, style_index in curves:
             if (
                 not self.curve_checks[key].isChecked()
                 or dataset is None
                 or channel_id not in dataset.channels
             ):
                 continue
-            item = self.plot_widget.plot(
-                dataset.time,
-                dataset.channel(channel_id).values,
-                pen=pg.mkPen(color, width=1.5),
+            item = self.analysis_plot.add_series(
+                dataset.project_time,
+                dataset.channel(channel_id).display_values(
+                    preferences=self._display_preferences,
+                    display_mode=self._display_mode,
+                ),
                 name=self._translations.translate(f"process.{key}"),
+                style_index=style_index,
             )
             self._curve_items.append(item)
+            display_unit = dataset.channel(channel_id).effective_display_unit(
+                self._display_preferences,
+                display_mode=self._display_mode,
+            )
+            self.analysis_plot.set_axis(
+                x_label=self._translations.translate("common.time"),
+                y_label=self._translations.translate("primary_channels.thrust"),
+                y_unit=display_unit,
+            )
+        missing_input = self._input_channel_id is None or uncorrected_dataset is None
+        self.analysis_plot.set_empty_state(
+            (
+                self._translations.translate("workspace.no_primary_thrust")
+                if missing_input
+                else None
+            ),
+            button_text=self._translations.translate("workspace.select_thrust"),
+            button_visible=True,
+        )
 
     def _regions_view_fit(self) -> None:
-        if not all(
-            region.isVisible()
-            for region in (self.pre_region, self.burn_region, self.post_region)
-        ):
+        if not self.burn_region.isVisible():
             return
         regions = self.regions()
-        view_start = float(regions["pre"][0])
-        view_end = float(regions["post"][1])
+        pre = regions["pre"]
+        burn = regions["active_test"]
+        post = regions["post"]
+        assert burn is not None
+        view_start = float(pre[0] if pre is not None else burn[0])
+        view_end = float(post[1] if post is not None else burn[1])
         if view_start >= view_end:
             return
-        self.plot_widget.setXRange(view_start, view_end, padding=0.02)
-
         values: list[np.ndarray] = []
         uncorrected_dataset = self._calibrated_dataset or self._raw_dataset
         if self.curve_checks["uncorrected"].isChecked() and uncorrected_dataset is not None:
-            channel_id = (
-                "force_calibrated"
-                if "force_calibrated" in uncorrected_dataset.channels
-                else "thrust_raw"
+            channel_id = self._input_channel_id or ""
+            if channel_id not in uncorrected_dataset.channels:
+                channel_id = ""
+            if not channel_id:
+                return
+            project_time = uncorrected_dataset.project_time
+            mask = (project_time >= view_start) & (
+                project_time <= view_end
             )
-            mask = (uncorrected_dataset.time >= view_start) & (
-                uncorrected_dataset.time <= view_end
+            values.append(
+                uncorrected_dataset.channel(channel_id).display_values(
+                    preferences=self._display_preferences,
+                    display_mode=self._display_mode,
+                )[mask]
             )
-            values.append(uncorrected_dataset.channel(channel_id).values[mask])
         if self.curve_checks["corrected"].isChecked() and self._processed_dataset is not None:
             channel_id = (
                 "thrust_processed"
@@ -542,27 +538,46 @@ class ProcessPage(QWidget):
                 else "thrust_corrected"
             )
             if channel_id in self._processed_dataset.channels:
-                mask = (self._processed_dataset.time >= view_start) & (
-                    self._processed_dataset.time <= view_end
+                project_time = self._processed_dataset.project_time
+                mask = (project_time >= view_start) & (
+                    project_time <= view_end
                 )
-                values.append(self._processed_dataset.channel(channel_id).values[mask])
-        finite_values = [array[np.isfinite(array)] for array in values if array.size]
-        finite_values = [array for array in finite_values if array.size]
-        if finite_values:
-            minimum = min(float(np.min(array)) for array in finite_values)
-            maximum = max(float(np.max(array)) for array in finite_values)
-            if minimum == maximum:
-                padding = max(abs(minimum) * 0.1, 1.0)
-                minimum -= padding
-                maximum += padding
-            self.plot_widget.setYRange(minimum, maximum, padding=0.08)
+                values.append(
+                    self._processed_dataset.channel(channel_id).display_values(
+                        preferences=self._display_preferences,
+                        display_mode=self._display_mode,
+                    )[mask]
+                )
+        self.analysis_plot.fit_view(
+            values=tuple(values),
+            regions=regions,
+        )
+
+    def set_processing_metadata(self, metadata: Mapping[str, Any] | None) -> None:
+        values = dict(metadata or {})
+        for name in ("pre", "post"):
+            baseline = values.get("baseline_start" if name == "pre" else "baseline_end")
+            source = values.get(f"baseline_{name}_source")
+            if baseline is None:
+                text = "—"
+            elif source == "assumed_zero":
+                text = self._translations.translate(
+                    "process.baseline_assumed", value=f"{float(baseline):.8g}"
+                )
+            else:
+                text = self._translations.translate(
+                    "process.baseline_measured", value=f"{float(baseline):.8g}"
+                )
+            self.baseline_status_values[name].setText(text)
 
     def clear_state(self) -> None:
         self._raw_dataset = None
         self._calibrated_dataset = None
         self._processed_dataset = None
+        self._input_channel_id = None
         self._candidates.clear()
+        self.interval_editor.clear()
         for region in (self.pre_region, self.burn_region, self.post_region):
             region.setVisible(False)
-        self._candidate_labels_update()
+        self.set_processing_metadata(None)
         self._plot_refresh()

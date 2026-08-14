@@ -2,10 +2,89 @@ import numpy as np
 
 from underline_retldc.core.channel import Channel
 from underline_retldc.core.dataset import Dataset
-from underline_retldc.core.pipeline import Processing_Passthrough
+from underline_retldc.core.pipeline import (
+    Calibration_Apply,
+    Calibration_OutputChannelId,
+    Processing_Passthrough,
+)
 from underline_retldc.core.region_detection import Burn_DetectCandidates
 from underline_retldc.core.units import G0_STANDARD_M_S2
 from underline_retldc.plugin_api.common import TaskContext
+
+
+def test_dynamic_primary_thrust_id_flows_through_processing_analysis_and_export(
+    tmp_path,
+    bundled_registry,
+) -> None:
+    time = np.linspace(0.0, 10.0, 101)
+    thrust = np.where((time >= 3.0) & (time <= 7.0), 8.0, 0.0)
+    raw = Channel(
+        "load_cell_A",
+        "force",
+        "raw",
+        thrust,
+        "raw",
+        semantic_role="thrust",
+    )
+    dataset = Dataset(time=time, channels={raw.id: raw})
+    output_id = Calibration_OutputChannelId(raw)
+    assert output_id == "load_cell_A_calibrated"
+    assert output_id != "force_calibrated"
+    calibrated = Calibration_Apply(
+        dataset,
+        bundled_registry.get("builtin.calibration.linear"),
+        input_channel_id=raw.id,
+        output_channel_id=output_id,
+        quantity="force",
+        unit="N",
+        parameters={"K": 1.0, "B": 0.0},
+    )
+    processor = bundled_registry.get("builtin.processor.vertical_linear_baseline")
+    processing = processor.process(
+        calibrated,
+        {
+            "input_channel_id": output_id,
+            "enabled": True,
+            "sign": 1,
+            "regions": {
+                "pre": [0.0, 2.0],
+                "burn": [3.0, 7.0],
+                "post": [8.0, 10.0],
+            },
+        },
+        TaskContext(),
+    )
+    assert processing.dataset.channel("thrust_processed").metadata[
+        "source_channel_id"
+    ] == "thrust_corrected"
+    analyzer = bundled_registry.get("builtin.analyzer.thrust")
+    analysis = analyzer.analyze(
+        processing.dataset,
+        {
+            "channel_id": "thrust_processed",
+            "ignition": 3.0,
+            "burnout": 7.0,
+            "propellant_mass_kg": None,
+        },
+        TaskContext(),
+    )
+    assert analysis.metrics["peak_thrust_n"] == 8.0
+    destination = tmp_path / "thrust_data_EN.csv"
+    bundled_registry.get("builtin.exporter.csv").export(
+        destination,
+        processing.dataset,
+        analysis,
+        {
+            "channel_ids": ["thrust_processed"],
+            "burn_only": True,
+            "shift_time": True,
+            "ignition": 3.0,
+            "burnout": 7.0,
+            "output_locale": "en_US",
+        },
+        TaskContext(),
+    )
+    assert destination.is_file()
 
 
 def test_vertical_compensation_recovers_known_thrust_and_preserves_input(
@@ -123,10 +202,65 @@ def test_processing_passthrough_creates_new_processed_channel() -> None:
             )
         },
     )
-    result = Processing_Passthrough(dataset)
+    result = Processing_Passthrough(
+        dataset,
+        input_channel_id="force_calibrated",
+    )
     assert "thrust_processed" not in dataset.channels
     np.testing.assert_allclose(
         result.dataset.channel("thrust_processed").values,
         dataset.channel("force_calibrated").values,
     )
     assert result.metadata["processor_id"] is None
+
+
+def test_missing_pre_and_post_assume_zero_and_analysis_continues(
+    bundled_registry,
+) -> None:
+    time = np.linspace(0.0, 4.0, 41)
+    measured = np.where((time >= 1.0) & (time <= 3.0), 8.0, 0.0)
+    dataset = Dataset(
+        time,
+        {
+            "force_calibrated": Channel(
+                "force_calibrated", "force", "N", measured, "calibrated"
+            )
+        },
+    )
+    result = bundled_registry.get(
+        "builtin.processor.vertical_linear_baseline"
+    ).process(
+        dataset,
+        {
+            "input_channel_id": "force_calibrated",
+            "sign": 1,
+            "regions": {"pre": None, "burn": [1.0, 3.0], "post": None},
+        },
+        TaskContext(),
+    )
+    assert result.metadata["baseline_start"] == 0.0
+    assert result.metadata["baseline_end"] == 0.0
+    assert result.metadata["baseline_pre_source"] == "assumed_zero"
+    assert result.metadata["baseline_post_source"] == "assumed_zero"
+    assert result.metadata["equivalent_mass_change_kg"] is None
+    assert {
+        "processing.pre_baseline_assumed_zero",
+        "processing.post_baseline_assumed_zero",
+        "processing.equivalent_mass_unavailable_assumed_baseline",
+    } <= {item.code for item in result.diagnostics}
+    np.testing.assert_allclose(
+        result.dataset.channel("thrust_processed").values, measured
+    )
+
+
+def test_activity_detection_marks_clipped_boundaries() -> None:
+    time = np.linspace(0.0, 10.0, 101)
+    start_clipped_signal = np.where(time <= 3.0, 5.0, 0.0)
+    start_candidates = Burn_DetectCandidates(time, start_clipped_signal)
+    assert start_candidates and start_candidates[0].start_clipped
+    assert not start_candidates[0].end_clipped
+
+    end_clipped_signal = np.where(time >= 7.0, 5.0, 0.0)
+    end_candidates = Burn_DetectCandidates(time, end_clipped_signal)
+    assert end_candidates and end_candidates[0].end_clipped
+    assert not end_candidates[0].start_clipped

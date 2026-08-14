@@ -10,6 +10,7 @@ import numpy as np
 
 from underline_retldc.core.dataset import Dataset
 from underline_retldc.core.diagnostics import Diagnostic, DiagnosticSeverity
+from underline_retldc.core.units import Unit_ConvertValues, Unit_IsPhysicalForQuantity
 from underline_retldc.plugin_api.common import (
     AnalysisResult,
     ExportResult,
@@ -64,7 +65,16 @@ class OpenRocketEngExporter(ExporterPlugin):
             EXPORTER_UI_SCHEMA_KEY: {
                 "filename": "motor.eng",
                 "translation_key": "export.eng",
-                "required_analysis_ids": ["builtin.analyzer.thrust"],
+                "required_analysis_ids": [],
+                "required_capability_ids": [
+                    "thrust_ready",
+                    "physical_force",
+                    "segmentation_ready",
+                ],
+                "group_id": "thrust",
+                "group_order": 10,
+                "format_order": 30,
+                "default_selected": False,
                 "locale_qualified": False,
                 "requires_motor_metadata": True,
             },
@@ -97,6 +107,22 @@ class OpenRocketEngExporter(ExporterPlugin):
                     plugin_id=self.descriptor.plugin_id,
                 )
             )
+        else:
+            channel = dataset.channel(channel_id)
+            if not Unit_IsPhysicalForQuantity(channel.quantity, channel.data_unit):
+                diagnostics.append(
+                    Diagnostic(
+                        DiagnosticSeverity.ERROR,
+                        "export.eng.physical_force_required",
+                        "OpenRocket ENG export requires a Channel with a physical force unit",
+                        plugin_id=self.descriptor.plugin_id,
+                        details={
+                            "channel_id": channel_id,
+                            "quantity": channel.quantity,
+                            "data_unit": channel.data_unit,
+                        },
+                    )
+                )
         if not bool(config.get("curve_confirmed", False)):
             diagnostics.append(
                 Diagnostic(
@@ -142,7 +168,7 @@ class OpenRocketEngExporter(ExporterPlugin):
         curve = ExportCurve_Extract(dataset, analysis, config)
         ignition = curve.ignition
         time = np.array(curve.time, copy=True)
-        force = np.array(curve.thrust, copy=True)
+        force = np.array(Unit_ConvertValues(curve.thrust, curve.unit, "N"), copy=True)
         if np.any(force < 0):
             diagnostics.append(
                 Diagnostic(

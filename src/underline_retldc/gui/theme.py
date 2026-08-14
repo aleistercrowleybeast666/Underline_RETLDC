@@ -444,11 +444,26 @@ class WindowThemeFilter(QObject):
 
 
 class RetldcApplicationStyle(QProxyStyle):
-    """Fusion-based style with theme-aware, unmistakable checkbox indicators."""
+    """Fusion-based style with unmistakable checkbox and radio indicators."""
 
     def __init__(self, theme: str) -> None:
         super().__init__("Fusion")
         self._theme = Theme_Normalize(theme)
+
+    def pixelMetric(
+        self,
+        metric: QStyle.PixelMetric,
+        option: QStyleOption | None = None,
+        widget: QWidget | None = None,
+    ) -> int:
+        if metric in {
+            QStyle.PixelMetric.PM_IndicatorWidth,
+            QStyle.PixelMetric.PM_IndicatorHeight,
+            QStyle.PixelMetric.PM_ExclusiveIndicatorWidth,
+            QStyle.PixelMetric.PM_ExclusiveIndicatorHeight,
+        }:
+            return 18
+        return super().pixelMetric(metric, option, widget)
 
     def drawPrimitive(
         self,
@@ -457,6 +472,35 @@ class RetldcApplicationStyle(QProxyStyle):
         painter: QPainter,
         widget: QWidget | None = None,
     ) -> None:
+        if element == QStyle.PrimitiveElement.PE_IndicatorRadioButton:
+            enabled = bool(option.state & QStyle.StateFlag.State_Enabled)
+            checked = bool(option.state & QStyle.StateFlag.State_On)
+            hovered = bool(option.state & QStyle.StateFlag.State_MouseOver)
+            indicator = option.rect.adjusted(1, 1, -1, -1)
+            painter.save()
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+            if self._theme == THEME_DARK:
+                border_color = QColor(
+                    "#60a5fa" if hovered and enabled else "#94a3b8"
+                )
+                fill_color = QColor("#182235" if enabled else "#172033")
+                dot_color = QColor("#60a5fa" if enabled else "#64748b")
+            else:
+                border_color = QColor(
+                    "#245bc5" if hovered and enabled else "#52647d"
+                )
+                fill_color = QColor("#ffffff" if enabled else "#eef1f5")
+                dot_color = QColor("#2f6fed" if enabled else "#91a6ca")
+            painter.setPen(QPen(border_color, 1.6))
+            painter.setBrush(fill_color)
+            painter.drawEllipse(indicator)
+            if checked:
+                radius = max(3.0, min(indicator.width(), indicator.height()) * 0.27)
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(dot_color)
+                painter.drawEllipse(indicator.center(), radius, radius)
+            painter.restore()
+            return
         if element != QStyle.PrimitiveElement.PE_IndicatorCheckBox:
             super().drawPrimitive(element, option, painter, widget)
             return

@@ -48,10 +48,11 @@ def ExportCurve_Extract(
     if not math.isfinite(ignition) or not math.isfinite(burnout) or ignition >= burnout:
         raise ValueError("Final-curve export requires finite ignition < burnout")
     channel = dataset.channel(channel_id)
-    all_time = np.asarray(dataset.time, dtype=np.float64)
+    project_time = dataset.project_time
+    all_time = np.asarray(project_time, dtype=np.float64)
     all_thrust = np.asarray(channel.values, dtype=np.float64)
-    mask = (dataset.time >= ignition) & (dataset.time <= burnout)
-    time = np.asarray(dataset.time[mask], dtype=np.float64)
+    mask = (project_time >= ignition) & (project_time <= burnout)
+    time = np.asarray(project_time[mask], dtype=np.float64)
     thrust = np.asarray(channel.values[mask], dtype=np.float64)
     finite = np.isfinite(time) & np.isfinite(thrust)
     time = np.array(time[finite], dtype=np.float64, copy=True)

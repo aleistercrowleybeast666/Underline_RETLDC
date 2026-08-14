@@ -7,9 +7,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 from underline_retldc.app.version import FULL_NAME, __version__
 from underline_retldc.core.dataset import Dataset
 from underline_retldc.core.diagnostics import Diagnostic, DiagnosticSeverity
+from underline_retldc.core.measurement_export import Measurement_ChannelsSelect
 from underline_retldc.plugin_api.common import (
     AnalysisResult,
     ExportResult,
@@ -23,6 +26,9 @@ from underline_retldc.plugin_api.exporter import EXPORTER_UI_SCHEMA_KEY, Exporte
 
 class AnalysisTextExporter(ExporterPlugin):
     METRIC_ORDER = (
+        "peak_value",
+        "average_value",
+        "relative_integral",
         "peak_thrust_n",
         "average_thrust_n",
         "burn_duration_s",
@@ -33,6 +39,9 @@ class AnalysisTextExporter(ExporterPlugin):
     )
     METRIC_LABELS = {
         "en_US": {
+            "peak_value": "Peak (Current Data Unit)",
+            "average_value": "Average (Current Data Unit)",
+            "relative_integral": "Relative Integral (Current Data Unit s)",
             "peak_thrust_n": "Peak Thrust [N]",
             "average_thrust_n": "Average Thrust [N]",
             "burn_duration_s": "Test Duration [s]",
@@ -44,6 +53,9 @@ class AnalysisTextExporter(ExporterPlugin):
             ),
         },
         "zh_CN": {
+            "peak_value": "峰值（当前数据单位）",
+            "average_value": "平均值（当前数据单位）",
+            "relative_integral": "相对积分（当前数据单位 s）",
             "peak_thrust_n": "峰值推力 [N]",
             "average_thrust_n": "平均推力 [N]",
             "burn_duration_s": "试车时长 [s]",
@@ -74,6 +86,11 @@ class AnalysisTextExporter(ExporterPlugin):
             "processor_version": "Processor Version",
             "compensation": "Motor Weight-Change Compensation Enabled",
             "sign": "Sign",
+            "pre_baseline": "PRE Baseline",
+            "pre_baseline_source": "PRE Baseline Source",
+            "post_baseline": "POST Baseline",
+            "post_baseline_source": "POST Baseline Source",
+            "processing_metadata": "Processing Metadata",
             "analyzer": "Analyzer",
             "analyzer_version": "Analyzer Version",
             "motor_metadata": "Motor Metadata",
@@ -87,6 +104,17 @@ class AnalysisTextExporter(ExporterPlugin):
             "time_origin": "Exported Time Origin [s]",
             "interpolation": "Boundary Interpolation",
             "metrics": "Metrics",
+            "pressure_metrics": "Chamber Pressure Metrics",
+            "pressure_channel": "Chamber Pressure Channel",
+            "pressure_start": "Chamber Pressure at Test Start",
+            "pressure_peak_active": "Peak Chamber Pressure",
+            "pressure_mean_active": "Mean Active Chamber Pressure",
+            "temperature_metrics": "Temperature Metrics",
+            "temperature_channel": "Temperature Channel",
+            "temperature_start": "Temperature at Test Start",
+            "temperature_active_max": "Active Max",
+            "temperature_full_max": "Full Record Max",
+            "temperature_max_time": "Time of Max",
             "diagnostics": "Diagnostics",
             "final_curve": "Final Test Curve",
             "time_column": "Time(s)",
@@ -117,6 +145,11 @@ class AnalysisTextExporter(ExporterPlugin):
             "processor_version": "处理器版本",
             "compensation": "发动机自重变化补偿已启用",
             "sign": "推力极性",
+            "pre_baseline": "PRE 基线",
+            "pre_baseline_source": "PRE 基线来源",
+            "post_baseline": "POST 基线",
+            "post_baseline_source": "POST 基线来源",
+            "processing_metadata": "处理元数据",
             "analyzer": "分析器",
             "analyzer_version": "分析器版本",
             "motor_metadata": "发动机信息",
@@ -130,6 +163,17 @@ class AnalysisTextExporter(ExporterPlugin):
             "time_origin": "导出时间原点 [s]",
             "interpolation": "边界插值",
             "metrics": "分析指标",
+            "pressure_metrics": "燃烧室压力指标",
+            "pressure_channel": "燃烧室压力通道",
+            "pressure_start": "试车开始时燃烧室压力",
+            "pressure_peak_active": "燃烧室压力峰值",
+            "pressure_mean_active": "试车区间平均燃烧室压力",
+            "temperature_metrics": "温度指标",
+            "temperature_channel": "温度通道",
+            "temperature_start": "试车开始时温度",
+            "temperature_active_max": "试车区间最大值",
+            "temperature_full_max": "全记录最大值",
+            "temperature_max_time": "最大值时刻",
             "diagnostics": "诊断信息",
             "final_curve": "最终试车推力曲线",
             "time_column": "时间(s)",
@@ -165,7 +209,11 @@ class AnalysisTextExporter(ExporterPlugin):
             EXPORTER_UI_SCHEMA_KEY: {
                 "filename": "analysis_summary.txt",
                 "translation_key": "export.analysis_txt",
-                "required_analysis_ids": ["builtin.analyzer.thrust"],
+                "required_analysis_ids": [],
+                "required_capability_ids": ["project_summary_ready"],
+                "group_id": "overall",
+                "group_order": 0,
+                "format_order": 10,
                 "locale_qualified": True,
             },
         }
@@ -221,10 +269,13 @@ class AnalysisTextExporter(ExporterPlugin):
         metric_labels = self.METRIC_LABELS[output_locale]
         provenance = config.get("provenance", {})
         motor_metadata = config.get("motor_metadata", {})
+        processing_metadata = config.get("processing_metadata", {})
         if not isinstance(provenance, Mapping):
             provenance = {}
         if not isinstance(motor_metadata, Mapping):
             motor_metadata = {}
+        if not isinstance(processing_metadata, Mapping):
+            processing_metadata = {}
 
         def field(value: Any) -> str:
             if value in (None, ""):
@@ -277,6 +328,18 @@ class AnalysisTextExporter(ExporterPlugin):
             f"{field(plugin_value('processor', 'version'))}",
             f"{labels['compensation']}: {field(processor_config.get('enabled'))}",
             f"{labels['sign']}: {field(processor_config.get('sign'))}",
+            f"{labels['pre_baseline']}: "
+            f"{field(processing_metadata.get('baseline_start'))}",
+            f"{labels['pre_baseline_source']}: "
+            f"{field(processing_metadata.get('baseline_pre_source'))}",
+            f"{labels['post_baseline']}: "
+            f"{field(processing_metadata.get('baseline_end'))}",
+            f"{labels['post_baseline_source']}: "
+            f"{field(processing_metadata.get('baseline_post_source'))}",
+            f"{labels['processing_metadata']}: "
+            + json.dumps(
+                processing_metadata, ensure_ascii=False, sort_keys=True
+            ),
             f"{labels['analyzer']}: {field(plugin_value('analyzer', 'id'))}",
             f"{labels['analyzer_version']}: "
             f"{field(plugin_value('analyzer', 'version'))}",
@@ -309,6 +372,82 @@ class AnalysisTextExporter(ExporterPlugin):
                 f"{metric_labels[metric_name]}: "
                 f"{labels['unavailable'] if value is None else f'{float(value):.12g}'}"
             )
+        project_time = dataset.project_time
+        active_mask = (
+            np.isfinite(project_time)
+            & (project_time >= curve.ignition)
+            & (project_time <= curve.burnout)
+        )
+
+        def start_value(channel: Any) -> float | None:
+            finite = np.isfinite(project_time) & np.isfinite(channel.values)
+            if not np.any(finite):
+                return None
+            return float(
+                np.interp(
+                    curve.ignition,
+                    project_time[finite],
+                    channel.values[finite],
+                )
+            )
+
+        pressure_channels = Measurement_ChannelsSelect(
+            dataset,
+            dimension="pressure",
+            semantic_roles=("chamber_pressure",),
+        )
+        if pressure_channels:
+            lines.extend(("", f"[{labels['pressure_metrics']}]") )
+            for channel in pressure_channels:
+                selected = channel.values[active_mask & np.isfinite(channel.values)]
+                lines.append(f"{labels['pressure_channel']}: {channel.name}")
+                lines.append(
+                    f"{labels['pressure_start']} [{channel.data_unit}]: "
+                    f"{field(start_value(channel))}"
+                )
+                lines.append(
+                    f"{labels['pressure_peak_active']} [{channel.data_unit}]: "
+                    f"{field(float(np.max(selected)) if selected.size else None)}"
+                )
+                lines.append(
+                    f"{labels['pressure_mean_active']} [{channel.data_unit}]: "
+                    f"{field(float(np.mean(selected)) if selected.size else None)}"
+                )
+
+        temperature_channels = Measurement_ChannelsSelect(
+            dataset,
+            dimension="temperature",
+        )
+        if temperature_channels:
+            lines.extend(("", f"[{labels['temperature_metrics']}]") )
+            for channel in temperature_channels:
+                active_values = channel.values[
+                    active_mask & np.isfinite(channel.values)
+                ]
+                finite = np.isfinite(project_time) & np.isfinite(channel.values)
+                finite_indices = np.flatnonzero(finite)
+                maximum_index = (
+                    int(finite_indices[np.argmax(channel.values[finite])])
+                    if finite_indices.size
+                    else None
+                )
+                lines.append(f"{labels['temperature_channel']}: {channel.name}")
+                lines.append(
+                    f"{labels['temperature_start']} [{channel.data_unit}]: "
+                    f"{field(start_value(channel))}"
+                )
+                lines.append(
+                    f"{labels['temperature_active_max']} [{channel.data_unit}]: "
+                    f"{field(float(np.max(active_values)) if active_values.size else None)}"
+                )
+                lines.append(
+                    f"{labels['temperature_full_max']} [{channel.data_unit}]: "
+                    f"{field(channel.values[maximum_index] if maximum_index is not None else None)}"
+                )
+                lines.append(
+                    f"{labels['temperature_max_time']} [s]: "
+                    f"{field(project_time[maximum_index] if maximum_index is not None else None)}"
+                )
         lines.extend(("", f"[{labels['diagnostics']}]"))
         combined_diagnostics = (*dataset.diagnostics, *analysis.diagnostics)
         if combined_diagnostics:

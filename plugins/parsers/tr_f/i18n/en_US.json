@@ -1,5 +1,5 @@
 {
-  "parser.tr_f.name": "TR_F (Time / Raw Force)",
+  "parser.tr_f.name": "TR_F — Time / Raw Thrust",
   "schema.parser.delimiter": "Delimiter",
   "schema.parser.time_unit": "Source Time Unit",
   "schema.parser.invalid_row_policy": "Invalid Row Policy",

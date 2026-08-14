@@ -47,9 +47,13 @@ class CsvExporter(ExporterPlugin):
                 "shift_time": {"type": "boolean", "default": True},
             },
             EXPORTER_UI_SCHEMA_KEY: {
-                "filename": "processed_thrust.csv",
+                "filename": "thrust_data.csv",
                 "translation_key": "export.csv",
-                "required_analysis_ids": ["builtin.analyzer.thrust"],
+                "required_analysis_ids": [],
+                "required_capability_ids": ["thrust_ready"],
+                "group_id": "thrust",
+                "group_order": 10,
+                "format_order": 10,
                 "locale_qualified": True,
             },
         }
@@ -110,6 +114,7 @@ class CsvExporter(ExporterPlugin):
                     ]
                 )
                 indices = np.arange(dataset.sample_count)
+                project_time = dataset.project_time
                 ignition = 0.0
                 if bool(config.get("burn_only", False)):
                     try:
@@ -120,7 +125,7 @@ class CsvExporter(ExporterPlugin):
                             "Burn-only CSV export requires ignition and burnout"
                         ) from exc
                     indices = indices[
-                        (dataset.time >= ignition) & (dataset.time <= burnout)
+                        (project_time >= ignition) & (project_time <= burnout)
                     ]
                     if len(indices) < 2:
                         raise ValueError("Burn-only CSV export requires at least two samples")
@@ -134,7 +139,7 @@ class CsvExporter(ExporterPlugin):
                         )
                     writer.writerow(
                         [
-                            f"{dataset.time[index] - (ignition if shift_time else 0.0):.12g}"
+                            f"{project_time[index] - (ignition if shift_time else 0.0):.12g}"
                         ]
                         + [
                             f"{dataset.channels[channel_id].values[index]:.12g}"
@@ -162,12 +167,10 @@ class CsvExporter(ExporterPlugin):
             "en_US": {
                 "thrust_processed": "Corrected Thrust",
                 "thrust_corrected": "Corrected Thrust",
-                "force_calibrated": "Uncorrected Force",
             },
             "zh_CN": {
                 "thrust_processed": "已修正推力",
                 "thrust_corrected": "已修正推力",
-                "force_calibrated": "未修正力",
             },
         }
         label = known_labels[output_locale].get(channel_id, channel_id)

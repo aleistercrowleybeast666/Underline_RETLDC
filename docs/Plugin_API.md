@@ -42,6 +42,19 @@ class ParserPlugin(ABC):
 `probe` is bounded and must not fully parse a large file. A Parser converts syntax to raw Dataset
 channels only. It never calibrates, detects the final burn, analyzes, or exports.
 
+Each produced Channel should provide stable `id`, human `name`, `quantity`, `unit`, `role`,
+immutable `values`, semantic metadata, and optional `semantic_role`. If the format states a Unit,
+the Parser must preserve it (`Pc (MPa)`→`MPa`, `F (N)`→`N`). If the format omits a Unit for a
+known Quantity, the Parser may pass `None`; Core assigns the canonical SI Data Unit and records
+`unit_source=default_si`. A Parser must explicitly write `raw`, `count`, or `ADC` only when the
+format has that sensor-value meaning. It must not guess Calibration or label every missing unit as
+raw. Unknown custom quantities should declare a Unit; otherwise Core records `unknown_si` and a
+Diagnostic for user confirmation.
+
+Parser output and Calibration state are independent. Orchestration assigns factory-default
+`builtin.calibration.identity` to every newly parsed Channel, including engineering and raw
+Units. The Parser does not select or execute that Calibration.
+
 The desktop schema form currently renders object properties whose type is `string`, `number`,
 `integer`, or `boolean`, plus scalar `enum` values. `default`, `minimum`, `maximum`, `title`, and
 optional `x-i18n-key`/`x-enum-i18n-keys` are honored. A property with `x-ui-hidden: true` is not
@@ -50,6 +63,56 @@ rendered. Orchestration may inject a value using a documented generic `x-ui-sour
 workspace capability and must never be interpreted through a concrete plugin ID. Other valid
 schema structures remain available to non-GUI clients but require a future generic GUI renderer.
 
+Parsers for ordinary two-dimensional tables may additionally implement the additive preview
+capability without changing existing Parser API v1 implementations:
+
+```python
+class TabularParserPlugin(ParserPlugin):
+    def preview(
+        self,
+        source: Path,
+        config: Mapping[str, Any],
+        *,
+        maximum_rows: int = 50,
+    ) -> TabularPreview: ...
+```
+
+Such a Parser declares top-level schema metadata such as:
+
+```json
+{
+  "x-underline-retldc-tabular": {
+    "reader": "xlsx",
+    "preview_rows": 50,
+    "preset_supported": true
+  }
+}
+```
+
+`reader` is currently `xlsx` or `delimited`. The common Tabular Mapping Editor consumes this
+capability; orchestration does not compare a concrete plugin ID. Preview must be bounded and
+read-only. Auto Mapping is a user-editable suggestion operation outside `parse()`. The actual
+Parser contract is the explicit config: header/data rows, time mode, zero-based column mappings,
+Quantity, Semantic Role, Data Unit, and invalid-value policy. A Parser must reject a missing time
+source instead of inventing a 1 Hz timeline.
+
+For a normal CSV/TSV/XLSX layout difference, prefer `builtin.parser.generic_delimited` or
+`builtin.parser.generic_xlsx` plus a pure-JSON Tabular Preset. A new executable Parser plugin is
+appropriate only when a format cannot be represented as an ordinary table (for example binary,
+compressed, checksummed, multi-block, or proprietary-protocol data).
+
+The platform's ordinary Quick Import categories are provided by its Workspace Capability Registry
+and translated into this existing explicit tabular config. They do not add a new Parser API v1
+method. Direct Quantity, Semantic Role, Channel ID, Metadata, and Ignore controls remain available
+through Advanced Mapping for specialist use.
+
+Two-column raw-log Parsers may subclass the additive `TwoColumnRawParserBase` helper in
+`underline_retldc.plugin_api.two_column`. It supplies bounded syntax probing, timestamp-unit
+normalization, malformed-row diagnostics, immutable raw Channel construction, and common
+validation. TR_F, TR_P, and TR_T use this helper while declaring different Quantity and Semantic
+Role values. The helper changes no Plugin API v1 signatures; third-party Parsers may continue to
+implement `ParserPlugin` directly.
+
 ## Calibration Model
 
 ```python
@@ -57,14 +120,25 @@ class CalibrationModelPlugin(ABC):
     @property
     def descriptor(self) -> PluginDescriptor: ...
     def parameter_schema(self) -> dict[str, Any]: ...
+    def requirements(self) -> Mapping[str, Any]: ...
     def evaluate(self, raw: np.ndarray, parameters: Mapping[str, Any]) -> np.ndarray: ...
 ```
 
-Evaluation returns a new array. It must not mutate `raw`.
+Evaluation returns a new array. It must not mutate `raw`. `requirements()` declares input
+Quantity/Unit constraints (if any) and output Quantity/Unit behavior. Stable conventions include:
 
-The same scalar schema renderer consumes `parameter_schema()`. Quantity and output unit are
-workflow fields appended around the plugin parameters; they are not inferred by the Calibration
-plugin or hardcoded for Linear Calibration.
+```text
+input_quantity = any | <quantity>
+input_unit = any | <unit/dimension constraint>
+output_quantity = same_as_input | parameter:<schema_property> | <quantity>
+output_unit = same_as_input | parameter:<schema_property> | <unit>
+```
+
+The same scalar schema renderer consumes `parameter_schema()`. If output Quantity or Unit is
+user-configurable, the plugin exposes those values through that schema. Calibration performs the
+numeric mapping (for example count→N or V→Pa); it must never merely rename a Unit. Identity uses
+same-as-input behavior and means no additional transform, not certification of sensor accuracy.
+Unit conversion (Pa↔MPa, K↔°C) remains a separate Core service.
 
 ## Processor
 
@@ -136,6 +210,10 @@ builtin.exporter.csv
 builtin.exporter.analysis_json
 builtin.exporter.analysis_txt
 builtin.exporter.thrust_png
+builtin.exporter.chamber_pressure_csv
+builtin.exporter.chamber_pressure_png
+builtin.exporter.temperature_csv
+builtin.exporter.temperature_png
 builtin.exporter.openrocket_eng
 ```
 
@@ -151,7 +229,13 @@ An Exporter opts into the desktop Export Dialog through generic top-level config
   "x-underline-retldc-export": {
     "filename": "example.dat",
     "translation_key": "example.export.name",
-    "required_analysis_ids": ["builtin.analyzer.thrust"],
+    "required_analysis_ids": [],
+    "required_capability_ids": ["thrust_ready"],
+    "group_id": "thrust",
+    "group_translation_key": "export.group.thrust",
+    "group_order": 10,
+    "format_order": 10,
+    "default_selected": true,
     "locale_qualified": true
   }
 }
@@ -162,6 +246,17 @@ uses this mapping for labels, availability, default selection, and output naming
 hard-code bundled Exporter IDs. A malformed desktop mapping is skipped with a diagnostic/log entry
 instead of preventing other plugins from loading. Exporters without desktop metadata remain valid
 API v1 plugins for non-desktop clients.
+
+`required_capability_ids` is optional and generic. Current stable desktop capabilities are
+`project_summary_ready`, `thrust_ready`, `physical_force`, `chamber_pressure_ready`,
+`temperature_ready`, and `segmentation_ready`. OpenRocket ENG declares the thrust, physical-force,
+and segmentation capabilities and sets `default_selected=false`, so a relative analysis in
+raw/count/ADC can unlock compatible reports without making ENG selectable. Overall, thrust,
+pressure, and temperature groups use `group_order` 0/10/20/30; missing group metadata falls back to
+Other at 1000. `format_order` provides CSV 10, PNG 20, and special format 30 ordering. A metadata
+default is applied once when its requirements first become available; user choices survive later
+refreshes. The Exporter still validates Quantity, Unit, curve confirmation, and motor metadata at
+execution.
 
 ## Manifest, roots, and discovery
 
@@ -258,10 +353,12 @@ class MyDAQParser(ParserPlugin):
             channels={
                 "sensor_raw": Channel(
                     id="sensor_raw",
+                    name="Load cell ADC",
                     quantity="force",
                     unit="raw",
                     values=matrix[:, 1],
                     role="raw",
+                    semantic_role="thrust",
                 )
             },
         )

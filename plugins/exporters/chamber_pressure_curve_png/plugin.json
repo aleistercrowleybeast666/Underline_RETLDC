@@ -1,0 +1,8 @@
+{
+  "plugin_id": "builtin.exporter.chamber_pressure_png",
+  "plugin_type": "exporter",
+  "api_version": "1",
+  "version": "1.0.0",
+  "entry": "plugin:ChamberPressurePngExporter",
+  "name": "Chamber Pressure PNG Exporter"
+}

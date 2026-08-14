@@ -29,9 +29,37 @@ def Launcher_IsProjectVenv(project_root: Path) -> bool:
         return False
 
 
+def Launcher_IsFrozen() -> bool:
+    return bool(getattr(sys, "frozen", False))
+
+
+def Launcher_ProjectRoot() -> Path:
+    if Launcher_IsFrozen():
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+
+def Launcher_ApplicationRun(arguments: Sequence[str]) -> LauncherResult:
+    try:
+        from underline_retldc.app.application import main as Application_Main
+    except ImportError as exc:
+        print(f"无法导入 Underline RETLDC：{exc}", file=sys.stderr)
+        return LauncherResult.APPLICATION_FAILED
+
+    application_code = Application_Main(list(arguments))
+    return (
+        LauncherResult.SUCCESS
+        if application_code == 0
+        else LauncherResult.APPLICATION_FAILED
+    )
+
+
 def Launcher_Run(arguments: Sequence[str] | None = None) -> LauncherResult:
-    project_root = Path(__file__).resolve().parent
+    project_root = Launcher_ProjectRoot()
     launcher_arguments = list(sys.argv[1:] if arguments is None else arguments)
+    if Launcher_IsFrozen():
+        return Launcher_ApplicationRun(launcher_arguments)
+
     venv_python = Launcher_FindVenvPython(project_root)
     if venv_python is None:
         print(
@@ -63,20 +91,8 @@ def Launcher_Run(arguments: Sequence[str] | None = None) -> LauncherResult:
     if source_path not in sys.path:
         sys.path.insert(0, source_path)
 
-    try:
-        from underline_retldc.app.application import main as Application_Main
-    except ImportError as exc:
-        print(f"无法导入 Underline RETLDC：{exc}", file=sys.stderr)
-        return LauncherResult.APPLICATION_FAILED
-
-    application_code = Application_Main(launcher_arguments)
-    return (
-        LauncherResult.SUCCESS
-        if application_code == 0
-        else LauncherResult.APPLICATION_FAILED
-    )
+    return Launcher_ApplicationRun(launcher_arguments)
 
 
 if __name__ == "__main__":
     raise SystemExit(int(Launcher_Run()))
-

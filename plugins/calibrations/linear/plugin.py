@@ -41,7 +41,27 @@ class LinearCalibration(CalibrationModelPlugin):
                     "title": "B",
                     "x-i18n-key": "setup.b",
                 },
+                "output_quantity": {
+                    "type": "string",
+                    "default": "force",
+                    "title": "Output Quantity",
+                    "x-i18n-key": "setup.quantity",
+                },
+                "output_unit": {
+                    "type": "string",
+                    "default": "N",
+                    "title": "Output Unit",
+                    "x-i18n-key": "setup.unit",
+                },
             },
+        }
+
+    def requirements(self) -> Mapping[str, Any]:
+        return {
+            "input_quantity": "any",
+            "input_unit": "any",
+            "output_quantity": "parameter:output_quantity",
+            "output_unit": "parameter:output_unit",
         }
 
     def evaluate(

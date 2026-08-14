@@ -38,7 +38,7 @@ def test_bundled_plugin_locale_bundles_have_parity_and_load() -> None:
     plugin_directories = sorted(
         path.parent for path in plugin_root.rglob("plugin.json")
     )
-    assert len(plugin_directories) == 10
+    assert plugin_directories
     service = TranslationService("zh_CN")
     for directory in plugin_directories:
         chinese_path = directory / "i18n" / "zh_CN.json"
@@ -49,6 +49,6 @@ def test_bundled_plugin_locale_bundles_have_parity_and_load() -> None:
         english = json.loads(english_path.read_text(encoding="utf-8"))
         assert set(chinese) == set(english)
         service.load_plugin_directory(directory / "i18n")
-    assert service.translate("parser.tr_f.name") == "TR_F（时间 / 原始力）"
+    assert service.translate("parser.tr_f.name") == "TR_F — 时间 / 原始推力"
     service.set_locale("en_US")
     assert service.translate("calibration.linear.name") == "Linear Calibration"

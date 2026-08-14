@@ -5,10 +5,55 @@ import math
 import os
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
 CALIBRATION_SCHEMA = "underline-retldc-calibration/1"
+IDENTITY_CALIBRATION_ID = "builtin.calibration.identity"
+
+
+class CalibrationSelectionSource(StrEnum):
+    PROJECT = "project"
+    USER_PROFILE = "user_profile"
+    FACTORY_DEFAULT = "factory_default"
+
+
+@dataclass(frozen=True, slots=True)
+class CalibrationSelection:
+    plugin_id: str = IDENTITY_CALIBRATION_ID
+    parameters: Mapping[str, Any] = field(default_factory=dict)
+    output_quantity: str | None = None
+    output_unit: str | None = None
+    source: CalibrationSelectionSource = CalibrationSelectionSource.FACTORY_DEFAULT
+    profile_name: str | None = None
+
+
+def Calibration_SelectionResolve(
+    *,
+    project: CalibrationSelection | None = None,
+    matched_profile: CalibrationDocument | None = None,
+) -> CalibrationSelection:
+    """Resolve Project > matched user profile > factory Identity without using Unit."""
+    if project is not None:
+        return project
+    if matched_profile is not None:
+        return CalibrationSelection(
+            plugin_id=matched_profile.model_id,
+            parameters=dict(matched_profile.parameters),
+            output_quantity=matched_profile.quantity,
+            output_unit=matched_profile.output_unit,
+            source=CalibrationSelectionSource.USER_PROFILE,
+            profile_name=matched_profile.name,
+        )
+    return CalibrationSelection()
+
+
+def Calibration_DefaultSelections(
+    channel_ids: list[str] | tuple[str, ...],
+) -> dict[str, CalibrationSelection]:
+    """Every new Channel receives Identity, independent of quantity or unit."""
+    return {str(channel_id): CalibrationSelection() for channel_id in channel_ids}
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,4 +144,3 @@ def Calibration_Load(source: Path) -> CalibrationDocument:
     if not isinstance(payload, Mapping):
         raise ValueError("Calibration JSON root must be an object")
     return CalibrationDocument.from_dict(payload)
-

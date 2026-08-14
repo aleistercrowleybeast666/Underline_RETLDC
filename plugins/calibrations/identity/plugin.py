@@ -26,6 +26,14 @@ class IdentityCalibration(CalibrationModelPlugin):
     def parameter_schema(self) -> dict[str, Any]:
         return {"type": "object", "properties": {}}
 
+    def requirements(self) -> Mapping[str, Any]:
+        return {
+            "input_quantity": "any",
+            "input_unit": "any",
+            "output_quantity": "same_as_input",
+            "output_unit": "same_as_input",
+        }
+
     def evaluate(
         self, raw: NDArray[np.float64], parameters: Mapping[str, Any]
     ) -> NDArray[np.float64]:

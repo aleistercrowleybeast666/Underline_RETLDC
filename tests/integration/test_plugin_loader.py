@@ -151,15 +151,21 @@ def test_bundled_plugins_are_discovered_recursively() -> None:
     records = PluginLoader(registry).discover(
         (PluginDiscoveryRoot(root, "bundled"),)
     )
-    assert len(records) == 10
+    assert len(records) == len(tuple(root.rglob("plugin.json")))
     assert all(record.result is PluginLoadResult.LOADED for record in records)
     assert all(record.source_kind == "bundled" for record in records)
     assert registry.get("builtin.parser.tr_f").descriptor.plugin_type is PluginType.PARSER
+    assert registry.get("builtin.parser.tr_p").descriptor.plugin_type is PluginType.PARSER
+    assert registry.get("builtin.parser.tr_t").descriptor.plugin_type is PluginType.PARSER
     assert (
         registry.get("builtin.calibration.linear").descriptor.plugin_type
         is PluginType.CALIBRATION
     )
     assert registry.get("builtin.calibration.identity")
+    assert registry.get("builtin.parser.generic_xlsx")
+    assert registry.get("builtin.parser.generic_delimited")
+    assert registry.get("builtin.exporter.chamber_pressure_csv")
+    assert registry.get("builtin.exporter.temperature_png")
     assert not list((project_root / "src" / "underline_retldc" / "builtin").rglob("*.py"))
 
 

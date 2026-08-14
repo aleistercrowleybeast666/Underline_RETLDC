@@ -1,0 +1,8 @@
+{
+  "plugin_id": "builtin.parser.generic_delimited",
+  "plugin_type": "parser",
+  "api_version": "1",
+  "version": "1.0.0",
+  "entry": "plugin:GenericDelimitedParser",
+  "name": "Generic Delimited"
+}

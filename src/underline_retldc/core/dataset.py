@@ -9,7 +9,8 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from underline_retldc.core.channel import Channel
-from underline_retldc.core.diagnostics import Diagnostic
+from underline_retldc.core.diagnostics import Diagnostic, DiagnosticSeverity
+from underline_retldc.core.units import UnitSource
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,6 +20,9 @@ class Dataset:
     time_unit: str = "s"
     metadata: Mapping[str, Any] = field(default_factory=dict)
     diagnostics: tuple[Diagnostic, ...] | Iterable[Diagnostic] = field(default_factory=tuple)
+    source_id: str | None = None
+    stream_id: str | None = None
+    time_offset_s: float = 0.0
 
     def __post_init__(self) -> None:
         if not self.time_unit.strip():
@@ -39,11 +43,38 @@ class Dataset:
         object.__setattr__(self, "time", immutable_time)
         object.__setattr__(self, "channels", MappingProxyType(channels))
         object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
-        object.__setattr__(self, "diagnostics", tuple(self.diagnostics))
+        diagnostics = list(self.diagnostics)
+        existing_codes = {
+            (item.code, item.source, item.details.get("channel_id"))
+            for item in diagnostics
+        }
+        for channel in channels.values():
+            code = channel.metadata.get("unit_diagnostic_code")
+            message = channel.metadata.get("unit_diagnostic_message")
+            diagnostic_key = (str(code), None, channel.id)
+            if code and diagnostic_key not in existing_codes:
+                diagnostics.append(
+                    Diagnostic(
+                        DiagnosticSeverity.WARNING,
+                        str(code),
+                        str(message or code),
+                        details={"channel_id": channel.id},
+                    )
+                )
+        object.__setattr__(self, "diagnostics", tuple(diagnostics))
+        object.__setattr__(self, "source_id", self.source_id or None)
+        object.__setattr__(self, "stream_id", self.stream_id or None)
+        object.__setattr__(self, "time_offset_s", float(self.time_offset_s))
 
     @property
     def sample_count(self) -> int:
         return len(self.time)
+
+    @property
+    def project_time(self) -> NDArray[np.float64]:
+        project_time = np.array(self.time + self.time_offset_s, dtype=np.float64, copy=True)
+        project_time.setflags(write=False)
+        return project_time
 
     def channel(self, channel_id: str) -> Channel:
         try:
@@ -63,3 +94,24 @@ class Dataset:
     def with_diagnostics(self, diagnostics: Iterable[Diagnostic]) -> Dataset:
         return replace(self, diagnostics=(*self.diagnostics, *tuple(diagnostics)))
 
+    def with_channel_interpretation(
+        self,
+        channel_id: str,
+        *,
+        quantity: str | None = None,
+        data_unit: str | None = None,
+        display_unit: str | None = None,
+        semantic_role: str | None = None,
+        unit_source: UnitSource | str = UnitSource.USER_OVERRIDE,
+    ) -> Dataset:
+        source = self.channel(channel_id)
+        replacement = source.with_unit_interpretation(
+            quantity=quantity,
+            data_unit=data_unit,
+            display_unit=display_unit,
+            semantic_role=semantic_role,
+            unit_source=unit_source,
+        )
+        channels = dict(self.channels)
+        channels[channel_id] = replacement
+        return replace(self, channels=channels)

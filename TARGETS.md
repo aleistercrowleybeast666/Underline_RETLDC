@@ -36,6 +36,10 @@ The immediate goal is not to support every possible rocket-engine test measureme
 
 The immediate goal is to establish a correct and extensible foundation using thrust-test data.
 
+Generic tabular ingestion should allow ordinary CSV, TSV, and XLSX rocket-test data to be
+integrated through explicit column mapping and reusable pure-JSON Presets without writing Python
+plugins.
+
 ---
 
 # 3. Current Workflow
@@ -87,7 +91,7 @@ Primary functions:
 * decode logs;
 * inspect timestamp/data quality;
 * apply sensor calibration;
-* select the burn interval;
+* select the Project test interval;
 * optionally compensate vertical-test baseline/weight changes;
 * calculate thrust performance;
 * inspect curves;
@@ -287,6 +291,23 @@ The Dataset shall be capable of representing:
 * metadata;
 * diagnostics.
 
+Each Channel records `quantity`, scientific `data_unit`, `unit_source`, optional
+`display_unit`, role, semantic role, and immutable values. Source and Stream are explicit Project
+entities; a Stream keeps local timestamps and a scalar offset so
+`t_project = t_local + time_offset_s`. Different sample rates and timestamp arrays are not
+resampled merely to share a Project Test Segment.
+
+Unit resolution is:
+
+```text
+Project/User Data Unit override > Parser declaration > canonical SI by known Quantity
+```
+
+Canonical examples include force→N, pressure→Pa, temperature→K, mass→kg, length→m,
+area→m², volume→m³, and dimensionless quantities→1. `raw`, `count`, and `ADC` are explicit,
+non-convertible data units. Display conversion (for example Pa→MPa or K→°C) is a view operation
+and never rewrites raw values.
+
 The Core must not assume every Dataset contains only a thrust Channel.
 
 The Core must not assume every source format contains two columns.
@@ -319,7 +340,9 @@ The first version provides:
 
 ### Already Calibrated / Identity
 
-For source values already expressed in an engineering unit.
+Factory default for every newly parsed Channel, independent of Unit. Identity performs no
+additional numeric transform. Its user-facing “Already Calibrated” name is convenience wording,
+not a claim that the sensor's physical calibration has been certified.
 
 ### Linear Calibration
 
@@ -337,6 +360,11 @@ B
 ```
 
 Calibration shall be independent of Parser selection.
+
+Calibration shall also be independent of Unit inference. Project configuration overrides a
+matched user Calibration profile, and a matched profile overrides factory Identity. A Calibration
+may transform `raw/count/ADC/V` to an engineering Quantity and must declare its output Quantity and
+Unit behavior; compatible engineering-unit display conversion remains a separate service.
 
 A TR_F file may use any valid calibration.
 
@@ -381,7 +409,8 @@ Chinese/English label shall be `发动机自重变化补偿` / `Motor Weight-Cha
 
 The plugin declares `processor_role = motor_weight_compensation` in `requirements()`. The GUI
 selector lists every registered Processor with that role and `None`; it must not branch on the
-official plugin ID. Plugin scalar settings come from `config_schema()`, while shared PRE/BURN/POST
+official plugin ID. Plugin scalar settings come from `config_schema()`, while shared
+PRE/ACTIVE_TEST/POST
 regions and input-channel state are injected through generic schema-source metadata. `None` stores
 no Processor reference and remains reproducible through a pass-through processing stage.
 
@@ -389,9 +418,11 @@ The user selects three time regions:
 
 ```text
 PRE
-BURN
+ACTIVE_TEST
 POST
 ```
+
+`burn` remains only a legacy persistence/Plugin API v1 compatibility alias.
 
 The initial algorithm:
 
@@ -437,18 +468,18 @@ thermal effects, mechanical settling, and ablation can all affect the estimate.
 
 ---
 
-# 19. Burn Detection Target
+# 19. Test Interval Detection Target
 
-The application shall assist with burn selection.
+The application shall assist with Project test-interval selection.
 
 It should:
 
 * detect candidate high-force regions;
 * support multiple candidates;
 * rank them;
-* recommend a likely primary burn;
+* recommend a likely primary active-test interval;
 * allow manual selection;
-* allow ignition and burnout boundaries to be adjusted interactively.
+* allow active-test start and end boundaries to be adjusted interactively.
 
 Automatic detection must not permanently override user judgment.
 
@@ -633,7 +664,7 @@ source hash
 Parser ID/version/config
 Calibration ID/version/config
 Processor ID/version/config
-selected PRE/BURN/POST regions
+selected PRE/ACTIVE_TEST/POST regions (`burn` accepted only as a legacy alias)
 Analyzer ID/version/config
 motor metadata
 export configuration
@@ -735,10 +766,14 @@ Primary navigation:
 ```text
 Project  = source + Parser + quality + Calibration + motor metadata
 Thrust Analysis = test-interval selection + processing + thrust plots + metrics + diagnostics
+Chamber Pressure = pressure channels + shared ACTIVE_TEST statistics/view
+Temperature = temperature channels + shared ACTIVE_TEST marker
+Data Explorer = arbitrary Project channels + shared ACTIVE_TEST marker
 ```
 
-Workspace IDs and export-to-analysis dependencies shall remain explicit so chamber-pressure and
-other analysis pages can be added without overloading the Thrust Analysis workspace.
+Workspace IDs and export-to-analysis dependencies remain explicit. All measurement workspaces
+share Project Time and the Project-level PRE/ACTIVE_TEST/POST segmentation without overloading the
+Thrust Analysis implementation.
 
 Export is a unified dialog available from the menu/toolbar at every workflow stage. It always shows
 all output choices, while each checkbox remains unavailable until the stable analyzer IDs declared
@@ -1010,22 +1045,115 @@ Unresolved design questions should be placed here rather than solved by hidden a
 
 Current questions that may need later decisions include:
 
-* exact unit-system implementation strategy;
 * whether to adopt a dedicated unit library;
 * portable project packaging with embedded raw files;
-* multi-file and multi-device time synchronization;
+* clock-drift estimation and automatic multi-device synchronization beyond manual offsets;
 * plugin packaging format;
 * plugin signing/trust mechanisms;
-* formal schemas for future pressure and temperature Channels;
+* formal analyzer schemas for additional pressure and temperature metrics;
 * standard report format;
 * uncertainty-propagation architecture;
 * multiple-test comparison model;
 * motor/design/test-run database relationships.
 
-These are not blockers for the current thrust-only foundation.
+These are not blockers for the current multi-workspace foundation.
 
 When a question is resolved:
 
 1. update the relevant detailed documentation;
 2. implement the decision;
 3. remove or revise it here.
+
+---
+
+# 42. Factory Defaults
+
+Factory policy is centralized rather than repeated in GUI files:
+
+```text
+Theme = light
+Language = zh_CN
+Parser auto-select threshold = 0.90
+Parser ambiguity margin = 0.10
+New Channel Calibration = builtin.calibration.identity
+Missing known Unit = canonical SI by Quantity
+Segmentation reference = Auto (chamber_pressure, then thrust, then manual)
+Missing PRE/POST baseline = Assume Zero with visible provenance
+After import = remain on Project
+```
+
+---
+
+# 43. Ordinary Import and Workspace Binding Target
+
+The default operator path is deliberately short:
+
+```text
+Identify file format → confirm measurement categories → import → confirm primary channels
+→ analyze in the matching workspace
+```
+
+For ordinary tabular files, Quick Import exposes only `Time`, `Thrust`, `Chamber Pressure`,
+`Temperature`, and `Other`. Raw Quantity, Semantic Role, Channel ID, metadata, and Ignore controls
+remain in collapsed Advanced Mapping for specialist use. `Other` preserves the Channel in the
+Project but does not silently add it to plots or scientific analysis.
+
+Supported Quick Import categories are supplied by the Workspace Capability Registry. Future
+measurement families extend that registry and the generic workspace layer; they do not require a
+new localized-name branch in the table editor.
+
+After parsing, the Project stores explicit Primary Channel bindings as full
+Source/Stream/Channel references. The primary thrust and chamber-pressure bindings are singular;
+temperature may bind multiple Channels. Semantic roles are useful auto-binding hints, but the
+stored binding is the final source of truth for segmentation, processing, analysis, and workspace
+display. No stage may depend on a Parser-specific or Calibration-specific Channel ID.
+
+Automatic Parser recommendation selects the highest score only when it reaches the factory
+threshold and exceeds the runner-up by the factory ambiguity margin. Syntactically identical
+formats such as TR_F, TR_P, and TR_T therefore require the user to confirm physical meaning rather
+than letting file syntax invent it.
+
+Close recommendations are presented as a visible exclusive radio group with confidence and probe
+reason. Registry order is never a scientific selection rule.
+
+---
+
+# 44. Shared Project Test Segmentation Target
+
+The Project owns exactly one PRE/ACTIVE_TEST/POST segmentation in Project Time. Thrust and Chamber
+Pressure are bidirectional editors of that state; Temperature and Data Explorer read the same
+markers. No Workspace maintains a separate final interval. Automatic detection uses the explicit
+Primary Chamber Pressure when valid, otherwise Primary Thrust. Pressure activity polarity is
+always positive and does not inherit the thrust installation/Processor sign. Legacy `burn` input
+remains readable but is normalized to `active_test`.
+
+---
+
+# 45. Unit Display Target
+
+Unit Display Mode defaults to `engineering`, using resolved units such as N, MPa, °C, and mm.
+`si_scientific` converts only displayed values to canonical SI such as N, Pa, K, and m and formats
+ticks/results scientifically. pyqtgraph automatic SI prefixes are disabled, so already prefixed
+units can never become kMPa or kmm. Neither mode mutates raw arrays, Data Units, Calibration state,
+or formal-export units.
+
+---
+
+# 46. Capability-Based Export Target
+
+Exporter desktop metadata declares generic capabilities, grouping, ordering, and a default. The
+dialog sorts Overall, Thrust, Chamber Pressure, Temperature, then Other. An unavailable option is
+disabled and unchecked. Its default applies only on first availability and is never silently
+restored after a user unchecks it. Overall, thrust, pressure, and temperature formats depend on
+their own data readiness; OpenRocket ENG additionally requires physical force and segmentation and
+defaults off.
+
+---
+
+# 47. Source Removal Invalidation Target
+
+Removing a parsed Source immediately removes its Streams, calibrated state, Primary bindings, and
+workspace series and invalidates all stale candidates, segmentation references, processing,
+analysis, confirmation, statistics, and export readiness. Removing an unparsed pending Source
+preserves the parsed Project. Removing the final Source clears parser/configuration/preview/results
+and every measurement workspace without requiring another Parse action.

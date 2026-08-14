@@ -34,6 +34,47 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 - Calibration, baseline, correction, processing, and analysis create new channels/results.
 - Never overwrite a raw channel or silently clip, resample, reorder, or delete measurements.
 - Recalculation must always be possible from parsed raw values and saved configuration.
+- Source/Stream/Channel is the persistent measurement hierarchy. Streams retain their own local
+  timestamps and use `t_project = t_local + time_offset_s`; sharing a Project segment never
+  requires resampling or rewriting a source array.
+
+## Generic tabular ingestion
+
+- Ordinary two-dimensional CSV, TSV, delimited text, and XLSX formats use the Generic Tabular
+  Parsers plus an explicit Mapping Preset. Do not create a new Parser merely because columns,
+  headers, units, or leading description rows differ.
+- Concrete laboratory header strings must never become a Core or Parser format contract. Header
+  recognition is permitted only for an editable Auto Mapping suggestion; `parse()` executes the
+  saved column-index mapping.
+- Generic Delimited and Generic XLSX share the platform Tabular Mapping Engine and
+  `TabularMappingEditor`. GUI orchestration must discover that capability through API/schema
+  metadata, never a branch on a concrete plugin ID.
+- A Tabular mapping must explicitly choose a time column, sample rate, or sample period. Never
+  invent a silent 1 Hz fallback. Preserve real timestamps when present.
+- Tabular Presets are pure JSON, execute no code, and are index-based. Expected-header hints may
+  warn but never replace the saved index contract. A Project stores its own copy of each Source's
+  final mapping.
+
+## Unit and Calibration invariants
+
+- Unit and Calibration are independent. Never infer Calibration state from the presence, absence,
+  or spelling of a Unit.
+- Every newly parsed Channel receives `builtin.calibration.identity` by factory default, including
+  Channels declared as `raw`, `count`, or `ADC`. Identity means “no additional transform”; it is
+  not certification that a sensor was physically calibrated.
+- A Parser that knows a Channel's Unit must declare it. For a known Quantity with no declared
+  Unit, Core assigns the canonical SI Data Unit and records `unit_source=default_si`; an unknown
+  Quantity remains explicitly unknown and produces a Diagnostic.
+- Data Unit and Display Unit are separate. A Data Unit override reinterprets unchanged source
+  numbers and is scientific Project state. A Display Unit is a view preference and converts only
+  the displayed values.
+- Unit conversion and Calibration are separate layers. Unit conversion is between compatible
+  units of one dimension; Calibration may transform `raw/count/ADC/V` into an engineering
+  quantity and must define its output Quantity and Unit behavior.
+- Never implement conversion by renaming a Unit string. Never mutate raw values while changing a
+  display preference, and never offer direct physical conversion from `raw`, `count`, or `ADC`.
+- Physical analyzers and exporters validate both Quantity and Unit. Identity does not turn `raw`
+  force into newtons or make SI impulse, Isp, or ENG scientifically available.
 
 ## Plugin API stability
 
@@ -66,14 +107,39 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 - Use actual timestamps and trapezoidal integration.
 - `g0` is exactly `9.80665 m/s²`.
 - Specific impulse uses propellant mass only. Unknown propellant mass means unavailable Isp.
-- Automatic burn detection is advisory. Users retain final interval control.
+- Automatic test-interval detection is advisory. Users retain final interval control.
 - Equivalent baseline-derived mass change is not claimed as exact propellant consumption.
 
 ## Desktop workflow invariants
 
-- The primary navigation currently contains `Project` and the explicitly typed `Thrust Analysis`
-  workspace. Future measurement analyses are added as separate stable-ID workspaces. Export,
-  plugin management, and settings are dialogs or menu/toolbar actions, not primary workflow pages.
+- Primary navigation contains stable-ID `Project`, `Thrust Analysis`, `Chamber Pressure`,
+  `Temperature`, and `Data Explorer` workspaces. They share Project Time and Test Segmentation.
+  Export, plugin management, and settings are dialogs or menu/toolbar actions, not primary
+  workflow pages.
+- Ordinary tabular import exposes capability categories such as `Time`, `Thrust`,
+  `Chamber Pressure`, `Temperature`, and `Other`; it must not require ordinary users to edit raw
+  Quantity, Semantic Role, or Channel ID values. Those fields remain available only in the
+  collapsed Advanced Mapping editor.
+- Workspace input is resolved through explicit Project `PrimaryChannelBindings` containing full
+  Source/Stream/Channel references. A Channel `semantic_role` is an auto-binding hint, never the
+  final workflow input, and downstream code must not assume concrete names such as
+  `force_calibrated`.
+- Workspace categories come from the generic Workspace Capability Registry. Adding a supported
+  measurement family extends the registry and generic views rather than adding localized-name or
+  concrete-plugin branches to the tabular editor.
+- Thrust, Chamber Pressure, and Temperature use the shared analysis shell, plot behavior, test
+  markers, empty state, theme handling, and result-panel layout. Measurement-specific formulas
+  remain outside GUI code.
+- Project Test Segmentation is the single source of truth for PRE/ACTIVE_TEST/POST. Never keep a
+  separate final interval per Workspace. Thrust and Chamber Pressure both edit the same Project
+  interval; Temperature reads it. Automatic detection uses the explicitly bound Primary Chamber
+  Pressure first, then Primary Thrust. A pressure reference always uses positive activity polarity
+  and never inherits the thrust installation sign.
+- Compatible two-column raw-log Parsers share the Plugin API helper for bounded probing,
+  timestamp normalization, malformed-row diagnostics, and immutable Dataset construction. TR_F,
+  TR_P, and TR_T differ only in declared measurement semantics and localized presentation.
+- Ambiguous Parser recommendations must be explicitly selectable with a visible exclusive radio
+  group. Registry/discovery order must never silently decide among TR_F, TR_P, and TR_T.
 - Parser and Calibration configuration widgets are generated from Plugin API schemas. GUI logic
   must not branch on localized names or reimplement a built-in plugin's parameter model.
 - A Project may be saved at any workflow stage. Project JSON records explicit parsed, calibrated,
@@ -83,14 +149,26 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 - Export is allowed without saving a Project. Unified exports use language-qualified fixed
   filenames (`_ZH`/`_EN`, except locale-neutral ENG) and replace the same files on repeat export;
   they never invent numbered or `_final` copies.
-- The Export dialog is always inspectable. Each export option declares stable analysis IDs that
-  must be complete before the option becomes selectable; adding a new analysis/export pair must
-  extend this dependency mapping rather than hard-code a localized page name.
-- Newly available export options are selected by default. The export-format list displays at most
-  ten rows before vertical scrolling, and every checkbox must retain a visible square indicator in
-  unchecked, checked, and disabled states.
-- Formal curve exports use the selected final processed channel and BURN interval with ignition as
-  time zero. Any export-only endpoint interpolation must be disclosed in result metadata and docs.
+- Plot axis labels and tick formatting must use the resolved Display Unit and must not rely on
+  pyqtgraph automatic SI prefixes. Unit Display Mode is a persisted UI preference: `engineering`
+  uses configured engineering Display Units and `si_scientific` converts display values to
+  canonical SI with scientific notation. Neither mode changes raw values, Data Units, Calibration,
+  or formal export units.
+- The Export dialog is always inspectable. Each export option declares stable data capability IDs
+  and optional analysis IDs that must be complete before it becomes selectable. Options are
+  grouped and sorted by generic metadata, with unknown third-party groups placed last.
+- Default export selection depends on the option's actual capability and `default_selected`
+  metadata. A default is applied only the first time that option becomes available; a user's
+  unchecked choice is not silently restored by later availability refreshes. Unavailable formats
+  stay disabled and unchecked. The list displays at most ten option rows before vertical scrolling,
+  and every checkbox retains a visible square indicator in every state.
+- Formal curve exports use the selected final processed channel and ACTIVE_TEST interval with
+  ignition as time zero. Legacy persisted `burn` remains a read-compatible alias. Any export-only
+  endpoint interpolation must be disclosed in result metadata and docs.
+- Removing a parsed Source immediately removes its Streams, calibrated state, Primary bindings,
+  and workspace series, then invalidates candidates, segmentation references, processing,
+  analysis, curve confirmation, cached statistics, and export availability. Removing a pending
+  unparsed Source must not invalidate unrelated parsed Project data.
 - Theme IDs are `light` and `dark`, selected at runtime and persisted under QSettings `ui/theme`.
   Theme is a UI preference, never Project scientific state. Formal exports must not depend on it.
 - The motor-weight selector lists only Processor plugins whose `requirements()` declares

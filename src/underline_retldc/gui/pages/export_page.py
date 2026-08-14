@@ -37,10 +37,16 @@ class ExportOption:
     filename: str
     translation_key: str
     required_analysis_ids: tuple[str, ...]
+    required_capability_ids: tuple[str, ...] = ()
     display_name: str = ""
     locale_qualified: bool = True
     requires_motor_metadata: bool = False
     supports_metric_annotation: bool = False
+    group_id: str = "other"
+    group_translation_key: str = "export.group.other"
+    group_order: int = 1000
+    format_order: int = 1000
+    default_selected: bool = True
 
 
 class ExportDialog(QDialog):
@@ -63,7 +69,11 @@ class ExportDialog(QDialog):
         super().__init__(parent)
         self._translations = translations
         self._completed_analysis_ids: set[str] = set()
+        self._completed_capability_ids: set[str] = set()
         self._options: tuple[ExportOption, ...] = ()
+        self._default_applied: set[str] = set()
+        self._user_touched: set[str] = set()
+        self._availability_refreshing = False
         self.setModal(True)
         self.resize(680, 620)
 
@@ -116,6 +126,7 @@ class ExportDialog(QDialog):
         self.exporter_list_layout = QVBoxLayout(self.exporter_list_widget)
         self.exporter_list_layout.setContentsMargins(0, 0, 0, 0)
         self.exporter_checks: dict[str, QCheckBox] = {}
+        self.group_labels: dict[str, QLabel] = {}
         self.exporter_scroll.setWidget(self.exporter_list_widget)
         formats_layout.addWidget(self.exporter_scroll)
         self.annotate_metrics_check = QCheckBox()
@@ -203,6 +214,9 @@ class ExportDialog(QDialog):
                 required = metadata.get("required_analysis_ids", [])
                 if not isinstance(required, (list, tuple)):
                     raise ValueError("required_analysis_ids must be an array")
+                required_capabilities = metadata.get("required_capability_ids", [])
+                if not isinstance(required_capabilities, (list, tuple)):
+                    raise ValueError("required_capability_ids must be an array")
                 options.append(
                     ExportOption(
                         plugin_id=descriptor.plugin_id,
@@ -213,6 +227,9 @@ class ExportDialog(QDialog):
                             or ""
                         ),
                         required_analysis_ids=tuple(str(item) for item in required),
+                        required_capability_ids=tuple(
+                            str(item) for item in required_capabilities
+                        ),
                         display_name=descriptor.name,
                         locale_qualified=bool(
                             metadata.get("locale_qualified", True)
@@ -222,6 +239,18 @@ class ExportDialog(QDialog):
                         ),
                         supports_metric_annotation=bool(
                             metadata.get("supports_metric_annotation", False)
+                        ),
+                        group_id=str(metadata.get("group_id", "other")),
+                        group_translation_key=str(
+                            metadata.get(
+                                "group_translation_key",
+                                f"export.group.{metadata.get('group_id', 'other')}",
+                            )
+                        ),
+                        group_order=int(metadata.get("group_order", 1000)),
+                        format_order=int(metadata.get("format_order", 1000)),
+                        default_selected=bool(
+                            metadata.get("default_selected", True)
                         ),
                     )
                 )
@@ -244,19 +273,54 @@ class ExportDialog(QDialog):
             if widget is not None:
                 widget.deleteLater()
         self.exporter_checks.clear()
-        self._options = tuple(options)
+        self.group_labels.clear()
+        self._options = tuple(
+            sorted(
+                options,
+                key=lambda option: (
+                    option.group_order,
+                    option.format_order,
+                    option.display_name.casefold(),
+                    option.plugin_id,
+                ),
+            )
+        )
+        current_group = None
         for option in self._options:
+            if option.group_id != current_group:
+                heading = QLabel()
+                heading.setObjectName("exportGroupHeading")
+                self.group_labels[option.group_id] = heading
+                self.exporter_list_layout.addWidget(heading)
+                current_group = option.group_id
             checkbox = QCheckBox()
             checked, enabled = previous_state.get(option.plugin_id, (False, False))
             checkbox.setChecked(checked)
             checkbox.setEnabled(enabled)
-            checkbox.toggled.connect(self._export_controls_refresh)
+            checkbox.toggled.connect(
+                lambda checked, plugin_id=option.plugin_id: self._checkbox_toggled(
+                    plugin_id,
+                    checked,
+                )
+            )
             self.exporter_checks[option.plugin_id] = checkbox
             self.exporter_list_layout.addWidget(checkbox)
         self._format_labels_update()
 
+    def _checkbox_toggled(self, plugin_id: str, _checked: bool) -> None:
+        if not self._availability_refreshing:
+            self._user_touched.add(plugin_id)
+            self._default_applied.add(plugin_id)
+        self._export_controls_refresh()
+
     def _format_labels_update(self, _index: int | None = None) -> None:
         t = self._translations.translate
+        for option in self._options:
+            heading = self.group_labels.get(option.group_id)
+            if heading is not None:
+                heading.setText(
+                    t(option.group_translation_key, option.group_id.replace("_", " ").title())
+                )
         for option in self._options:
             localized_filename = self.export_filename(option.plugin_id)
             label = (
@@ -273,6 +337,12 @@ class ExportDialog(QDialog):
         self._completed_analysis_ids = set(analysis_ids)
         self._availability_refresh()
 
+    def set_completed_capability_ids(
+        self, capability_ids: tuple[str, ...] | list[str]
+    ) -> None:
+        self._completed_capability_ids = set(capability_ids)
+        self._availability_refresh()
+
     def _exporter_list_size_update(self) -> None:
         checkboxes = tuple(self.exporter_checks.values())
         if not checkboxes:
@@ -280,10 +350,21 @@ class ExportDialog(QDialog):
             return
         row_heights = [max(checkbox.sizeHint().height(), 22) for checkbox in checkboxes]
         spacing = max(self.exporter_list_layout.spacing(), 0)
-        full_height = sum(row_heights) + spacing * (len(row_heights) - 1)
+        heading_heights = [
+            max(label.sizeHint().height(), 24)
+            for label in self.group_labels.values()
+        ]
+        full_height = (
+            sum(row_heights)
+            + sum(heading_heights)
+            + spacing * max(len(row_heights) + len(heading_heights) - 1, 0)
+        )
         visible_count = min(len(row_heights), self.MAX_VISIBLE_EXPORT_OPTIONS)
         visible_height = (
-            sum(row_heights[:visible_count]) + spacing * max(visible_count - 1, 0)
+            sum(row_heights[:visible_count])
+            + sum(heading_heights)
+            + spacing
+            * max(visible_count + len(heading_heights) - 1, 0)
         )
         self.exporter_list_widget.setMinimumHeight(full_height)
         self.exporter_scroll.setFixedHeight(visible_height)
@@ -292,22 +373,37 @@ class ExportDialog(QDialog):
         if not hasattr(self, "exporter_checks"):
             return
         t = self._translations.translate
-        for option in self._options:
-            checkbox = self.exporter_checks[option.plugin_id]
-            was_enabled = checkbox.isEnabled()
-            missing = tuple(
-                analysis_id
-                for analysis_id in option.required_analysis_ids
-                if analysis_id not in self._completed_analysis_ids
-            )
-            checkbox.setEnabled(not missing)
-            if missing:
-                checkbox.setChecked(False)
-                checkbox.setToolTip(t("export.requires_thrust_analysis"))
-            else:
-                if not was_enabled:
-                    checkbox.setChecked(True)
-                checkbox.setToolTip("")
+        self._availability_refreshing = True
+        try:
+            for option in self._options:
+                checkbox = self.exporter_checks[option.plugin_id]
+                missing = tuple(
+                    analysis_id
+                    for analysis_id in option.required_analysis_ids
+                    if analysis_id not in self._completed_analysis_ids
+                )
+                missing_capabilities = tuple(
+                    capability_id
+                    for capability_id in option.required_capability_ids
+                    if capability_id not in self._completed_capability_ids
+                )
+                ready = not missing and not missing_capabilities
+                checkbox.setEnabled(ready)
+                if not ready:
+                    checkbox.setChecked(False)
+                    checkbox.setToolTip(
+                        t(
+                            "export.requires_capabilities",
+                            capabilities=", ".join((*missing, *missing_capabilities)),
+                        )
+                    )
+                else:
+                    if option.plugin_id not in self._default_applied:
+                        checkbox.setChecked(option.default_selected)
+                        self._default_applied.add(option.plugin_id)
+                    checkbox.setToolTip("")
+        finally:
+            self._availability_refreshing = False
         any_ready = any(checkbox.isEnabled() for checkbox in self.exporter_checks.values())
         if not self._options:
             availability_key = "export.no_exporters"
@@ -382,8 +478,36 @@ class ExportDialog(QDialog):
 
     def set_selected_exporter_ids(self, plugin_ids: list[str] | tuple[str, ...]) -> None:
         selected = set(plugin_ids)
-        for plugin_id, checkbox in self.exporter_checks.items():
-            checkbox.setChecked(plugin_id in selected and checkbox.isEnabled())
+        self._availability_refreshing = True
+        try:
+            for plugin_id, checkbox in self.exporter_checks.items():
+                checkbox.setChecked(plugin_id in selected and checkbox.isEnabled())
+                self._default_applied.add(plugin_id)
+                self._user_touched.add(plugin_id)
+        finally:
+            self._availability_refreshing = False
+        self._export_controls_refresh()
+
+    def reset_default_selection(self) -> None:
+        self._default_applied.clear()
+        self._user_touched.clear()
+        self._availability_refreshing = True
+        try:
+            for checkbox in self.exporter_checks.values():
+                checkbox.setChecked(False)
+        finally:
+            self._availability_refreshing = False
+        self._availability_refresh()
+
+    def export_group_id(self, plugin_id: str) -> str:
+        try:
+            return next(
+                option.group_id
+                for option in self._options
+                if option.plugin_id == plugin_id
+            )
+        except StopIteration as exc:
+            raise KeyError(f"Unknown export plugin ID {plugin_id!r}") from exc
 
     def set_motor_metadata(self, metadata: dict[str, Any]) -> None:
         for field_name, edit in self.eng_edits.items():

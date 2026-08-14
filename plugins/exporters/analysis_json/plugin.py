@@ -38,7 +38,11 @@ class AnalysisJsonExporter(ExporterPlugin):
             EXPORTER_UI_SCHEMA_KEY: {
                 "filename": "analysis_data.json",
                 "translation_key": "export.analysis_json",
-                "required_analysis_ids": ["builtin.analyzer.thrust"],
+                "required_analysis_ids": [],
+                "required_capability_ids": ["project_summary_ready"],
+                "group_id": "overall",
+                "group_order": 0,
+                "format_order": 20,
                 "locale_qualified": True,
             },
         }
@@ -90,13 +94,19 @@ class AnalysisJsonExporter(ExporterPlugin):
                 "channels": {
                     channel_id: {
                         "quantity": channel.quantity,
-                        "unit": channel.unit,
+                        "unit": channel.data_unit,
+                        "data_unit": channel.data_unit,
+                        "unit_source": channel.unit_source.value,
+                        "display_unit": channel.display_unit,
                         "role": channel.role,
+                        "semantic_role": channel.semantic_role,
                     }
                     for channel_id, channel in dataset.channels.items()
                 },
                 "metadata": dict(dataset.metadata),
             },
+            "provenance": dict(config.get("provenance", {})),
+            "processing_metadata": dict(config.get("processing_metadata", {})),
             "analysis": analysis.to_dict(),
         }
         destination = Path(destination)
@@ -122,6 +132,9 @@ class AnalysisJsonExporter(ExporterPlugin):
             return {
                 "title": "火箭发动机试车数据分析",
                 "metric_labels": {
+                    "peak_value": "峰值（当前数据单位）",
+                    "average_value": "平均值（当前数据单位）",
+                    "relative_integral": "相对积分（当前数据单位·s）",
                     "peak_thrust_n": "峰值推力 [N]",
                     "average_thrust_n": "平均推力 [N]",
                     "burn_duration_s": "试车时长 [s]",
@@ -134,6 +147,9 @@ class AnalysisJsonExporter(ExporterPlugin):
         return {
             "title": "Rocket Motor Test Analysis",
             "metric_labels": {
+                "peak_value": "Peak (current data unit)",
+                "average_value": "Average (current data unit)",
+                "relative_integral": "Relative integral (current data unit·s)",
                 "peak_thrust_n": "Peak thrust [N]",
                 "average_thrust_n": "Average thrust [N]",
                 "burn_duration_s": "Test duration [s]",

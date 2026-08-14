@@ -19,6 +19,9 @@ dev = [
     "pytest>=8.3",
     "ruff>=0.9",
 ]
+packaging = [
+    "pyinstaller>=6.21",
+]
 
 [project.scripts]
 underline-retldc = "underline_retldc.app.application:main"
@@ -41,4 +44,3 @@ extend-exclude = [".venv"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
-

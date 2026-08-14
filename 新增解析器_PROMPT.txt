@@ -1,6 +1,66 @@
 Underline_RETLDC 新增解析器插件通用 Prompt
 ============================================
 
+【开始前必须先判断：Preset 还是 Parser Plugin】
+
+如果用户描述的格式只是普通二维：
+
+- CSV；
+- TSV；
+- XLSX；
+- 自定义单字符分隔文本；
+- 仅列顺序、表头、单位、数据开始行不同；
+
+不要创建新的 Parser Plugin。优先使用现有：
+
+- builtin.parser.generic_delimited；或
+- builtin.parser.generic_xlsx；
+- 加 Explicit Column Mapping；
+- 加可复用的 Tabular Mapping Preset。
+
+表头文字只能帮助生成 Auto Mapping Suggestion，不能成为解析格式契约。Preset 必须按零基 Column
+Index 保存真实映射，可附带 expected_header/header_hint 作为安全警告。必须明确保存 Header Row、
+Data Start Row、时间列/采样率/dt、每列 Usage、Channel ID、Quantity、Semantic Role 和 Data Unit。
+不得在没有时间来源时默认 1 Hz。
+
+如果 AI 没有 Agent、不能访问仓库，而且需求只是普通表格，应优先实际生成一个可导入的：
+
+   <format_name>_tabular_preset.json
+
+其 schema 必须是 underline-retldc-tabular-preset/1，内容是纯 JSON，不执行 Python。只有 binary、
+压缩、专有协议、特殊校验、复杂多数据块或 Generic Tabular 无法表示的跨 Sheet 关系，才继续执行
+本 Prompt 后面的 Parser Plugin 开发流程。
+
+可导入 Preset 的基本结构必须符合当前实现，例如：
+
+{
+  "schema": "underline-retldc-tabular-preset/1",
+  "name": "某试车台格式",
+  "parser_id": "builtin.parser.generic_xlsx",
+  "parser_version": "1.0.0",
+  "config": {
+    "sheet_name": "Sheet1",
+    "header_row": 1,
+    "data_start_row": 2,
+    "data_end_row": null,
+    "invalid_row_policy": "preserve",
+    "time": {"mode": "column", "column": 0, "unit": "s"},
+    "columns": [
+      {"column": 0, "usage": "time", "unit": "s", "expected_header": "Time"},
+      {
+        "column": 1,
+        "usage": "data",
+        "display_name": "Chamber Pressure",
+        "channel_id": "chamber_pressure",
+        "quantity": "pressure",
+        "role": "chamber_pressure",
+        "unit": "MPa",
+        "expected_header": "Pc"
+      }
+    ]
+  }
+}
+
 用途
 ----
 把本文件完整复制给编码 AI，然后在文件末尾“【本次具体要求】”下面补充你想支持的新原始数据格式、字段含义、单位、示例数据和异常处理要求。
@@ -9,7 +69,7 @@ Underline_RETLDC 新增解析器插件通用 Prompt
 
 
 【任务总则】
-你正在为现有项目 Underline_RETLDC（Underline Rocket Engine Test Log Decode and Compute）新增一个 Parser 插件。
+你正在为现有项目 Underline_RETLDC（Underline Rocket Engine Test Log Decoder and Calculator）新增一个 Parser 插件。
 
 这是已有工程，不允许新建另一套工程，不允许复制为新版本目录，不允许为了省事修改 Core 使新格式变成特例。
 
@@ -231,13 +291,35 @@ Dataset 当前至少需要：
 
 Channel 当前至少包含：
 - id
+- name
 - quantity
 - unit
 - values
 - role
 - metadata
 
-对于“原始未校准传感器值”，通常：
+有明确语义时还应提供 semantic_role，例如 thrust、chamber_pressure、temperature。
+
+【Unit 强制规则】
+Unit 是 Channel 数据语义，Parser 必须尽量忠实提供，但 Parser 不负责 Calibration：
+
+1. 文件格式明确写了 Unit 时，必须写真实 Unit，不得丢失。例如 time→s、Pc→MPa、
+   F→N、temperature→°C。
+2. 文件没有写 Unit，但 Quantity 是平台已知类型时，可以令 unit=None，由 Core 按
+   Quantity 补 canonical SI（force→N、pressure→Pa、temperature→K、mass→kg、
+   length→m、area→m²、volume→m³、Kn/ratio→1）；也可以显式写该 SI Unit。
+3. 只有文件格式明确表示 ADC、raw 或 count 传感器值时，才写 unit="raw"、"ADC" 或
+   "count"。不要把“文件没写单位”自动解释成 raw。
+4. custom.xxx 等未知 Quantity 应由 Parser 明确声明 Unit。若仍省略，平台会记录
+   unknown_si 和需要人工确认的 Diagnostic；绝不能暗中猜成 N。
+5. Parser 显式 Unit 的优先级高于 SI fallback；用户/Project 后续的 Data Unit
+   Interpretation Override 又高于 Parser 声明。
+6. Parser 只解释文件语法，不猜传感器是否已经标定，也不选择 Calibration。
+
+平台会为所有新 Channel 默认选择 builtin.calibration.identity，与 Unit 完全无关。
+“Already Calibrated/已经校准”只表示不额外变换数值，不是软件认证传感器标定正确。
+
+对于格式明确的“原始传感器值”，通常：
 - role = "raw"
 - unit = "raw" 或当前架构约定的未校准单位
 
@@ -245,11 +327,15 @@ channel ID 必须稳定，不要用翻译文字。
 
 如果源文件的时间单位不是秒，应按当前项目规范转换并在 metadata 中保留 source_time_unit 等来源信息。
 
-如果源格式自带已经是物理工程量的数据，不要擅自重复校准；应按本次具体需求和当前 Core 语义明确 quantity/unit，并确保后续用户仍可选择适当 Calibration 工作流。
+如果源格式自带物理工程量，应忠实写 quantity/unit，但不要因此宣称传感器标定正确；
+用户仍可把默认 Identity 改为 Linear、Polynomial、Lookup Table 或其他 Calibration。
 
 如果源格式包含多个 Channel，应全部按需求映射成独立 Channel，不要把多列拼成一个含义模糊的数组。
 
-如果本次格式无法映射到当前单一 Dataset time 轴，例如每个传感器都有完全独立异步时间轴，而当前 Core 不支持，则停止并明确报告架构缺口，不要伪造同步数据。
+如果一个文件包含多个独立异步时间轴，应先确认当前 ParseResult API 能否表达多个
+Stream；若不能，应明确报告需要通用 API 扩展，不能为方便而重采样、拼接或伪造同步。
+平台现有多个文件/Stream 通过 t_project = t_local + time_offset_s 共享工程级
+PRE/ACTIVE_TEST/POST。
 
 
 【5. validate()】
@@ -328,6 +414,10 @@ i18n/en_US.json
 9. parse 不做校准。
 10. 原始文件未被修改。
 11. 插件刷新后 GUI Parser 列表能出现该插件。
+12. 格式明确 Unit 时保留原 Unit，并记录 Parser declaration。
+13. 已知 Quantity 缺 Unit 时得到 canonical SI/default_si；未知 Quantity 不乱猜。
+14. 明确 raw/count/ADC 时保持不可物理换算的 Unit。
+15. 平台后续默认 Identity 与 Unit 无关，Parser 本身不执行或猜测 Calibration。
 
 如果项目已有 pytest，使用项目 .venv 执行测试。
 

@@ -8,9 +8,13 @@ import numpy as np
 
 from underline_retldc.core.channel import Channel
 from underline_retldc.core.dataset import Dataset
-from underline_retldc.core.diagnostics import Diagnostic
+from underline_retldc.core.diagnostics import Diagnostic, DiagnosticSeverity
 from underline_retldc.core.regions import RegionSelection
-from underline_retldc.core.units import G0_STANDARD_M_S2
+from underline_retldc.core.units import (
+    G0_STANDARD_M_S2,
+    Unit_ConvertValue,
+    Unit_IsPhysicalForQuantity,
+)
 from underline_retldc.plugin_api.common import (
     PluginDescriptor,
     PluginType,
@@ -49,7 +53,6 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
                 },
                 "input_channel_id": {
                     "type": "string",
-                    "default": "force_calibrated",
                     "x-ui-hidden": True,
                     "x-ui-source": "thrust_analysis.input_channel",
                 },
@@ -92,10 +95,39 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
             raise ValueError(f"{label} baseline fit is not finite")
         return float(slope), float(intercept)
 
+    def _fit_or_assume_zero(
+        self,
+        time: np.ndarray,
+        values: np.ndarray,
+        region,
+        boundary: float,
+        label: str,
+        diagnostics: list[Diagnostic],
+    ) -> tuple[float, float, float, str]:
+        if region is not None:
+            mask = (time >= region.start) & (time <= region.end)
+            try:
+                slope, intercept = self._fit(time[mask], values[mask], label)
+                return slope, intercept, slope * boundary + intercept, "measured_fit"
+            except ValueError:
+                pass
+        code = f"processing.{label.lower()}_baseline_assumed_zero"
+        diagnostics.append(
+            Diagnostic(
+                DiagnosticSeverity.WARNING,
+                code,
+                f"{label} baseline is unavailable and was assumed to be zero",
+                plugin_id=self.descriptor.plugin_id,
+            )
+        )
+        return 0.0, 0.0, 0.0, "assumed_zero"
+
     def process(
         self, dataset: Dataset, config: Mapping[str, Any], context: TaskContext
     ) -> ProcessingResult:
-        input_id = str(config.get("input_channel_id", "force_calibrated"))
+        input_id = str(config.get("input_channel_id", "")).strip()
+        if not input_id:
+            raise ValueError("Vertical baseline processing requires an input Channel")
         source = dataset.channel(input_id)
         if source.quantity.lower() not in {"force", "thrust"}:
             raise ValueError("Vertical baseline processor requires a force/thrust channel")
@@ -103,7 +135,7 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
         if sign not in {-1, 1}:
             raise ValueError("Thrust sign must be +1 or -1")
         enabled = bool(config.get("enabled", True))
-        time = dataset.time
+        time = dataset.project_time
         measured = source.values
         context.raise_if_cancelled()
         diagnostics: list[Diagnostic] = []
@@ -113,27 +145,52 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
             if not isinstance(region_payload, dict):
                 raise ValueError("Vertical baseline compensation requires PRE/BURN/POST regions")
             regions = RegionSelection.from_dict(region_payload)
-            pre_mask = (time >= regions.pre.start) & (time <= regions.pre.end)
-            post_mask = (time >= regions.post.start) & (time <= regions.post.end)
-            pre_slope, pre_intercept = self._fit(time[pre_mask], measured[pre_mask], "PRE")
-            context.report_progress(0.3, "PRE baseline fitted")
-            post_slope, post_intercept = self._fit(time[post_mask], measured[post_mask], "POST")
             ignition = regions.burn.start
             burnout = regions.burn.end
-            baseline_start = pre_slope * ignition + pre_intercept
-            baseline_end = post_slope * burnout + post_intercept
+            pre_slope, pre_intercept, baseline_start, pre_source = (
+                self._fit_or_assume_zero(
+                    time,
+                    measured,
+                    regions.pre,
+                    ignition,
+                    "PRE",
+                    diagnostics,
+                )
+            )
+            context.report_progress(0.3, "PRE baseline resolved")
+            post_slope, post_intercept, baseline_end, post_source = (
+                self._fit_or_assume_zero(
+                    time,
+                    measured,
+                    regions.post,
+                    burnout,
+                    "POST",
+                    diagnostics,
+                )
+            )
             burn_baseline = baseline_start + (baseline_end - baseline_start) * (
                 (time - ignition) / (burnout - ignition)
             )
+            pre_baseline = (
+                pre_slope * time + pre_intercept
+                if pre_source == "measured_fit"
+                else np.zeros_like(measured)
+            )
+            post_baseline = (
+                post_slope * time + post_intercept
+                if post_source == "measured_fit"
+                else np.zeros_like(measured)
+            )
             baseline = np.where(
                 time < ignition,
-                pre_slope * time + pre_intercept,
-                np.where(time > burnout, post_slope * time + post_intercept, burn_baseline),
+                pre_baseline,
+                np.where(time > burnout, post_baseline, burn_baseline),
             )
         else:
             regions = None
             pre_slope = pre_intercept = post_slope = post_intercept = 0.0
             baseline_start = baseline_end = 0.0
+            pre_source = post_source = "assumed_zero"
             baseline = np.zeros_like(measured)
 
         context.raise_if_cancelled()
@@ -141,32 +198,63 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
         baseline_channel = Channel(
             id="baseline_model",
             quantity=source.quantity,
-            unit=source.unit,
+            unit=source.data_unit,
             values=baseline,
             role="baseline",
             metadata={"processor_id": self.descriptor.plugin_id, "enabled": enabled},
+            unit_source=source.unit_source,
+            display_unit=source.display_unit,
+            semantic_role=source.semantic_role,
         )
         corrected_channel = Channel(
             id="thrust_corrected",
             quantity="thrust",
-            unit=source.unit,
+            unit=source.data_unit,
             values=corrected,
             role="corrected",
             metadata={"source_channel_id": input_id, "sign": sign},
+            unit_source=source.unit_source,
+            display_unit=source.display_unit,
+            semantic_role="thrust",
         )
         processed_channel = Channel(
             id="thrust_processed",
             quantity="thrust",
-            unit=source.unit,
+            unit=source.data_unit,
             values=corrected,
             role="processed",
             metadata={"source_channel_id": corrected_channel.id, "user_confirmed": False},
+            unit_source=source.unit_source,
+            display_unit=source.display_unit,
+            semantic_role="thrust",
         )
         result_dataset = dataset.with_channel(baseline_channel)
         result_dataset = result_dataset.with_channel(corrected_channel)
         result_dataset = result_dataset.with_channel(processed_channel)
-        equivalent_force_change = baseline_start - baseline_end
-        equivalent_mass_change = abs(equivalent_force_change) / G0_STANDARD_M_S2
+        equivalent_value_change = baseline_start - baseline_end
+        equivalent_force_change: float | None = None
+        equivalent_mass_change: float | None = None
+        baselines_measured = pre_source == post_source == "measured_fit"
+        physical_force = Unit_IsPhysicalForQuantity(source.quantity, source.data_unit)
+        if baselines_measured and physical_force:
+            baseline_start_n = Unit_ConvertValue(baseline_start, source.data_unit, "N")
+            baseline_end_n = Unit_ConvertValue(baseline_end, source.data_unit, "N")
+            equivalent_force_change = baseline_start_n - baseline_end_n
+            equivalent_mass_change = abs(equivalent_force_change) / G0_STANDARD_M_S2
+        else:
+            diagnostics.append(
+                Diagnostic(
+                    DiagnosticSeverity.WARNING,
+                    (
+                        "processing.equivalent_mass_unavailable_assumed_baseline"
+                        if not baselines_measured
+                        else "processing.equivalent_mass_unavailable_unit"
+                    ),
+                    "Equivalent mass change is unavailable unless both baselines are "
+                    "measured fits in a physical force unit",
+                    plugin_id=self.descriptor.plugin_id,
+                )
+            )
 
         metadata = {
             "enabled": enabled,
@@ -176,6 +264,10 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
             "post_intercept": post_intercept,
             "baseline_start": baseline_start,
             "baseline_end": baseline_end,
+            "baseline_pre_source": pre_source,
+            "baseline_post_source": post_source,
+            "equivalent_value_change": equivalent_value_change,
+            "equivalent_value_change_unit": source.data_unit,
             "equivalent_force_change_n": equivalent_force_change,
             "equivalent_mass_change_kg": equivalent_mass_change,
             "equivalent_mass_change_usage": "manual_reference_only",

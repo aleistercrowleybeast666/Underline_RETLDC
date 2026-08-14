@@ -8,9 +8,22 @@ import pytest
 from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QHeaderView, QMessageBox, QStyle
+from PySide6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QHeaderView,
+    QInputDialog,
+    QMessageBox,
+    QStyle,
+)
 
-from underline_retldc.app.settings import THEME_DARK, THEME_LIGHT, SettingsService
+from underline_retldc.app.session import ChannelCalibrationState
+from underline_retldc.app.settings import (
+    THEME_DARK,
+    THEME_LIGHT,
+    UNIT_DISPLAY_SI_SCIENTIFIC,
+    SettingsService,
+)
 from underline_retldc.core.channel import Channel
 from underline_retldc.core.dataset import Dataset
 from underline_retldc.core.project import (
@@ -20,13 +33,32 @@ from underline_retldc.core.project import (
     Project_SourceHash,
     ProjectDocument,
 )
+from underline_retldc.core.project_data import (
+    ChannelReference,
+    PrimaryChannelBindings,
+    ProjectData,
+    Source,
+    Stream,
+)
 from underline_retldc.core.regions import BurnCandidate
+from underline_retldc.core.tabular import TabularPreview
+from underline_retldc.core.workspace_capabilities import (
+    WorkspaceCapabilities_Default,
+    WorkspaceChannelCapability,
+)
+from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
 from underline_retldc.gui.main_window import MainWindow
 from underline_retldc.gui.pages.export_page import ExportDialog, ExportOption
+from underline_retldc.gui.pages.workspace_pages import WorkspaceSeries
+from underline_retldc.gui.tabular_mapping_editor import TabularMappingEditor
 from underline_retldc.gui.theme import RetldcApplicationStyle, Theme_Apply, Theme_Current
 from underline_retldc.gui.widgets import StandardComboBox
 from underline_retldc.i18n.service import TranslationService
-from underline_retldc.plugin_api.common import TaskContext
+from underline_retldc.plugin_api.common import (
+    AnalysisResult,
+    ProcessingResult,
+    TaskContext,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -58,6 +90,96 @@ def _window(
     )
 
 
+def _window_with_bound_measurements(
+    tmp_path: Path,
+) -> tuple[MainWindow, Dataset]:
+    window = _window(
+        TranslationService("en_US"),
+        SettingsService(tmp_path / "settings.ini"),
+        tmp_path,
+    )
+    time = np.linspace(0.0, 10.0, 101)
+    active = (time >= 3.0) & (time <= 7.0)
+    dataset = Dataset(
+        time,
+        {
+            "thrust": Channel(
+                "thrust",
+                "force",
+                "N",
+                np.where(active, 12.0, 0.0),
+                "calibrated",
+                semantic_role="thrust",
+                name="Thrust A",
+            ),
+            "pressure": Channel(
+                "pressure",
+                "pressure",
+                "MPa",
+                np.where(active, -2.0, 0.0),
+                "calibrated",
+                semantic_role="chamber_pressure",
+                name="Chamber Pressure A",
+            ),
+            "temperature": Channel(
+                "temperature",
+                "temperature",
+                "°C",
+                np.linspace(20.0, 80.0, time.size),
+                "calibrated",
+                semantic_role="temperature",
+                name="Temperature A",
+            ),
+            "web": Channel(
+                "web",
+                "length",
+                "mm",
+                np.linspace(0.0, 13.0, time.size),
+                "calibrated",
+                semantic_role="auxiliary",
+                name="Burned Web",
+            ),
+        },
+    )
+    source = Source("source", tmp_path / "measurements.csv")
+    stream = Stream("stream", source.id, dataset)
+    thrust_ref = ChannelReference(source.id, stream.id, "thrust")
+    pressure_ref = ChannelReference(source.id, stream.id, "pressure")
+    temperature_ref = ChannelReference(source.id, stream.id, "temperature")
+    bindings = PrimaryChannelBindings(
+        thrust=thrust_ref,
+        chamber_pressure=pressure_ref,
+        temperature_channels=(temperature_ref,),
+    )
+    window.session.project_data = ProjectData(
+        {source.id: source},
+        {stream.id: stream},
+        bindings,
+    )
+    window.session.primary_stream_id = stream.id
+    window.session.active_stream_id = stream.id
+    window.session.raw_dataset = stream.dataset
+    window.session.calibrated_dataset = stream.dataset
+    window.session.calibrated_streams = {stream.id: stream.dataset}
+    states = {
+        channel_id: ChannelCalibrationState(
+            channel_id,
+            channel_id,
+            "builtin.calibration.identity",
+        )
+        for channel_id in stream.dataset.channels
+    }
+    window.session.channel_calibrations = states
+    window.session.stream_channel_calibrations = {
+        ChannelReference(source.id, stream.id, channel_id).stable_id: state
+        for channel_id, state in states.items()
+    }
+    window._primary_channels_update()
+    window._measurement_workspaces_update()
+    window._segmentation_views_sync()
+    return window, stream.dataset
+
+
 def _external_plugin_write(
     root: Path,
     category: str,
@@ -73,21 +195,33 @@ def _external_plugin_write(
     (directory / "plugin.py").write_text(code, encoding="utf-8")
 
 
-def test_gui_initializes_two_workspaces_and_switches_locale(tmp_path: Path) -> None:
+def test_gui_initializes_measurement_workspaces_and_switches_locale(
+    tmp_path: Path,
+) -> None:
     app = _application()
     settings = SettingsService(tmp_path / "settings.ini")
     translations = TranslationService("zh_CN")
     window = _window(translations, settings, tmp_path)
-    assert window.stack.count() == 2
+    assert window.windowTitle() == "Underline RETLDC — 0.1.0"
+    assert window.header_title.text() == "Underline RETLDC · 未命名项目"
+    assert window.stack.count() == 5
     assert window.navigation.item(0).text() == "项目"
     assert window.navigation.item(1).text() == "推力分析"
-    assert window.project_page.analysis_button.text() == "进入推力分析 →"
-    window.project_page.analysis_button.click()
+    assert window.navigation.item(2).text() == "燃烧室压力"
+    assert window.navigation.item(3).text() == "温度"
+    assert window.navigation.item(4).text() == "数据浏览器"
+    assert not hasattr(window.project_page, "analysis_button")
+    assert not hasattr(window.project_page, "analysis_requested")
+    window.navigation.setCurrentRow(1)
     assert window.stack.currentWidget() is window.thrust_analysis_page
     window._locale_select("en_US")
     app.processEvents()
     assert window.navigation.item(0).text() == "Project"
     assert window.navigation.item(1).text() == "Thrust Analysis"
+    assert window.navigation.item(2).text() == "Chamber Pressure"
+    assert window.navigation.item(3).text() == "Temperature"
+    assert window.navigation.item(4).text() == "Data Explorer"
+    assert window.header_title.text() == "Underline RETLDC · Untitled Project"
     assert window.plugins_page.refresh_button.text() == "Refresh"
     assert window.settings_page.language_group.title() == "Language"
     assert window.export_dialog.windowTitle() == "Export…"
@@ -132,24 +266,29 @@ def test_gui_initializes_two_workspaces_and_switches_locale(tmp_path: Path) -> N
     window._export_dialog_show()
     app.processEvents()
     assert window.export_dialog.isVisible()
-    assert len(window.export_dialog.exporter_checks) == 5
+    assert len(window.export_dialog.exporter_checks) == 9
     assert all(
         not checkbox.isEnabled()
         for checkbox in window.export_dialog.exporter_checks.values()
     )
     assert all(
-        window.export_dialog.required_analysis_ids(plugin_id)
-        == ("builtin.analyzer.thrust",)
+        window.export_dialog.required_analysis_ids(plugin_id) == ()
         for plugin_id in window.export_dialog.exporter_checks
     )
     window.export_dialog.reject()
     window.export_dialog.set_output_locale("zh_CN")
     assert window.export_dialog.export_filename("builtin.exporter.csv") == (
-        "processed_thrust_ZH.csv"
+        "thrust_data_ZH.csv"
     )
     assert window.export_dialog.export_filename("builtin.exporter.thrust_png") == (
         "thrust_curve_ZH.png"
     )
+    assert window.export_dialog.export_filename(
+        "builtin.exporter.chamber_pressure_csv"
+    ) == "chamber_pressure_data_ZH.csv"
+    assert window.export_dialog.export_filename(
+        "builtin.exporter.temperature_png"
+    ) == "temperature_curve_ZH.png"
     assert window.export_dialog.export_filename("builtin.exporter.openrocket_eng") == (
         "motor.eng"
     )
@@ -228,14 +367,10 @@ def test_gui_plugin_combos_schema_forms_and_burn_candidates(tmp_path: Path) -> N
         for index in range(window.import_page.parser_combo.count())
     }
     assert "builtin.parser.tr_f" in parser_ids
-    assert window.import_page.selected_parser_id() == "builtin.parser.tr_f"
+    assert window.import_page.selected_parser_id() is None
     app.processEvents()
-    assert window.import_page.selected_parser_id() == "builtin.parser.tr_f"
-    assert set(window.import_page.configuration_form.field_names) == {
-        "delimiter",
-        "time_unit",
-        "invalid_row_policy",
-    }
+    assert window.import_page.selected_parser_id() is None
+    assert window.import_page.configuration_form.field_names == ()
     window.import_page.set_parser_id(None)
     app.processEvents()
     assert window.import_page.selected_parser_id() is None
@@ -250,7 +385,10 @@ def test_gui_plugin_combos_schema_forms_and_burn_candidates(tmp_path: Path) -> N
     window.import_page.set_parser_id(None)
     window._parser_detect()
     _task_wait(window)
-    assert window.import_page.selected_parser_id() == "builtin.parser.tr_f"
+    assert window.import_page.selected_parser_id() is None
+    assert len(window.import_page._ambiguity_buttons) == 3
+    window.import_page.set_parser_id("builtin.parser.tr_f")
+    app.processEvents()
     assert "delimiter" in window.import_page.configuration_form.field_names
     recommendation_header = window.import_page.recommendation_table.horizontalHeader()
     assert recommendation_header.sectionResizeMode(0) is QHeaderView.ResizeMode.Stretch
@@ -322,17 +460,17 @@ def test_gui_plugin_combos_schema_forms_and_burn_candidates(tmp_path: Path) -> N
             ),
         },
     )
-    window.process_page.set_datasets(dataset, dataset, None)
+    window.process_page.set_datasets(
+        dataset,
+        dataset,
+        None,
+        input_channel_id="force_calibrated",
+    )
     assert set(window.process_page.curve_checks) == {"uncorrected", "corrected"}
     assert window.process_page.detect_button.text() == "Detect Test Interval"
-    assert window.process_page.fit_button.text() == "Fit Interval"
+    assert window.process_page.fit_button.text() == "Fit View"
     assert window.process_page.candidate_combo.currentData() is None
     assert window.process_page.candidate_combo.currentText() == "Not detected"
-    window.session.calibrated_dataset = dataset
-    window._burn_detect()
-    _task_wait(window)
-    assert window.process_page.candidate_combo.count() >= 1
-    assert window.process_page.candidate_combo.currentData() == 0
     candidates = [
         BurnCandidate(3.0, 5.0, 10.0, 2.0, 8.0, 100.0, 21),
         BurnCandidate(6.0, 7.0, 5.0, 1.0, 4.0, 20.0, 11),
@@ -342,14 +480,21 @@ def test_gui_plugin_combos_schema_forms_and_burn_candidates(tmp_path: Path) -> N
     assert window.process_page.candidate_combo.currentData() == 0
     window.process_page.candidate_combo.setCurrentIndex(1)
     app.processEvents()
-    burn_start, burn_end = window.process_page.regions()["burn"]
+    window.process_page.set_regions(
+        {
+            "pre": [5.0, 5.9],
+            "active_test": [6.0, 7.0],
+            "post": [7.1, 8.0],
+        }
+    )
+    burn_start, burn_end = window.process_page.regions()["active_test"]
     assert (burn_start, burn_end) == (6.0, 7.0)
     burn_start_edit, _burn_end_edit = window.process_page.region_edits["burn"]
     assert burn_start_edit.text().strip()
     assert burn_start_edit.palette().color(QPalette.ColorRole.Text).lightness() < 64
     burn_start_edit.setValue(6.1)
     app.processEvents()
-    assert window.process_page.regions()["burn"][0] == 6.1
+    assert window.process_page.regions()["active_test"][0] == 6.1
     window.process_page.fit_button.click()
     app.processEvents()
     view_start, view_end = window.process_page.plot_widget.viewRange()[0]
@@ -566,13 +711,9 @@ def test_gui_creates_savable_incomplete_project_document(tmp_path: Path) -> None
     document = window._project_document_create()
     assert document.source_path == str(source.resolve())
     assert document.source_hash is None
-    assert document.parser is not None
-    assert document.parser.id == "builtin.parser.tr_f"
-    assert document.calibration is not None
-    assert len(document.processors) == 1
-    assert document.processors[0].id == (
-        "builtin.processor.vertical_linear_baseline"
-    )
+    assert document.parser is None
+    assert document.calibration is None
+    assert document.processors == ()
     assert document.regions == {}
     assert document.analyzer is None
     assert document.workflow_state == {
@@ -630,8 +771,12 @@ def test_gui_pipeline_parses_calibrates_processes_analyzes_and_exports(
     _task_wait(window)
     assert window.session.calibrated_dataset is not None
 
-    window.process_page.set_regions(
-        {"pre": [0.0, 2.5], "burn": [3.0, 7.0], "post": [7.5, 10.0]}
+    window._regions_store(
+        {
+            "pre": [0.0, 2.5],
+            "active_test": [3.0, 7.0],
+            "post": [7.5, 10.0],
+        }
     )
     window._processing_apply()
     _task_wait(window)
@@ -640,14 +785,16 @@ def test_gui_pipeline_parses_calibrates_processes_analyzes_and_exports(
     window._analysis_calculate()
     _task_wait(window)
     assert window.session.analysis_result is not None
-    assert all(
-        checkbox.isEnabled()
-        for checkbox in window.export_dialog.exporter_checks.values()
-    )
-    assert all(
-        checkbox.isChecked()
-        for checkbox in window.export_dialog.exporter_checks.values()
-    )
+    for plugin_id, checkbox in window.export_dialog.exporter_checks.items():
+        group_id = window.export_dialog.export_group_id(plugin_id)
+        if group_id in {"overall", "thrust"}:
+            assert checkbox.isEnabled()
+        else:
+            assert not checkbox.isEnabled()
+            assert not checkbox.isChecked()
+    assert not window.export_dialog.exporter_checks[
+        "builtin.exporter.openrocket_eng"
+    ].isChecked()
     header = window.analyze_page.metrics_table.horizontalHeader()
     assert header.sectionResizeMode(0) is QHeaderView.ResizeMode.Stretch
     assert header.sectionResizeMode(1) is QHeaderView.ResizeMode.Stretch
@@ -676,7 +823,7 @@ def test_gui_pipeline_parses_calibrates_processes_analyzes_and_exports(
     window._export_execute()
     _task_wait(window)
     assert {path.name for path in export_directory.iterdir()} == {
-        "processed_thrust_EN.csv",
+        "thrust_data_EN.csv",
         "analysis_data_EN.json",
         "analysis_summary_EN.txt",
         "thrust_curve_EN.png",
@@ -697,7 +844,7 @@ def test_gui_pipeline_parses_calibrates_processes_analyzes_and_exports(
     assert window.session.processor_config == {}
     np.testing.assert_allclose(
         window.session.processed_dataset.channel("thrust_processed").values,
-        window.session.calibrated_dataset.channel("force_calibrated").values,
+        window.session.calibrated_dataset.channel("thrust_raw_calibrated").values,
     )
     window._analysis_calculate()
     _task_wait(window)
@@ -713,6 +860,165 @@ def test_gui_pipeline_parses_calibrates_processes_analyzes_and_exports(
     assert no_compensation_recomputed[-1].metrics == (
         window.session.analysis_result.metrics
     )
+    window.close()
+    app.processEvents()
+
+
+def test_gui_imports_multiple_sources_with_independent_project_time(
+    tmp_path: Path,
+) -> None:
+    app = _application()
+    source_a = tmp_path / "thrust_a.txt"
+    source_b = tmp_path / "thrust_b.txt"
+    source_a.write_text("0,0\n1,5\n2,0\n", encoding="utf-8")
+    source_b.write_text("0,0\n0.5,3\n1.5,0\n", encoding="utf-8")
+    window = _window(
+        TranslationService("en_US"),
+        SettingsService(tmp_path / "settings.ini"),
+        tmp_path,
+    )
+    window.import_page.set_source_entries(
+        [(source_a, 0.0), (source_b, 10.0)]
+    )
+    window.import_page.set_parser_id("builtin.parser.tr_f")
+    window.import_page.set_parser_config(
+        {"delimiter": ",", "time_unit": "s", "invalid_row_policy": "skip"}
+    )
+    window._source_parse()
+    _task_wait(window)
+
+    assert len(window.session.project_data.sources) == 2
+    assert len(window.session.project_data.streams) == 2
+    assert len(window.session.calibrated_streams) == 2
+    assert window.session.project_data.primary_channels.thrust is None
+    second = window.session.project_data.streams["stream_2"].dataset
+    np.testing.assert_allclose(second.project_time, [10.0, 10.5, 11.5])
+    np.testing.assert_allclose(second.time, [0.0, 0.5, 1.5])
+    for dataset in window.session.calibrated_streams.values():
+        assert "thrust_raw_calibrated" in dataset.channels
+        assert dataset.channel("thrust_raw_calibrated").data_unit == "raw"
+    assert window.data_explorer_page.channel_combo.count() == 2
+
+    window.import_page.source_list.setCurrentRow(1)
+    app.processEvents()
+    assert window.session.active_stream_id == "stream_2"
+    window.setup_page.set_calibration_config(
+        "builtin.calibration.linear",
+        {
+            "input_channel_id": "thrust_raw",
+            "output_channel_id": "thrust_raw_calibrated",
+            "quantity": "force",
+            "unit": "N",
+            "parameters": {"K": 2.0, "B": 1.0},
+            "data_quantity": "force",
+            "data_unit": "raw",
+            "display_unit": "raw",
+            "semantic_role": "thrust",
+        },
+    )
+    window._calibration_apply()
+    _task_wait(window)
+    assert window.session.primary_stream_id == "stream_1"
+    assert (
+        window.session.calibrated_dataset.channel("thrust_raw_calibrated").data_unit
+        == "raw"
+    )
+    secondary_calibrated = window.session.calibrated_streams["stream_2"]
+    assert secondary_calibrated.channel("thrust_raw_calibrated").data_unit == "N"
+    np.testing.assert_allclose(
+        secondary_calibrated.channel("thrust_raw_calibrated").values,
+        [1.0, 7.0, 1.0],
+    )
+
+    selected_thrust = ChannelReference("source_2", "stream_2", "thrust_raw")
+    thrust_selector = window.project_page.primary_channels.thrust_combo
+    thrust_selector.setCurrentIndex(
+        thrust_selector.findData(selected_thrust.stable_id)
+    )
+    app.processEvents()
+    assert window.session.project_data.primary_channels.thrust == selected_thrust
+    assert window.session.primary_stream_id == "stream_2"
+
+    document = window._project_document_create()
+    assert len(document.sources) == 2
+    assert len(document.streams) == 2
+    assert len(document.channels) == 2
+    assert document.streams[1].time_offset_s == 10.0
+    secondary_state = document.channels["source_2/stream_2/thrust_raw"]
+    assert secondary_state.calibration is not None
+    assert secondary_state.calibration.id == "builtin.calibration.linear"
+    assert document.primary_channels.thrust == selected_thrust
+    document = ProjectDocument.from_dict(document.to_dict())
+    recomputed = window._project_recompute(document, TaskContext())
+    assert recomputed[2] is not None
+    assert len(window._recomputed_project_data.sources) == 2
+    assert len(window._recomputed_calibrated_streams) == 2
+    np.testing.assert_allclose(
+        window._recomputed_project_data.streams["stream_2"].dataset.project_time,
+        [10.0, 10.5, 11.5],
+    )
+    restored_secondary = window._recomputed_calibrated_streams["stream_2"]
+    assert restored_secondary.channel("thrust_raw_calibrated").data_unit == "N"
+    np.testing.assert_allclose(
+        restored_secondary.channel("thrust_raw_calibrated").values,
+        [1.0, 7.0, 1.0],
+    )
+    window.close()
+    app.processEvents()
+
+
+def test_raw_identity_analysis_keeps_relative_results_but_disables_eng(
+    tmp_path: Path,
+) -> None:
+    app = _application()
+    source = tmp_path / "raw_force.txt"
+    source.write_text("0,0\n1,5\n2,5\n3,0\n", encoding="utf-8")
+    window = _window(
+        TranslationService("en_US"),
+        SettingsService(tmp_path / "settings.ini"),
+        tmp_path,
+    )
+    window.import_page.set_source_path(source)
+    window.import_page.set_parser_id("builtin.parser.tr_f")
+    window.import_page.set_parser_config(
+        {"delimiter": ",", "time_unit": "s", "invalid_row_policy": "skip"}
+    )
+    window._source_parse()
+    _task_wait(window)
+    assert window.session.calibration_id == "builtin.calibration.identity"
+    assert (
+        window.session.calibrated_dataset.channel("thrust_raw_calibrated").data_unit
+        == "raw"
+    )
+
+    window._regions_store(
+        {"pre": None, "active_test": [0.5, 2.5], "post": None}
+    )
+    none_index = window.process_page.processor_combo.findData(None)
+    window.process_page.processor_combo.setCurrentIndex(none_index)
+    window._processing_apply()
+    _task_wait(window)
+    window._analysis_calculate()
+    _task_wait(window)
+
+    result = window.session.analysis_result
+    assert result is not None
+    assert result.metrics["peak_value"] == 5.0
+    assert result.metrics["peak_thrust_n"] is None
+    eng = window.export_dialog.exporter_checks[
+        "builtin.exporter.openrocket_eng"
+    ]
+    assert not eng.isEnabled()
+    assert not eng.isChecked()
+    for plugin_id, checkbox in window.export_dialog.exporter_checks.items():
+        group_id = window.export_dialog.export_group_id(plugin_id)
+        if group_id in {"overall", "thrust"} and plugin_id != (
+            "builtin.exporter.openrocket_eng"
+        ):
+            assert checkbox.isEnabled() and checkbox.isChecked()
+        elif plugin_id != "builtin.exporter.openrocket_eng":
+            assert not checkbox.isEnabled()
+            assert not checkbox.isChecked()
     window.close()
     app.processEvents()
 
@@ -775,7 +1081,782 @@ def test_export_dialog_scrolls_after_ten_file_types(
     visible_rows_height = sum(
         max(checkbox.sizeHint().height(), 22)
         for checkbox in tuple(dialog.exporter_checks.values())[:10]
-    ) + dialog.exporter_list_layout.spacing() * 9
+    )
+    heading_height = sum(
+        max(label.sizeHint().height(), 24)
+        for label in dialog.group_labels.values()
+    )
+    visible_rows_height += heading_height
+    visible_rows_height += dialog.exporter_list_layout.spacing() * (
+        10 + len(dialog.group_labels) - 1
+    )
     assert dialog.exporter_scroll.height() == visible_rows_height
     dialog.close()
+
+
+def test_generic_tabular_mapping_flows_into_project_and_workspaces(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _application()
+    source = tmp_path / "unknown_headers.csv"
+    source.write_text(
+        "T0,CH_A,CH_B\n0.0,0.10,10\n0.1,0.20,20\n0.25,0.30,15\n",
+        encoding="utf-8",
+    )
+    original = source.read_bytes()
+    settings = SettingsService(tmp_path / "settings.ini")
+    translations = TranslationService("en_US")
+    window = _window(translations, settings, tmp_path)
+    window.import_page.set_source_path(source)
+    window.import_page.set_parser_id("builtin.parser.generic_delimited")
+    app.processEvents()
+    _task_wait(window)
+
+    editor = window.import_page.tabular_mapping_editor
+    assert window.import_page.uses_tabular_mapping()
+    assert editor.preview_table.columnCount() == 3
+    mapping = {
+        "delimiter": "auto",
+        "encoding": "auto",
+        "header_row": 1,
+        "data_start_row": 2,
+        "data_end_row": None,
+        "invalid_row_policy": "preserve",
+        "time": {"mode": "column", "column": 0, "unit": "s"},
+        "columns": [
+            {
+                "column": 0,
+                "usage": "time",
+                "unit": "s",
+                "expected_header": "T0",
+            },
+            {
+                "column": 1,
+                "usage": "data",
+                "display_name": "Pressure A",
+                "channel_id": "pressure_a",
+                "quantity": "pressure",
+                "role": "chamber_pressure",
+                "unit": "MPa",
+                "expected_header": "CH_A",
+            },
+            {
+                "column": 2,
+                "usage": "data",
+                "display_name": "Force B",
+                "channel_id": "force_b",
+                "quantity": "force",
+                "role": "thrust",
+                "unit": "N",
+                "expected_header": "CH_B",
+            },
+        ],
+    }
+    editor.set_config(mapping)
+
+    monkeypatch.setattr(
+        QInputDialog,
+        "getText",
+        lambda *_args, **_kwargs: ("Lab Rig", True),
+    )
+    monkeypatch.setattr(
+        QMessageBox,
+        "question",
+        lambda *_args, **_kwargs: QMessageBox.StandardButton.Yes,
+    )
+    editor.preset_save_button.click()
+    user_preset = tmp_path / "presets" / "tabular" / "Lab_Rig.json"
+    assert user_preset.is_file()
+    preset_payload = json.loads(user_preset.read_text(encoding="utf-8"))
+    assert preset_payload["schema"] == "underline-retldc-tabular-preset/1"
+    assert preset_payload["config"]["columns"][2]["channel_id"] == "force_b"
+
+    exported_preset = tmp_path / "exported_lab.json"
+    monkeypatch.setattr(
+        QFileDialog,
+        "getSaveFileName",
+        lambda *_args, **_kwargs: (str(exported_preset), ""),
+    )
+    editor.preset_export_button.click()
+    assert exported_preset.is_file()
+    editor.preset_delete_button.click()
+    assert not user_preset.exists()
+    monkeypatch.setattr(
+        QFileDialog,
+        "getOpenFileName",
+        lambda *_args, **_kwargs: (str(exported_preset), ""),
+    )
+    editor.preset_import_button.click()
+    app.processEvents()
+    _task_wait(window)
+    assert (tmp_path / "presets" / "tabular" / "exported_lab.json").is_file()
+    assert editor.config()["columns"][1]["channel_id"] == "pressure_a"
+
+    window._source_parse()
+    _task_wait(window)
+
+    assert source.read_bytes() == original
+    assert window.session.raw_dataset is not None
+    assert np.allclose(window.session.raw_dataset.time, [0.0, 0.1, 0.25])
+    pressure = window.session.raw_dataset.channel("pressure_a")
+    thrust = window.session.raw_dataset.channel("force_b")
+    assert (pressure.quantity, pressure.semantic_role, pressure.data_unit) == (
+        "pressure",
+        "chamber_pressure",
+        "MPa",
+    )
+    assert (thrust.quantity, thrust.semantic_role, thrust.data_unit) == (
+        "force",
+        "thrust",
+        "N",
+    )
+    assert window.session.project_data.primary_channels.thrust is not None
+    assert (
+        window.session.project_data.primary_channels.chamber_pressure is not None
+    )
+    assert window.chamber_pressure_page.channel_combo.count() == 2
+    assert window.temperature_page.channel_combo.count() == 0
+    assert window.data_explorer_page.channel_combo.count() == 2
+    assert len(window.process_page._curve_items) == 1
+    assert len(window.chamber_pressure_page.analysis_plot._series) == 1
+    assert window.stack.currentWidget() is window.project_page
+
+    document = window._project_document_create(Project_SourceHash(source))
+    project_path = tmp_path / "mapped.retldc.json"
+    Project_Save(document, project_path)
+    loaded = Project_Load(project_path)
+    assert loaded.sources[0].parser is not None
+    saved_mapping = loaded.sources[0].parser.config
+    assert saved_mapping["time"]["column"] == 0
+    assert saved_mapping["columns"][2]["channel_id"] == "force_b"
+    assert loaded.primary_channels.thrust is not None
+    assert loaded.primary_channels.thrust.channel_id == "force_b"
+    assert loaded.primary_channels.chamber_pressure is not None
+    assert loaded.primary_channels.chamber_pressure.channel_id == "pressure_a"
+    window.close()
+
+    reopened = _window(
+        TranslationService("en_US"),
+        SettingsService(tmp_path / "reopened_settings.ini"),
+        tmp_path,
+    )
+    recomputed = reopened._project_recompute(
+        loaded,
+        TaskContext(),
+        raw_source=source,
+    )
+    reopened_dataset = recomputed[2].dataset
+    assert np.allclose(reopened_dataset.time, [0.0, 0.1, 0.25])
+    assert reopened_dataset.channel("force_b").semantic_role == "thrust"
+    source_config = reopened._recomputed_project_data.sources["source_1"].parser_config
+    assert source_config["columns"][1]["channel_id"] == "pressure_a"
+    assert reopened._recomputed_project_data.primary_channels == loaded.primary_channels
+    reopened.close()
+    app.processEvents()
+
+
+def test_workspace_capability_extends_quick_mapping_without_editor_changes() -> None:
+    app = _application()
+    registry = WorkspaceCapabilities_Default()
+    registry.register(
+        WorkspaceChannelCapability(
+            capability_id="mass_flow",
+            workspace_id="mass_flow",
+            display_key="mapping.type.mass_flow",
+            quantity="mass_flow",
+            semantic_role="mass_flow",
+        )
+    )
+    editor = TabularMappingEditor(TranslationService("en_US"), registry)
+    editor.set_parser(
+        "builtin.parser.generic_delimited",
+        "1.0.0",
+        "delimited",
+    )
+    editor.set_preview(
+        TabularPreview(
+            headers=("Time", "Mass Flow"),
+            rows=(("0", "1"), ("1", "2")),
+            row_numbers=(2, 3),
+            column_count=2,
+        ),
+        config={
+            "header_row": 1,
+            "data_start_row": 2,
+            "time": {"mode": "column", "column": 0, "unit": "s"},
+            "columns": [
+                {"column": 0, "usage": "time", "unit": "s"},
+                {
+                    "column": 1,
+                    "usage": "data",
+                    "display_name": "Mass Flow",
+                    "channel_id": "mass_flow",
+                    "quantity": "mass_flow",
+                    "role": "mass_flow",
+                    "unit": "kg/s",
+                },
+            ],
+        },
+    )
+    assert editor.simple_type_ids() == (
+        "time",
+        "thrust",
+        "chamber_pressure",
+        "temperature",
+        "mass_flow",
+        "other",
+    )
+    type_combo = editor.quick_table.cellWidget(1, 2)
+    assert {
+        type_combo.itemData(index) for index in range(type_combo.count())
+    } == set(editor.simple_type_ids())
+    editor.deleteLater()
+    app.processEvents()
+
+
+def test_analysis_workspaces_share_plot_shell_and_temperature_is_multi_series(
+    tmp_path: Path,
+) -> None:
+    app = _application()
+    window = _window(
+        TranslationService("en_US"),
+        SettingsService(tmp_path / "settings.ini"),
+        tmp_path,
+    )
+    pages = (
+        window.process_page,
+        window.chamber_pressure_page,
+        window.temperature_page,
+    )
+    assert all(isinstance(page.analysis_plot, AnalysisPlotWidget) for page in pages)
+    window._theme_select(THEME_DARK)
+    backgrounds = {
+        page.plot_widget.backgroundBrush().color().name() for page in pages
+    }
+    assert backgrounds == {"#0b1220"}
+
+    time = np.linspace(0.0, 4.0, 9)
+    first_reference = ChannelReference("source_1", "stream_1", "tc_1")
+    second_reference = ChannelReference("source_1", "stream_1", "tc_2")
+    dataset = Dataset(
+        time=time,
+        source_id="source_1",
+        stream_id="stream_1",
+        channels={
+            "tc_1_calibrated": Channel(
+                "tc_1_calibrated",
+                "temperature",
+                "K",
+                np.linspace(300.0, 340.0, 9),
+                "calibrated",
+                semantic_role="temperature",
+            ),
+            "tc_2_calibrated": Channel(
+                "tc_2_calibrated",
+                "temperature",
+                "K",
+                np.linspace(310.0, 370.0, 9),
+                "calibrated",
+                semantic_role="temperature",
+            ),
+        },
+    )
+    series = (
+        WorkspaceSeries(
+            first_reference,
+            dataset,
+            "tc_1_calibrated",
+            "fixture.csv · TC1 [K]",
+        ),
+        WorkspaceSeries(
+            second_reference,
+            dataset,
+            "tc_2_calibrated",
+            "fixture.csv · TC2 [K]",
+        ),
+    )
+    window.temperature_page.set_series(
+        series,
+        selected=(first_reference, second_reference),
+    )
+    regions = {
+        "pre": [0.0, 0.5],
+        "burn": [1.0, 3.0],
+        "post": [3.5, 4.0],
+    }
+    for page in pages:
+        page.analysis_plot.set_regions(regions)
+        assert page.pre_region.isVisible()
+        if page is window.process_page:
+            assert page.burn_region.isVisible()
+        else:
+            assert page.active_region.isVisible()
+        assert page.post_region.isVisible()
+    assert len(window.temperature_page.analysis_plot._series) == 2
+    assert len(window.temperature_page.analysis_plot.legend.items) == 2
+    assert window.temperature_page.metrics_table.rowCount() == 8
+
+    auxiliary_reference = ChannelReference("source_1", "stream_1", "aux")
+    auxiliary_dataset = Dataset(
+        time=time,
+        source_id="source_1",
+        stream_id="stream_1",
+        channels={
+            "aux_calibrated": Channel(
+                "aux_calibrated",
+                "custom.aux",
+                "1",
+                np.arange(9),
+                "calibrated",
+                semantic_role="auxiliary",
+            )
+        },
+    )
+    window.data_explorer_page.set_series(
+        (
+            series[0],
+            WorkspaceSeries(
+                auxiliary_reference,
+                auxiliary_dataset,
+                "aux_calibrated",
+                "fixture.csv · Other [1]",
+                auxiliary=True,
+            ),
+        )
+    )
+    assert window.data_explorer_page.channel_combo.count() == 1
+    window.data_explorer_page.show_auxiliary_check.setChecked(True)
+    assert window.data_explorer_page.channel_combo.count() == 2
+    window.close()
+    app.processEvents()
+
+
+def test_quick_import_binds_thrust_pressure_and_routes_workspaces(
+    tmp_path: Path,
+) -> None:
+    app = _application()
+    source = tmp_path / "quick.csv"
+    source.write_text(
+        "Time [s],Chamber Pressure [MPa],Thrust [N],Kn [1]\n"
+        "0.0,0.1,0,100\n"
+        "0.1,0.2,10,110\n"
+        "0.25,0.15,0,105\n",
+        encoding="utf-8",
+    )
+    window = _window(
+        TranslationService("en_US"),
+        SettingsService(tmp_path / "settings.ini"),
+        tmp_path,
+    )
+    window.import_page.set_source_path(source)
+    window.import_page.set_parser_id("builtin.parser.generic_delimited")
+    app.processEvents()
+    _task_wait(window)
+    editor = window.import_page.tabular_mapping_editor
+    if editor.quick_table.rowCount() == 0:
+        window._tabular_preview_refresh(True)
+        _task_wait(window)
+    assert not editor.advanced_container.isVisible()
+    assert tuple(
+        editor.quick_table.cellWidget(row, 2).currentData()
+        for row in range(editor.quick_table.rowCount())
+    ) == ("time", "chamber_pressure", "thrust", "other")
+
+    window._source_parse()
+    _task_wait(window)
+    bindings = window.session.project_data.primary_channels
+    assert bindings.thrust is not None
+    assert bindings.thrust.channel_id == "thrust"
+    assert bindings.chamber_pressure is not None
+    assert bindings.chamber_pressure.channel_id == "chamber_pressure"
+    assert window.session.raw_dataset.channel("kn").semantic_role == "auxiliary"
+    assert len(window.process_page.analysis_plot._series) == 1
+    assert len(window.chamber_pressure_page.analysis_plot._series) == 1
+    assert window.data_explorer_page.channel_combo.count() == 2
+    assert (
+        window.temperature_page.analysis_plot._stack.currentWidget()
+        is window.temperature_page.analysis_plot.empty_widget
+    )
+    assert window.temperature_page.analysis_plot.empty_label.text() == (
+        "This Project has no temperature data."
+    )
+    document = ProjectDocument.from_dict(
+        window._project_document_create(Project_SourceHash(source)).to_dict()
+    )
+    recomputed = window._project_recompute(document, TaskContext())
+    assert recomputed[2].dataset.channel("kn").semantic_role == "auxiliary"
+    window.close()
+    app.processEvents()
+
+
+@pytest.mark.parametrize(
+    ("parser_id", "channel_id", "workspace_name"),
+    (
+        ("builtin.parser.tr_p", "pressure_raw", "chamber_pressure_page"),
+        ("builtin.parser.tr_t", "temperature_raw", "temperature_page"),
+    ),
+)
+def test_tr_pressure_and_temperature_route_directly_to_their_workspaces(
+    tmp_path: Path,
+    parser_id: str,
+    channel_id: str,
+    workspace_name: str,
+) -> None:
+    app = _application()
+    source = tmp_path / f"{channel_id}.txt"
+    source.write_text("0.0,0\n0.1,1\n0.2,0\n", encoding="utf-8")
+    window = _window(
+        TranslationService("en_US"),
+        SettingsService(tmp_path / "settings.ini"),
+        tmp_path,
+    )
+    window.import_page.set_source_path(source)
+    window.import_page.set_parser_id(parser_id)
+    window._source_parse()
+    _task_wait(window)
+    bindings = window.session.project_data.primary_channels
+    if parser_id.endswith("tr_p"):
+        assert bindings.chamber_pressure is not None
+        assert bindings.chamber_pressure.channel_id == channel_id
+    else:
+        assert [item.channel_id for item in bindings.temperature_channels] == [
+            channel_id
+        ]
+    workspace = getattr(window, workspace_name)
+    assert len(workspace.analysis_plot._series) == 1
+    plotted_channel = workspace._selected_series()[0].dataset.channel(
+        f"{channel_id}_calibrated"
+    )
+    assert plotted_channel.data_unit == "raw"
+    window.close()
+    app.processEvents()
+
+
+def test_shared_segmentation_uses_positive_pressure_sign_and_syncs_both_pages(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    app = _application()
+    window, _dataset = _window_with_bound_measurements(tmp_path)
+    captured: dict[str, int] = {}
+
+    def fake_detect(time, values, *, sign=1, **_kwargs):
+        captured["sign"] = int(sign)
+        return [BurnCandidate(3.0, 7.0, -2.0, 4.0, 2.0, 20.0, 41)]
+
+    monkeypatch.setattr(
+        "underline_retldc.gui.main_window.Activity_DetectSegments",
+        fake_detect,
+    )
+    monkeypatch.setattr(window.process_page, "detection_sign", lambda: -1)
+    window._burn_detect()
+    _task_wait(window)
+
+    assert captured["sign"] == 1
+    assert window.session.segmentation_reference_priority == "chamber_pressure"
+    assert window.session.segmentation_reference is not None
+    assert window.session.segmentation_reference.channel_id == "pressure"
+    assert window.session.regions["active_test"] == [3.0, 7.0]
+    assert window.process_page.regions() == window.chamber_pressure_page._regions
+
+    thrust_start = window.process_page.region_edits["active_test"][0]
+    thrust_start.setValue(3.2)
+    app.processEvents()
+    assert window.session.regions["active_test"][0] == 3.2
+    assert (
+        window.chamber_pressure_page.interval_editor.region_edits[
+            "active_test"
+        ][0].value()
+        == 3.2
+    )
+
+    pressure_end = window.chamber_pressure_page.interval_editor.region_edits[
+        "active_test"
+    ][1]
+    pressure_end.setValue(6.8)
+    app.processEvents()
+    assert window.session.regions["active_test"][1] == 6.8
+    assert window.process_page.region_edits["active_test"][1].value() == 6.8
+    assert window.session.segmentation_manually_modified
+    window.close()
+    app.processEvents()
+
+
+def test_unit_mode_axes_results_and_analysis_layout_are_consistent(
+    tmp_path: Path,
+) -> None:
+    app = _application()
+    window, _dataset = _window_with_bound_measurements(tmp_path)
+    window.show()
+    window.resize(980, 640)
+    app.processEvents()
+
+    shell = window.thrust_analysis_page.shell
+    assert shell.controls_scroll.verticalScrollBarPolicy() is (
+        Qt.ScrollBarPolicy.ScrollBarAsNeeded
+    )
+    assert shell.controls_scroll.horizontalScrollBarPolicy() is (
+        Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+    )
+    assert shell.controls_scroll.maximumWidth() == 420
+    assert shell.controls_scroll.minimumWidth() == 300
+    assert shell.results.minimumWidth() == 230
+    assert shell.results.maximumWidth() == 350
+    assert shell.plot.width() >= 180
+    compact_plot_width = shell.plot.width()
+    assert window.process_page.candidates_group is window.process_page.regions_group
+    assert window.chamber_pressure_page.interval_editor is not None
+    assert window.chamber_pressure_page.channel_group.title() == "Primary Channels"
+    assert window.temperature_page.channel_group.title() == "Primary Channels"
+    assert window.data_explorer_page.channel_group.title() == "Data Channel"
+
+    explorer = window.data_explorer_page
+    explorer.show_auxiliary_check.setChecked(True)
+    app.processEvents()
+    web_index = explorer.channel_combo.findData("source/stream/web")
+    assert web_index >= 0
+    explorer.channel_combo.setCurrentIndex(web_index)
+    app.processEvents()
+    assert explorer.analysis_plot.left_axis.labelUnits == "mm"
+    assert "kmm" not in explorer.analysis_plot.left_axis.labelText
+    assert not explorer.analysis_plot.left_axis.autoSIPrefix
+
+    window.resize(1280, 820)
+    app.processEvents()
+    assert shell.plot.width() >= compact_plot_width
+
+    window._regions_store(
+        {"pre": None, "active_test": [3.0, 7.0], "post": None}
+    )
+    window._unit_display_mode_select(UNIT_DISPLAY_SI_SCIENTIFIC)
+    app.processEvents()
+    pressure_plot = window.chamber_pressure_page.analysis_plot
+    temperature_plot = window.temperature_page.analysis_plot
+    assert not pressure_plot.left_axis.autoSIPrefix
+    assert not pressure_plot.bottom_axis.autoSIPrefix
+    assert pressure_plot.left_axis.labelUnits == "Pa"
+    assert temperature_plot.left_axis.labelUnits == "K"
+    assert pressure_plot.left_axis.tickStrings([1_000_000.0], 1.0, 1.0) == [
+        "1.000e+06"
+    ]
+    pressure_value = window.chamber_pressure_page.metrics_table.item(0, 1).text()
+    assert "e" in pressure_value.lower()
+    window.close()
+    app.processEvents()
+
+
+def test_export_capabilities_group_sorting_and_one_time_defaults(
+    tmp_path: Path,
+) -> None:
+    app = _application()
+    window, _dataset = _window_with_bound_measurements(tmp_path)
+    dialog = window.export_dialog
+    other = ExportOption(
+        "example.exporter.other",
+        "other.txt",
+        "",
+        (),
+        display_name="Other Export",
+    )
+    dialog._export_options_set((*dialog._options, other))
+    assert dialog._options[-1].plugin_id == other.plugin_id
+    group_order = [option.group_id for option in dialog._options]
+    assert group_order == sorted(
+        group_order,
+        key={"overall": 0, "thrust": 10, "chamber_pressure": 20,
+             "temperature": 30, "other": 1000}.get,
+    )
+
+    dialog.reset_default_selection()
+    capabilities = (
+        "project_summary_ready",
+        "thrust_ready",
+        "segmentation_ready",
+        "physical_force",
+        "chamber_pressure_ready",
+    )
+    dialog.set_completed_capability_ids(capabilities)
+    for option in dialog._options:
+        checkbox = dialog.exporter_checks[option.plugin_id]
+        if option.group_id == "temperature":
+            assert not checkbox.isEnabled()
+            assert not checkbox.isChecked()
+        elif option.plugin_id == "builtin.exporter.openrocket_eng":
+            assert checkbox.isEnabled()
+            assert not checkbox.isChecked()
+        else:
+            assert checkbox.isEnabled()
+            assert checkbox.isChecked()
+
+    thrust_csv = dialog.exporter_checks["builtin.exporter.csv"]
+    thrust_csv.setChecked(False)
+    dialog.set_completed_capability_ids(capabilities)
+    assert not thrust_csv.isChecked()
+
+    dialog.set_completed_capability_ids((*capabilities, "temperature_ready"))
+    for option in dialog._options:
+        if option.group_id == "temperature":
+            checkbox = dialog.exporter_checks[option.plugin_id]
+            assert checkbox.isEnabled()
+            assert checkbox.isChecked()
+    window.close()
+    app.processEvents()
+
+
+def test_parser_ambiguity_has_exclusive_visible_radio_selection(
+    tmp_path: Path,
+) -> None:
+    app = _application()
+    window = _window(
+        TranslationService("en_US"),
+        SettingsService(tmp_path / "settings.ini"),
+        tmp_path,
+    )
+    source = tmp_path / "ambiguous.txt"
+    source.write_text("0,0\n0.1,1\n0.2,0\n", encoding="utf-8")
+    window.import_page.set_source_path(source)
+    window.import_page.set_parser_id(None)
+    window._parser_detect()
+    _task_wait(window)
+    page = window.import_page
+    assert page.ambiguity_button_group.exclusive()
+    assert len(page._ambiguity_buttons) == 3
+    assert set(page.ambiguity_button_group.buttons()) == set(page._ambiguity_buttons)
+    assert all("Confidence:" in button.text() for button in page._ambiguity_buttons)
+    assert all("builtin.parser" not in button.text() for button in page._ambiguity_buttons)
+    assert [button.text().split(" — ", 1)[0] for button in page._ambiguity_buttons] == [
+        "TR_F",
+        "TR_P",
+        "TR_T",
+    ]
+    assert all(button.toolTip() for button in page._ambiguity_buttons)
+    page._ambiguity_buttons[1].click()
+    app.processEvents()
+    assert sum(button.isChecked() for button in page._ambiguity_buttons) == 1
+    assert page.selected_parser_id() is not None
+    assert page.parse_button.isEnabled()
+    assert page.parser_combo.currentText() in page.ambiguity_selected.text()
+    assert app.style().pixelMetric(
+        QStyle.PixelMetric.PM_ExclusiveIndicatorWidth
+    ) == 18
+    recommended_id = page.recommendation_table.item(0, 0).data(
+        Qt.ItemDataRole.UserRole
+    )
+    page._recommendation_activate(0, 0)
+    assert page.selected_parser_id() == recommended_id
+    assert next(
+        button
+        for button in page._ambiguity_buttons
+        if button.property("parserPluginId") == recommended_id
+    ).isChecked()
+    window.close()
+    app.processEvents()
+
+
+def test_source_removal_invalidates_derived_state_and_last_source_clears_ui(
+    tmp_path: Path,
+) -> None:
+    app = _application()
+    source_a = tmp_path / "source_a.txt"
+    source_b = tmp_path / "source_b.txt"
+    source_a.write_text("0,0\n1,5\n2,0\n", encoding="utf-8")
+    source_b.write_text("0,0\n1,4\n2,0\n", encoding="utf-8")
+    window = _window(
+        TranslationService("en_US"),
+        SettingsService(tmp_path / "settings.ini"),
+        tmp_path,
+    )
+    window.import_page.set_source_entries([(source_a, 0.0), (source_b, 0.0)])
+    window.import_page.set_parser_id("builtin.parser.tr_f")
+    window.import_page.set_parser_config(
+        {"delimiter": ",", "time_unit": "s", "invalid_row_policy": "skip"}
+    )
+    window._source_parse()
+    _task_wait(window)
+    reference = ChannelReference("source_1", "stream_1", "thrust_raw")
+    bindings = window.session.project_data.primary_channels
+    window._primary_bindings_changed(
+        PrimaryChannelBindings(
+            thrust=reference,
+            chamber_pressure=bindings.chamber_pressure,
+            temperature_channels=bindings.temperature_channels,
+        )
+    )
+    window._regions_store(
+        {"pre": None, "active_test": [0.5, 1.5], "post": None}
+    )
+    dataset = window.session.calibrated_streams["stream_1"]
+    window.session.processing_result = ProcessingResult(dataset, (), {})
+    window.session.analysis_result = AnalysisResult({"peak_value": 5.0}, (), {})
+    window.session.curve_confirmed = True
+    window.session.export_settings = {"selected_exporter_ids": ["x"]}
+    window.session.candidates = [
+        BurnCandidate(0.5, 1.5, 5.0, 1.0, 5.0, 5.0, 2)
+    ]
+
+    window.import_page.source_list.setCurrentRow(0)
+    window.import_page.remove_source_button.click()
+    app.processEvents()
+    assert set(window.session.project_data.sources) == {"source_2"}
+    assert set(window.session.project_data.streams) == {"stream_2"}
+    assert set(window.session.calibrated_streams) == {"stream_2"}
+    assert window.session.project_data.primary_channels.thrust is None
+    assert window.session.processing_result is None
+    assert window.session.analysis_result is None
+    assert not window.session.regions
+    assert not window.session.candidates
+    assert not window.session.curve_confirmed
+    assert not window.session.export_settings
+    assert window.session.active_stream_id == "stream_2"
+    assert window.session.source_path == source_b.resolve()
+    assert window.session.quality_report is not None
+    assert window.session.quality_report.sample_count == 3
+    assert window.import_page.summary_values["sample_count"].text() == "3"
+
+    window.import_page.source_list.setCurrentRow(0)
+    window.import_page.remove_source_button.click()
+    app.processEvents()
+    assert not window.session.project_data.sources
+    assert not window.session.project_data.streams
+    assert window.session.quality_report is None
+    assert window.import_page.source_edit.text() == ""
+    assert window.setup_page.channel_combo.count() == 0
+    assert not window.process_page.analysis_plot._series
+    assert not window.chamber_pressure_page.analysis_plot._series
+    assert not window.temperature_page.analysis_plot._series
+    assert all(
+        not checkbox.isEnabled()
+        for checkbox in window.export_dialog.exporter_checks.values()
+    )
+    window.close()
+    app.processEvents()
+
+
+def test_removing_pending_source_preserves_parsed_project_data(
+    tmp_path: Path,
+) -> None:
+    app = _application()
+    parsed = tmp_path / "parsed.txt"
+    pending = tmp_path / "pending.txt"
+    parsed.write_text("0,0\n1,2\n2,0\n", encoding="utf-8")
+    pending.write_text("0,0\n1,3\n2,0\n", encoding="utf-8")
+    window = _window(
+        TranslationService("en_US"),
+        SettingsService(tmp_path / "settings.ini"),
+        tmp_path,
+    )
+    window.import_page.set_source_path(parsed)
+    window.import_page.set_parser_id("builtin.parser.tr_f")
+    window._source_parse()
+    _task_wait(window)
+    original_project_data = window.session.project_data
+    original_raw = window.session.raw_dataset
+    window.import_page.add_source_paths([pending])
+    window.import_page.remove_source_button.click()
+    app.processEvents()
+    assert window.session.project_data is original_project_data
+    assert window.session.raw_dataset is original_raw
+    assert window.import_page.source_paths() == (parsed,)
+    window.close()
     app.processEvents()

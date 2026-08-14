@@ -18,8 +18,11 @@ class CalibrationModelPlugin(ABC):
     @abstractmethod
     def parameter_schema(self) -> dict[str, Any]: ...
 
+    def requirements(self) -> Mapping[str, Any]:
+        """Optional quantity/unit contract; absent constraints mean any input is accepted."""
+        return {}
+
     @abstractmethod
     def evaluate(
         self, raw: NDArray[np.float64], parameters: Mapping[str, Any]
     ) -> NDArray[np.float64]: ...
-
