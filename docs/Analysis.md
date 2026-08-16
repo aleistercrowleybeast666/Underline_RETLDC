@@ -8,17 +8,21 @@ ends no later than ignition `ti`, `ti < tb`, and POST begins no earlier than `tb
 Pressure, Temperature, Data Explorer, analysis, and export share these markers without resampling
 individual Streams.
 
-Auto reference priority is the explicitly bound Primary Chamber Pressure Channel, then the
-explicitly bound Primary Thrust Channel. It never promotes an arbitrary pressure Channel.
-Validation
-checks finite time, sufficient samples, and signal variation. Activity detection uses relative
+Each editable workspace has an explicit detection source. The Thrust button uses only the bound
+Primary Thrust Channel; the Chamber Pressure button uses only the bound Primary Chamber Pressure
+Channel. Neither silently switches to the other measurement family. The generic Core selector
+retains chamber-pressure-then-thrust priority for legacy/programmatic callers. Validation checks
+finite time, sufficient samples, and signal variation. Activity detection uses relative
 baseline/noise/amplitude and duration, so Pa, MPa, N, and raw signals can all provide segmentation;
 it never treats Identity Calibration as evidence of physical units. Pressure detection always uses
-positive activity polarity; thrust detection alone uses the resolved thrust installation sign. It
-returns multiple ranked regions with clipped-boundary flags and remains advisory.
+positive activity polarity. Thrust detection uses the Project's polarity-normalized thrust working
+Channel and then calls the detector with positive activity polarity. It returns multiple ranked
+regions with clipped-boundary flags and remains advisory.
 
-Before detection, the Test Interval control displays `Not detected`. After detection it selects the
-highest-ranked recommendation and synchronizes available regions. PRE/ACTIVE_TEST/POST can be
+Before detection, the Test Interval control displays `Not detected`. The Thrust action explicitly
+identifies thrust data and the Chamber Pressure action identifies chamber-pressure data. After
+detection it selects the highest-ranked recommendation and synchronizes available regions.
+PRE/ACTIVE_TEST/POST can be
 dragged on either the Thrust or Chamber Pressure plot or edited numerically. Both workspaces write
 the same Project segmentation and update each other immediately; Temperature reads the same state.
 Invalid or overlapping edits are rejected without changing the active selection. `Fit Interval`
@@ -39,19 +43,43 @@ Quantity and Unit. Processing takes that resolved output rather than assuming a 
 name such as `force_calibrated`. The same rule applies when the user changes the primary thrust
 Channel or reopens a multi-Source Project.
 
-Thrust, Chamber Pressure, and Temperature share plot controls, PRE/ACTIVE_TEST/POST markers,
-legend, Fit View, theme behavior, empty state, and a non-shrinking results panel. The pressure
-workspace reports value at test start plus active-test mean, maximum, time to maximum, and minimum.
-The temperature workspace can display multiple selected primary Channels; for each it reports the
-test-start value, active-test maximum, full-record maximum, and full-record time to maximum. Its
-Fit View deliberately spans the full record so pre-test and post-test thermal behavior remains
-visible.
+Thrust, Chamber Pressure, and Temperature share PRE/ACTIVE_TEST/POST markers, plot behavior,
+legend, theme handling, empty state, and a non-shrinking results panel. Chamber Pressure and
+Temperature do not duplicate a separate View Controls group. Each instead has Curve Display plus
+Reset Chart; pressure exposes one `Chamber Pressure` visibility checkbox and temperature mirrors
+the selected imported temperature Channels with one checkbox per curve. The pressure workspace
+reports value at test start plus active-test mean, maximum, time to maximum, and minimum. The
+temperature workspace reports the test-start value, active-test maximum, full-record maximum, and
+full-record time to maximum for each selected Channel. These two result tables remain empty until
+the user presses their localized Calculate Analysis Results button. A binding or segmentation
+change invalidates the saved completion state and requires recalculation. Reset Chart restores the
+complete data-driven automatic X/Y range after zoom or pan and preserves PRE/ACTIVE_TEST/POST
+because those markers are shared Project state, not disposable viewport annotations.
+
+The chamber-pressure PNG export is stricter than the interactive full-record view: it requires a
+valid ACTIVE_TEST and clips both plotted samples and the X-axis to that interval. PRE and POST remain
+available in the Project and interactive workspace but are not rendered into the formal pressure
+curve image.
 
 Plot axes disable pyqtgraph automatic SI prefixes. In `engineering` Unit Display Mode, the GUI
 uses resolved engineering Display Units such as N, MPa, °C, and mm. In `si_scientific` mode it
 converts display values to canonical SI such as N, Pa, K, and m and formats ticks and result values
 in scientific notation. These modes never change raw arrays, Data Units, Calibration, or formal
 export units.
+
+## Thrust polarity
+
+Project `thrust_polarity` is `+1` by factory default or `-1` when the sensor installation is
+reversed. It is a required Thrust Workflow setting, independent of optional correction:
+
+```text
+F_oriented(t) = thrust_polarity × F_calibrated(t)
+```
+
+Core creates a fresh read-only `thrust_oriented` Channel; parsed raw and calibrated Channels are
+never overwritten. The workspace's `Uncorrected` curve is calibrated and polarity-normalized but
+does not yet contain optional baseline/weight correction. With no correction Processor,
+`thrust_processed` is a pass-through copy of `thrust_oriented`.
 
 ## Motor weight-change compensation
 
@@ -73,8 +101,13 @@ Fit PRE and POST independently:
 Bpre(t)  = a1 t + b1;  B0 = Bpre(ti)
 Bpost(t) = a2 t + b2;  B1 = Bpost(tb)
 Bburn(t) = B0 + (B1 - B0) × (t - ti) / (tb - ti)
-Fcorrected(t) = sign × (Fmeasured(t) - B(t)), sign ∈ {+1, -1}
+Fcorrected(t) = Foriented(t) - Boriented(t)
 ```
+
+The Processor receives `thrust_oriented`, so it fits both endpoint baselines in the same
+orientation and owns no sign parameter. This is mathematically equivalent to the former
+`sign × (measured - baseline)` formulation while keeping polarity available when correction is
+disabled.
 
 If PRE or POST is absent or cannot provide a measured fit, that endpoint baseline is exactly zero
 and its source is `assumed_zero`. With both absent the complete baseline is zero; processing
@@ -98,7 +131,7 @@ this estimate; non-vertical stands and ablation can make direct mass interpretat
 
 ## Thrust metrics
 
-Metrics use the user-confirmed final processed thrust over `[ti, tb]` and actual Project
+Metrics use the analyzed final processed thrust over `[ti, tb]` and actual Project
 timestamps:
 
 ```text
@@ -134,3 +167,7 @@ calibration and processing configuration, motor metadata, test limits, metrics, 
 the complete zero-origin final time/thrust table. CSV/TXT/JSON display labels and all PNG text follow
 the selected Chinese or English output locale. Missing values are written with the locale's
 unavailable marker.
+
+OpenRocket ENG becomes selectable immediately after successful thrust processing/analysis when
+its physical-force, segmentation, and motor-metadata requirements are satisfied. There is no
+separate curve-confirmation checkbox or confirmation field in current Project output.

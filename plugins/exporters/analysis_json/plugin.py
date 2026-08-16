@@ -81,8 +81,12 @@ class AnalysisJsonExporter(ExporterPlugin):
         if output_locale not in {"zh_CN", "en_US"}:
             raise ValueError("Analysis JSON output_locale must be 'zh_CN' or 'en_US'")
         display = self._display_labels(output_locale)
+        thrust_polarity = int(config.get("thrust_polarity", 1))
+        if thrust_polarity not in {-1, 1}:
+            raise ValueError("Analysis JSON thrust_polarity must be +1 or -1")
         payload = {
             "schema": "underline-retldc-analysis/1",
+            "thrust_polarity": thrust_polarity,
             "output": {
                 "locale": output_locale,
                 "language": "简体中文" if output_locale == "zh_CN" else "English",

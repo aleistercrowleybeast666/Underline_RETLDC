@@ -62,6 +62,7 @@ def test_csv_and_analysis_json_export(tmp_path: Path, export_plugins) -> None:
         dataset,
         analysis,
         {
+            "thrust_polarity": -1,
             "processing_metadata": {
                 "baseline_start": 0.0,
                 "baseline_pre_source": "assumed_zero",
@@ -73,10 +74,11 @@ def test_csv_and_analysis_json_export(tmp_path: Path, export_plugins) -> None:
     assert '"underline-retldc-analysis/1"' in json_path.read_text(encoding="utf-8")
     payload = json.loads(json_path.read_text(encoding="utf-8"))
     assert payload["processing_metadata"]["baseline_pre_source"] == "assumed_zero"
+    assert payload["thrust_polarity"] == -1
     assert payload["dataset"]["channels"]["thrust_processed"]["data_unit"] == "N"
 
 
-def test_eng_requires_confirmation_and_writes_shifted_curve(
+def test_eng_writes_analyzed_shifted_curve_without_confirmation(
     tmp_path: Path, export_plugins
 ) -> None:
     dataset = _dataset()
@@ -92,11 +94,6 @@ def test_eng_requires_confirmation_and_writes_shifted_curve(
         "total_motor_mass_kg": 0.10,
         "manufacturer": "Underline",
     }
-    with pytest.raises(ValueError, match="Confirm"):
-        export_plugins["eng"].export(
-            tmp_path / "motor.eng", dataset, None, config, TaskContext()
-        )
-    config["curve_confirmed"] = True
     destination = tmp_path / "motor.eng"
     result = export_plugins["eng"].export(
         destination, dataset, None, config, TaskContext()
@@ -182,6 +179,7 @@ def test_text_summary_contains_provenance_metrics_and_final_table(
         "burnout": 11.5,
         "project_name": "试车_001.retldc.json",
         "source_hash": "abc123",
+        "thrust_polarity": -1,
         "motor_metadata": {
             "propellant_mass_kg": 0.05,
             "total_motor_mass_kg": 0.10,
@@ -200,7 +198,7 @@ def test_text_summary_contains_provenance_metrics_and_final_table(
             "processor": {
                 "id": "builtin.processor.vertical_linear_baseline",
                 "version": "1.0.0",
-                "config": {"enabled": True, "sign": 1},
+                "config": {"enabled": True},
             },
             "analyzer": {
                 "id": "builtin.analyzer.thrust",
@@ -230,6 +228,8 @@ def test_text_summary_contains_provenance_metrics_and_final_table(
         "builtin.parser.tr_f",
         "builtin.calibration.linear",
         "builtin.processor.vertical_linear_baseline",
+        "Thrust Polarity: Reversed (-1)",
+        "Thrust Correction: Motor Weight-Change Compensation",
         "PRE Baseline Source: assumed_zero",
         "POST Baseline Source: assumed_zero",
         "Time(s)\tThrust(N)",
@@ -394,6 +394,7 @@ def test_pressure_and_temperature_exports_use_channel_semantics_and_skip_absent(
     pressure_png = tmp_path / "chamber_pressure_curve_EN.png"
     temperature_csv = tmp_path / "temperature_data_EN.csv"
     temperature_png = tmp_path / "temperature_curve_EN.png"
+    results = {}
     for key, destination in (
         ("pressure_csv", pressure_csv),
         ("pressure_png", pressure_png),
@@ -403,8 +404,11 @@ def test_pressure_and_temperature_exports_use_channel_semantics_and_skip_absent(
         result = export_plugins[key].export(
             destination, dataset, None, config, TaskContext()
         )
+        results[key] = result
         assert result.metadata["write_result"] == "written"
         assert destination.is_file()
+    assert results["pressure_png"].metadata["active_interval"] == [0.0, 1.0]
+    assert results["pressure_png"].metadata["cropped_to_active_test"] is True
     assert "Pc [MPa]" in pressure_csv.read_text(encoding="utf-8")
     assert "Wall temperature [K]" in temperature_csv.read_text(encoding="utf-8")
     assert pressure_png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")

@@ -34,7 +34,7 @@ from underline_retldc.app.settings import (
     SettingsService,
     Theme_Normalize,
 )
-from underline_retldc.app.version import PRODUCT_NAME, __version__
+from underline_retldc.app.version import NAME, PRODUCT_NAME, __version__
 from underline_retldc.core.calibration import (
     Calibration_Load,
     Calibration_Save,
@@ -48,10 +48,13 @@ from underline_retldc.core.parser_selection import (
     ParserSelectionResult,
 )
 from underline_retldc.core.pipeline import (
+    THRUST_ORIENTED_CHANNEL_ID,
     Calibration_Apply,
     Calibration_ApplyIdentityDefaults,
     Calibration_OutputChannelId,
     Processing_Passthrough,
+    ThrustPolarity_Apply,
+    ThrustPolarity_Normalize,
 )
 from underline_retldc.core.primary_channels import (
     PrimaryChannels_AutoBind,
@@ -85,6 +88,7 @@ from underline_retldc.core.registry import PluginLoadResult, PluginRegistry
 from underline_retldc.core.segmentation import (
     Segmentation_RegionsAroundCandidate,
     Segmentation_SelectReference,
+    Segmentation_SelectReferenceForRole,
 )
 from underline_retldc.core.tabular import (
     Tabular_MappingSuggest,
@@ -128,7 +132,9 @@ from underline_retldc.plugin_api.processor import (
 )
 from underline_retldc.plugins.installer import (
     Plugin_UserDirectory,
-    PluginInstaller_InstallDirectory,
+    PluginAlreadyExistsError,
+    PluginInstaller_Install,
+    PluginInstallResult,
 )
 from underline_retldc.plugins.loader import PluginDiscoveryRoot, PluginLoader
 
@@ -147,6 +153,7 @@ class MainWindow(QMainWindow):
         settings: SettingsService,
         *,
         project_root: Path | None = None,
+        application_plugin_directory: Path | None = None,
         bundled_plugin_directory: Path | None = None,
         user_plugin_directory: Path | None = None,
         initial_theme: str | None = None,
@@ -159,9 +166,21 @@ class MainWindow(QMainWindow):
         self.translations = translations
         self.settings = settings
         self.project_root = project_root or Path(__file__).resolve().parents[3]
-        self.development_plugin_directory = (
-            Path(bundled_plugin_directory)
-            if bundled_plugin_directory is not None
+        if (
+            application_plugin_directory is not None
+            and bundled_plugin_directory is not None
+        ):
+            raise ValueError(
+                "Specify application_plugin_directory or bundled_plugin_directory, not both"
+            )
+        configured_application_root = (
+            application_plugin_directory
+            if application_plugin_directory is not None
+            else bundled_plugin_directory
+        )
+        self.application_plugin_directory = (
+            Path(configured_application_root)
+            if configured_application_root is not None
             else self.project_root / "plugins"
         )
         self.user_plugin_directory = (
@@ -254,31 +273,66 @@ class MainWindow(QMainWindow):
         self.language_label = QLabel()
         self.language_label.setObjectName("headerLanguageLabel")
         self.language_combo = StandardComboBox()
+        self.language_combo.setObjectName("headerLanguageCombo")
+        self.language_combo.set_header_variant()
+        self.language_combo.setMinimumContentsLength(6)
+        self.language_combo.setMinimumWidth(90)
         self.language_combo.addItem("简体中文", "zh_CN")
         self.language_combo.addItem("English", "en_US")
         self.language_combo.currentIndexChanged.connect(
             lambda _index: self._locale_select(str(self.language_combo.currentData()))
         )
-        self.theme_button = QPushButton()
-        self.theme_button.setObjectName("themeToggleButton")
-        self.theme_button.clicked.connect(self._theme_toggle)
+        self.theme_label = QLabel()
+        self.theme_label.setObjectName("headerThemeLabel")
+        self.theme_combo = StandardComboBox()
+        self.theme_combo.setObjectName("headerThemeCombo")
+        self.theme_combo.set_header_variant()
+        self.theme_combo.setMinimumContentsLength(5)
+        self.theme_combo.setMinimumWidth(78)
+        self.theme_combo.addItem("", THEME_LIGHT)
+        self.theme_combo.addItem("", THEME_DARK)
+        self.theme_combo.currentIndexChanged.connect(
+            lambda _index: self._theme_select(str(self.theme_combo.currentData()))
+        )
         self.header_widget = QWidget()
         self.header_widget.setObjectName("headerBar")
         header = QHBoxLayout(self.header_widget)
-        header.setContentsMargins(12, 5, 12, 5)
-        header.addWidget(self.header_title, 1)
-        header.addWidget(self.version_label)
-        header.addWidget(self.credit_separator)
-        header.addWidget(self.credit_label)
-        header.addSpacing(8)
-        header.addWidget(self.language_label)
-        header.addWidget(self.language_combo)
-        header.addWidget(self.theme_button)
+        header.setContentsMargins(6, 4, 6, 4)
+        header.setSpacing(3)
+        header.addWidget(
+            self.header_title, alignment=Qt.AlignmentFlag.AlignVCenter
+        )
+        header.addWidget(
+            self.version_label, alignment=Qt.AlignmentFlag.AlignVCenter
+        )
+        header.addWidget(
+            self.credit_separator, alignment=Qt.AlignmentFlag.AlignVCenter
+        )
+        header.addWidget(
+            self.credit_label, alignment=Qt.AlignmentFlag.AlignVCenter
+        )
+        header.addStretch(1)
+        header.addWidget(
+            self.language_label, alignment=Qt.AlignmentFlag.AlignVCenter
+        )
+        header.addWidget(
+            self.language_combo, alignment=Qt.AlignmentFlag.AlignVCenter
+        )
+        header.addWidget(
+            self.theme_label, alignment=Qt.AlignmentFlag.AlignVCenter
+        )
+        header.addWidget(
+            self.theme_combo, alignment=Qt.AlignmentFlag.AlignVCenter
+        )
 
         content = QHBoxLayout()
+        content.setContentsMargins(0, 0, 0, 0)
+        content.setSpacing(0)
         content.addWidget(self.navigation)
         content.addWidget(self.stack, 1)
         central_layout = QVBoxLayout()
+        central_layout.setContentsMargins(0, 0, 0, 0)
+        central_layout.setSpacing(0)
         central_layout.addWidget(self.header_widget)
         central_layout.addLayout(content, 1)
         central = QWidget()
@@ -302,6 +356,8 @@ class MainWindow(QMainWindow):
         self.menuBar().setObjectName("mainMenuBar")
         Theme_DarkBarApply(self.menuBar())
         self.project_menu = self.menuBar().addMenu("")
+        self.export_action = QAction(self)
+        self.export_action.triggered.connect(self._export_dialog_show)
         self.new_project_action = QAction(self)
         self.new_project_action.triggered.connect(self._project_new)
         self.open_raw_action = QAction(self)
@@ -309,21 +365,20 @@ class MainWindow(QMainWindow):
         self.open_project_action = QAction(self)
         self.open_project_action.triggered.connect(self._project_open_dialog)
         self.save_project_action = QAction(self)
-        self.save_project_action.triggered.connect(self._project_save_dialog)
+        self.save_project_action.triggered.connect(self._project_save)
+        self.save_project_as_action = QAction(self)
+        self.save_project_as_action.triggered.connect(self._project_save_dialog)
         self.exit_action = QAction(self)
         self.exit_action.triggered.connect(self.close)
-        self.project_menu.addAction(self.new_project_action)
         self.project_menu.addAction(self.open_raw_action)
-        self.project_menu.addSeparator()
-        self.project_menu.addAction(self.open_project_action)
+        self.project_menu.addAction(self.export_action)
         self.project_menu.addAction(self.save_project_action)
+        self.project_menu.addAction(self.save_project_as_action)
+        self.project_menu.addAction(self.open_project_action)
         self.project_menu.addSeparator()
+        self.project_menu.addAction(self.new_project_action)
         self.project_menu.addAction(self.exit_action)
 
-        self.export_action = QAction(self)
-        self.export_action.triggered.connect(self._export_dialog_show)
-        self.export_menu = self.menuBar().addMenu("")
-        self.export_menu.addAction(self.export_action)
         self.tools_menu = self.menuBar().addMenu("")
         self.plugins_action = QAction(self)
         self.plugins_action.triggered.connect(self.plugins_dialog.show)
@@ -336,9 +391,9 @@ class MainWindow(QMainWindow):
         Theme_DarkBarApply(self.toolbar, self._theme)
         self.toolbar.setMovable(False)
         self.toolbar.addAction(self.open_raw_action)
-        self.toolbar.addAction(self.save_project_action)
-        self.toolbar.addSeparator()
         self.toolbar.addAction(self.export_action)
+        self.toolbar.addAction(self.save_project_action)
+        self.toolbar.addAction(self.open_project_action)
         self.addToolBar(self.toolbar)
 
         self._project_title: str | None = None
@@ -360,6 +415,7 @@ class MainWindow(QMainWindow):
         self._segmentation_views_sync()
         self.translations.locale_changed.connect(self._retranslate)
         self._locale_widgets_sync(self.translations.locale)
+        self._theme_widgets_sync(self._theme)
         self._retranslate()
         self.navigation.setCurrentRow(0)
         self.resize(1280, 820)
@@ -386,7 +442,9 @@ class MainWindow(QMainWindow):
         self.project_page.primary_channels.bindings_changed.connect(
             self._primary_bindings_changed
         )
-        self.process_page.detect_requested.connect(self._burn_detect)
+        self.process_page.detect_requested.connect(
+            lambda: self._burn_detect("thrust")
+        )
         self.process_page.apply_requested.connect(self._processing_apply)
         self.process_page.plugins_requested.connect(self._plugins_dialog_show)
         self.process_page.regions_changed.connect(self._regions_store)
@@ -396,19 +454,30 @@ class MainWindow(QMainWindow):
         self.process_page.primary_thrust_changed.connect(
             self._primary_thrust_quick_changed
         )
+        self.process_page.thrust_polarity_changed.connect(
+            self._thrust_polarity_changed
+        )
         self.process_page.select_thrust_requested.connect(
             lambda: self._workspace_select("project")
         )
         self.chamber_pressure_page.primary_channel_changed.connect(
             self._primary_pressure_quick_changed
         )
-        self.chamber_pressure_page.detect_requested.connect(self._burn_detect)
+        self.chamber_pressure_page.detect_requested.connect(
+            lambda: self._burn_detect("chamber_pressure")
+        )
         self.chamber_pressure_page.regions_changed.connect(self._regions_store)
         self.chamber_pressure_page.candidate_selected.connect(
             self._segmentation_candidate_select
         )
         self.temperature_page.temperature_channels_changed.connect(
             self._primary_temperature_quick_changed
+        )
+        self.chamber_pressure_page.analysis_state_changed.connect(
+            lambda _completed: self._export_availability_update()
+        )
+        self.temperature_page.analysis_state_changed.connect(
+            lambda _completed: self._export_availability_update()
         )
         self.chamber_pressure_page.select_channel_requested.connect(
             lambda: self._workspace_select("project")
@@ -417,12 +486,11 @@ class MainWindow(QMainWindow):
             lambda: self._workspace_select("project")
         )
         self.analyze_page.calculate_requested.connect(self._analysis_calculate)
-        self.analyze_page.confirmation_changed.connect(self._curve_confirmation_update)
         self.export_dialog.export_requested.connect(self._export_execute)
         self.plugins_page.refresh_requested.connect(self._plugins_refresh)
         self.plugins_page.install_requested.connect(self._plugin_install_dialog)
-        self.plugins_page.open_development_requested.connect(
-            lambda: self._directory_open(self.development_plugin_directory)
+        self.plugins_page.open_application_requested.connect(
+            lambda: self._directory_open(self.application_plugin_directory)
         )
         self.plugins_page.open_user_requested.connect(
             lambda: self._directory_open(self.user_plugin_directory)
@@ -442,16 +510,16 @@ class MainWindow(QMainWindow):
 
     def _retranslate(self) -> None:
         t = self.translations.translate
-        self.setWindowTitle(f"{PRODUCT_NAME} — {__version__}")
-        self.header_title.setText(
-            f"{PRODUCT_NAME} · {self._project_title or t('project.untitled')}"
-        )
+        self.setWindowTitle(PRODUCT_NAME)
+        header_title = f"{NAME} {t('app.workspace_title')}"
+        self.header_title.setText(header_title)
+        self.header_title.setToolTip(header_title)
         self.version_label.setText(t("app.version", version=__version__))
         self.credit_label.setText(t("app.credit"))
         self.language_label.setText(t("settings.language"))
-        self.theme_button.setText(
-            t("theme.light_mode" if self._theme == THEME_DARK else "theme.dark_mode")
-        )
+        self.theme_label.setText(t("settings.theme"))
+        self.theme_combo.setItemText(0, t("theme.light"))
+        self.theme_combo.setItemText(1, t("theme.dark"))
         current_row = self.navigation.currentRow()
         self.navigation.clear()
         for _workspace_id, translation_key, _page in self.workspaces:
@@ -467,8 +535,8 @@ class MainWindow(QMainWindow):
         self.open_raw_action.setText(t("menu.project.open_raw"))
         self.open_project_action.setText(t("menu.project.open"))
         self.save_project_action.setText(t("menu.project.save"))
+        self.save_project_as_action.setText(t("menu.project.save_as"))
         self.exit_action.setText(t("menu.project.exit"))
-        self.export_menu.setTitle(t("page.export"))
         self.export_action.setText(t("export.dialog_title"))
         self.tools_menu.setTitle(t("menu.tools"))
         self.plugins_action.setText(t("page.plugins"))
@@ -479,11 +547,6 @@ class MainWindow(QMainWindow):
         self.cancel_button.setText(t("common.cancel"))
         if self._active_task is None:
             self.statusBar().showMessage(t("common.ready"))
-
-    def _theme_toggle(self) -> None:
-        self._theme_select(
-            THEME_LIGHT if self._theme == THEME_DARK else THEME_DARK
-        )
 
     def _theme_select(self, theme: str) -> None:
         normalized = Theme_Normalize(theme)
@@ -497,7 +560,7 @@ class MainWindow(QMainWindow):
         self.process_page.set_theme(normalized)
         for page in self._measurement_pages():
             page.set_theme(normalized)
-        self.settings_page.set_theme(normalized)
+        self._theme_widgets_sync(normalized)
         self._retranslate()
 
     def _plugins_dialog_show(self) -> None:
@@ -541,9 +604,17 @@ class MainWindow(QMainWindow):
         self.language_combo.setCurrentIndex(index)
         self.language_combo.blockSignals(False)
         self.settings_page.set_locale(locale)
-        self.settings_page.set_theme(self._theme)
+        self._theme_widgets_sync(self._theme)
         if hasattr(self, "export_dialog"):
             self.export_dialog.retranslate()
+
+    def _theme_widgets_sync(self, theme: str) -> None:
+        normalized = Theme_Normalize(theme)
+        index = self.theme_combo.findData(normalized)
+        self.theme_combo.blockSignals(True)
+        self.theme_combo.setCurrentIndex(max(0, index))
+        self.theme_combo.blockSignals(False)
+        self.settings_page.set_theme(normalized)
 
     def _page_selected(self, index: int) -> None:
         if 0 <= index < len(self.pages):
@@ -577,11 +648,12 @@ class MainWindow(QMainWindow):
             )
         )
         self.process_page.set_thrust_choices(thrust_choices, bindings.thrust)
+        self.process_page.set_thrust_polarity(self.session.thrust_polarity)
         if bindings.thrust is None:
             self.process_page.set_datasets(None, None, None, input_channel_id=None)
             return
         raw_stream = self.session.project_data.streams[bindings.thrust.stream_id]
-        calibrated, input_channel_id = self._calibrated_binding_resolve(
+        oriented, input_channel_id = self._oriented_thrust_resolve(
             bindings.thrust
         )
         processed = (
@@ -591,7 +663,7 @@ class MainWindow(QMainWindow):
         )
         self.process_page.set_datasets(
             raw_stream.dataset,
-            calibrated,
+            oriented,
             processed,
             input_channel_id=input_channel_id,
         )
@@ -624,6 +696,36 @@ class MainWindow(QMainWindow):
                 f"{reference.stable_id}"
             )
         return dataset, state.output_channel_id
+
+    def _oriented_thrust_resolve(
+        self,
+        reference: ChannelReference,
+    ) -> tuple[Any, str]:
+        calibrated, input_channel_id = self._calibrated_binding_resolve(reference)
+        oriented = ThrustPolarity_Apply(
+            calibrated,
+            input_channel_id=input_channel_id,
+            polarity=self.session.thrust_polarity,
+        )
+        return oriented, THRUST_ORIENTED_CHANNEL_ID
+
+    def _thrust_polarity_changed(self, polarity: int) -> None:
+        normalized = ThrustPolarity_Normalize(polarity)
+        if normalized == self.session.thrust_polarity:
+            return
+        self.session.thrust_polarity = normalized
+        self.session.processing_result = None
+        self.session.reset_after_processing()
+        if self.session.segmentation_reference_priority == "thrust":
+            self.session.candidates.clear()
+            self.session.segmentation_reference = None
+            self.session.segmentation_reference_priority = None
+        self.process_page.set_processing_metadata(None)
+        self.analyze_page.clear_result()
+        self._primary_channels_update()
+        self._measurement_workspaces_update()
+        self._segmentation_views_sync()
+        self._export_availability_update()
 
     def _primary_thrust_quick_changed(self, reference: object) -> None:
         if reference is not None and not isinstance(reference, ChannelReference):
@@ -860,12 +962,12 @@ class MainWindow(QMainWindow):
         if self._binding_has_valid_data(
             bindings.chamber_pressure,
             dimension="pressure",
-        ):
+        ) and self.chamber_pressure_page.analysis_complete:
             capabilities.add("chamber_pressure_ready")
         if any(
             self._binding_has_valid_data(reference, dimension="temperature")
             for reference in bindings.temperature_channels
-        ):
+        ) and self.temperature_page.analysis_complete:
             capabilities.add("temperature_ready")
         if (
             self.session.analysis_result is not None
@@ -970,7 +1072,9 @@ class MainWindow(QMainWindow):
         self.export_dialog.directory_edit.clear()
         self.export_dialog.reset_default_selection()
         self.export_dialog.set_motor_metadata({})
-        self.export_dialog.set_output_locale(self.translations.locale)
+        self.export_dialog.set_output_locale(
+            ExportDialog.OUTPUT_LOCALE_FOLLOW_UI
+        )
         self.import_page.set_parser_id(None)
         self._parser_selection_changed(None)
         identity_index = self.setup_page.calibration_combo.findData(
@@ -1151,7 +1255,6 @@ class MainWindow(QMainWindow):
         self.session.analyzer_id = None
         self.session.analyzer_config.clear()
         self.session.analysis_result = None
-        self.session.curve_confirmed = False
         self.session.export_settings.clear()
         self.session.quality_report = None
         self.analyze_page.clear_result()
@@ -1722,6 +1825,7 @@ class MainWindow(QMainWindow):
             )
             self._primary_channels_update()
             self._measurement_workspaces_update()
+            self._segmentation_views_sync()
             self.analyze_page.clear_result()
             self._export_availability_update()
             self.statusBar().showMessage(
@@ -1965,36 +2069,51 @@ class MainWindow(QMainWindow):
         except (OSError, ValueError) as exc:
             self._error_show(exc)
 
-    def _burn_detect(self) -> None:
-        selected_reference = Segmentation_SelectReference(self.session.project_data)
+    def _burn_detect(self, reference_role: str | None = None) -> None:
+        selected_reference = (
+            Segmentation_SelectReference(self.session.project_data)
+            if reference_role is None
+            else Segmentation_SelectReferenceForRole(
+                self.session.project_data,
+                reference_role,
+            )
+        )
         if selected_reference is None:
+            missing_key = (
+                "process.no_pressure_detection_source"
+                if reference_role == "chamber_pressure"
+                else "process.no_thrust_detection_source"
+                if reference_role == "thrust"
+                else "process.no_detection_source"
+            )
             self._error_show(
-                ValueError(
-                    "No valid bound chamber-pressure or thrust signal was found; "
-                    "select the Primary Channels or set the interval manually"
-                )
+                ValueError(self.translations.translate(missing_key))
             )
             return
         try:
-            reference_dataset, channel_id = self._calibrated_binding_resolve(
-                selected_reference.reference
-            )
+            if selected_reference.priority == "chamber_pressure":
+                reference_dataset, channel_id = self._calibrated_binding_resolve(
+                    selected_reference.reference
+                )
+            else:
+                reference_dataset, channel_id = self._oriented_thrust_resolve(
+                    selected_reference.reference
+                )
         except ValueError as exc:
             self._error_show(exc)
             return
         priority = selected_reference.priority
-        sign = (
-            1
-            if priority == "chamber_pressure"
-            else self.process_page.detection_sign()
-        )
         channel = reference_dataset.channel(channel_id)
-        task_name = self.translations.translate("process.detect_candidates")
+        task_name = self.translations.translate(
+            "process.detect_with_pressure"
+            if priority == "chamber_pressure"
+            else "process.detect_with_thrust"
+        )
 
         def operation(context: TaskContext):
             context.raise_if_cancelled()
             result = Activity_DetectSegments(
-                reference_dataset.project_time, channel.values, sign=sign
+                reference_dataset.project_time, channel.values, sign=1
             )
             context.report_progress(1.0, task_name)
             return result
@@ -2055,11 +2174,20 @@ class MainWindow(QMainWindow):
         )
         reference_name = self._segmentation_reference_name()
         manually_modified = self.session.segmentation_manually_modified
-        detection_enabled = (
-            Segmentation_SelectReference(self.session.project_data) is not None
+        self.process_page.interval_editor.set_detection_enabled(
+            Segmentation_SelectReferenceForRole(
+                self.session.project_data,
+                "thrust",
+            )
+            is not None
         )
-        self.process_page.interval_editor.set_detection_enabled(detection_enabled)
-        self.chamber_pressure_page.set_detection_enabled(detection_enabled)
+        self.chamber_pressure_page.set_detection_enabled(
+            Segmentation_SelectReferenceForRole(
+                self.session.project_data,
+                "chamber_pressure",
+            )
+            is not None
+        )
         self.process_page.set_segmentation_reference(
             reference_name,
             manually_modified=manually_modified,
@@ -2131,7 +2259,6 @@ class MainWindow(QMainWindow):
             self.session.analyzer_id = None
             self.session.analyzer_config.clear()
             self.session.analysis_result = None
-            self.session.curve_confirmed = False
             self.analyze_page.clear_result()
             self.process_page.set_processing_metadata(None)
             self._primary_channels_update()
@@ -2144,7 +2271,7 @@ class MainWindow(QMainWindow):
             self._error_show(ValueError("Select the Primary Thrust Channel before processing"))
             return
         try:
-            dataset, input_channel_id = self._calibrated_binding_resolve(binding)
+            dataset, input_channel_id = self._oriented_thrust_resolve(binding)
             config = self.process_page.processing_config()
             motor_metadata = self.setup_page.motor_metadata()
             plugin_id = self.process_page.processor_id()
@@ -2212,17 +2339,13 @@ class MainWindow(QMainWindow):
             self.session.analyzer_config = config
             self.session.analysis_result = result
             self.session.motor_metadata = metadata
-            self.session.curve_confirmed = False
-            self.analyze_page.set_result(result, confirmed=False)
+            self.analyze_page.set_result(result)
             self._export_availability_update()
             self.statusBar().showMessage(
                 self.translations.translate("status.analysis_complete"), 5000
             )
 
         self._task_start(self.translations.translate("status.analyzing"), operation, success)
-
-    def _curve_confirmation_update(self, confirmed: bool) -> None:
-        self.session.curve_confirmed = confirmed
 
     def _plugin_reference_create(
         self, plugin_id: str | None, config: dict[str, Any]
@@ -2295,14 +2418,20 @@ class MainWindow(QMainWindow):
             processors = (processor_reference,)
         export_directory = self.export_dialog.directory_edit.text().strip()
         export_settings = {
-            **self.session.export_settings,
+            **{
+                key: value
+                for key, value in self.session.export_settings.items()
+                if key != "curve_confirmed"
+            },
             "directory": export_directory or None,
             "selected_exporter_ids": list(
                 self.export_dialog.selected_exporter_ids()
             ),
-            "curve_confirmed": self.session.curve_confirmed,
+            "selection_initialized_exporter_ids": list(
+                self.export_dialog.initialized_exporter_ids()
+            ),
             "annotate_metrics": self.export_dialog.annotate_metrics(),
-            "output_locale": self.export_dialog.output_locale(),
+            "output_locale": self.export_dialog.output_locale_selection(),
         }
         if self.session.project_data.sources:
             source_states = tuple(
@@ -2424,6 +2553,7 @@ class MainWindow(QMainWindow):
             regions=self.session.regions,
             channels=channel_states,
             primary_channels=self.session.project_data.primary_channels,
+            thrust_polarity=self.session.thrust_polarity,
             processing_metadata=(
                 dict(self.session.processing_result.metadata)
                 if self.session.processing_result is not None
@@ -2439,10 +2569,20 @@ class MainWindow(QMainWindow):
                 "calibrated": self.session.calibrated_dataset is not None,
                 "processed": self.session.processing_result is not None,
                 "analyzed": self.session.analysis_result is not None,
+                "chamber_pressure_analyzed": (
+                    self.chamber_pressure_page.analysis_complete
+                ),
+                "temperature_analyzed": self.temperature_page.analysis_complete,
             },
             locale=self.translations.locale,
             diagnostics=diagnostics,
         )
+
+    def _project_save(self) -> None:
+        if self.session.project_path is None:
+            self._project_save_dialog()
+            return
+        self._project_save_path(self.session.project_path)
 
     def _project_save_dialog(self) -> None:
         default_path = self.session.project_path
@@ -2460,6 +2600,9 @@ class MainWindow(QMainWindow):
         path = Path(destination)
         if not path.name.lower().endswith(".retldc.json"):
             path = path.with_name(f"{path.stem}.retldc.json")
+        self._project_save_path(path)
+
+    def _project_save_path(self, path: Path) -> None:
         was_untitled = self.session.project_path is None
         try:
             document_template = self._project_document_create()
@@ -2616,6 +2759,7 @@ class MainWindow(QMainWindow):
                     if primary_stream_id is not None
                     else calibrated
                 ),
+                thrust_polarity=document.thrust_polarity,
                 processor_id=document.processors[0].id if document.processors else None,
                 processor_config=(
                     dict(document.processors[0].config) if document.processors else {}
@@ -2632,7 +2776,6 @@ class MainWindow(QMainWindow):
                 analysis_result=analysis,
                 motor_metadata=dict(document.motor_metadata),
                 export_settings=dict(document.export_settings),
-                curve_confirmed=bool(document.export_settings.get("curve_confirmed", False)),
             )
             if document.regions:
                 selected_segmentation = Segmentation_SelectReference(project_data)
@@ -2720,6 +2863,7 @@ class MainWindow(QMainWindow):
                         )
             self.setup_page.set_motor_metadata(dict(document.motor_metadata))
             self.process_page.clear_state()
+            self.process_page.set_thrust_polarity(document.thrust_polarity)
             self._primary_channels_update()
             self.process_page.set_processing_metadata(document.processing_metadata)
             processor_id = document.processors[0].id if document.processors else None
@@ -2735,19 +2879,43 @@ class MainWindow(QMainWindow):
                     }
                 )
             if analysis is not None:
-                self.analyze_page.set_result(
-                    analysis, confirmed=self.session.curve_confirmed
-                )
+                self.analyze_page.set_result(analysis)
             else:
                 self.analyze_page.clear_result()
             self._measurement_workspaces_update()
             self._segmentation_views_sync()
             self._primary_channels_update()
+            self.chamber_pressure_page.set_analysis_complete(
+                bool(
+                    document.workflow_state.get(
+                        "chamber_pressure_analyzed",
+                        False,
+                    )
+                )
+            )
+            self.temperature_page.set_analysis_complete(
+                bool(
+                    document.workflow_state.get(
+                        "temperature_analyzed",
+                        False,
+                    )
+                )
+            )
             self._export_availability_update()
             self.export_dialog.set_motor_metadata(dict(document.motor_metadata))
             selected_exporters = document.export_settings.get("selected_exporter_ids")
             if isinstance(selected_exporters, list):
-                self.export_dialog.set_selected_exporter_ids(selected_exporters)
+                initialized_exporters = document.export_settings.get(
+                    "selection_initialized_exporter_ids"
+                )
+                self.export_dialog.set_selected_exporter_ids(
+                    selected_exporters,
+                    initialized_plugin_ids=(
+                        initialized_exporters
+                        if isinstance(initialized_exporters, list)
+                        else None
+                    ),
+                )
             export_directory = document.export_settings.get("directory")
             self.export_dialog.set_output_directory(
                 Path(export_directory)
@@ -2758,7 +2926,12 @@ class MainWindow(QMainWindow):
                 bool(document.export_settings.get("annotate_metrics", True))
             )
             self.export_dialog.set_output_locale(
-                str(document.export_settings.get("output_locale", document.locale))
+                str(
+                    document.export_settings.get(
+                        "output_locale",
+                        ExportDialog.OUTPUT_LOCALE_FOLLOW_UI,
+                    )
+                )
             )
             self._locale_select(document.locale)
             self._last_directory_store(project_path)
@@ -3080,10 +3253,16 @@ class MainWindow(QMainWindow):
                 raise ValueError(
                     "Processed Project has no Primary Thrust Channel binding"
                 )
+            oriented = ThrustPolarity_Apply(
+                calibrated,
+                input_channel_id=thrust_input_channel_id,
+                polarity=document.thrust_polarity,
+            )
+            processor_input_channel_id = THRUST_ORIENTED_CHANNEL_ID
             if processor is None or processor_reference is None:
                 processing_result = Processing_Passthrough(
-                    calibrated,
-                    input_channel_id=thrust_input_channel_id,
+                    oriented,
+                    input_channel_id=processor_input_channel_id,
                 )
             else:
                 processor_config = dict(processor_reference.config)
@@ -3091,7 +3270,7 @@ class MainWindow(QMainWindow):
                 if isinstance(schema_properties, Mapping):
                     normalized_regions = self._regions_normalize(document.regions)
                     injected = {
-                        "thrust_analysis.input_channel": thrust_input_channel_id,
+                        "thrust_analysis.input_channel": processor_input_channel_id,
                         "thrust_analysis.regions": {
                             "pre": normalized_regions.get("pre"),
                             "burn": normalized_regions.get("active_test"),
@@ -3105,7 +3284,7 @@ class MainWindow(QMainWindow):
                         if source in injected:
                             processor_config[str(field_name)] = injected[str(source)]
                 processing_result = processor.process(
-                    calibrated, processor_config, context
+                    oriented, processor_config, context
                 )
         if (
             processing_result is None
@@ -3393,6 +3572,7 @@ class MainWindow(QMainWindow):
 
         common_config = {
             "channel_id": "thrust_processed",
+            "thrust_polarity": self.session.thrust_polarity,
             "ignition": ignition,
             "burnout": burnout,
             "motor_metadata": motor_metadata,
@@ -3422,7 +3602,6 @@ class MainWindow(QMainWindow):
                 ),
                 "regions": self.session.regions,
             },
-            "curve_confirmed": self.session.curve_confirmed,
             "annotate_metrics": self.export_dialog.annotate_metrics(),
             "output_locale": output_locale,
         }
@@ -3495,9 +3674,11 @@ class MainWindow(QMainWindow):
             self.session.export_settings = {
                 "directory": str(destination),
                 "selected_exporter_ids": list(selected),
-                "curve_confirmed": self.session.curve_confirmed,
+                "selection_initialized_exporter_ids": list(
+                    self.export_dialog.initialized_exporter_ids()
+                ),
                 "annotate_metrics": self.export_dialog.annotate_metrics(),
-                "output_locale": output_locale,
+                "output_locale": self.export_dialog.output_locale_selection(),
             }
             self._last_directory_store(destination)
             self.export_dialog.accept()
@@ -3524,7 +3705,7 @@ class MainWindow(QMainWindow):
         self.plugin_loader.discover(
             (
                 PluginDiscoveryRoot(
-                    self.development_plugin_directory, "bundled"
+                    self.application_plugin_directory, "application"
                 ),
                 PluginDiscoveryRoot(self.user_plugin_directory, "user"),
             )
@@ -3592,32 +3773,100 @@ class MainWindow(QMainWindow):
         self._plugins_initialized = True
 
     def _plugin_install_dialog(self) -> None:
-        source = QFileDialog.getExistingDirectory(
+        t = self.translations.translate
+        directory_choice = t("plugins.install_source_directory")
+        zip_choice = t("plugins.install_source_zip")
+        source_kind, accepted = QInputDialog.getItem(
             self,
-            self.translations.translate("plugins.install"),
-            self._dialog_start_directory(),
-            options=FILE_DIALOG_OPTIONS,
+            t("plugins.install"),
+            t("plugins.install_source_prompt"),
+            (directory_choice, zip_choice),
+            0,
+            False,
         )
-        if not source:
+        if not accepted:
             return
+        if source_kind == directory_choice:
+            selected = QFileDialog.getExistingDirectory(
+                self,
+                t("plugins.select_directory"),
+                self._dialog_start_directory(),
+                options=FILE_DIALOG_OPTIONS,
+            )
+        else:
+            selected, _selected_filter = QFileDialog.getOpenFileName(
+                self,
+                t("plugins.select_zip"),
+                self._dialog_start_directory(),
+                t("plugins.zip_filter"),
+                options=FILE_DIALOG_OPTIONS,
+            )
+        if not selected:
+            return
+        source = Path(selected)
         answer = QMessageBox.warning(
             self,
-            self.translations.translate("page.plugins"),
-            self.translations.translate("plugins.warning"),
+            t("page.plugins"),
+            t("plugins.security_notice"),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
             QMessageBox.StandardButton.Cancel,
         )
         if answer is not QMessageBox.StandardButton.Yes:
             return
         try:
-            destination = PluginInstaller_InstallDirectory(
-                Path(source), self.user_plugin_directory
+            outcome = PluginInstaller_Install(
+                source,
+                self.application_plugin_directory,
+                self.user_plugin_directory,
             )
-            self._last_directory_store(Path(source))
-            self._plugins_refresh()
-            self.statusBar().showMessage(str(destination), 5000)
+        except PluginAlreadyExistsError as exc:
+            if not self._plugin_replace_confirm(exc):
+                return
+            try:
+                outcome = PluginInstaller_Install(
+                    source,
+                    self.application_plugin_directory,
+                    self.user_plugin_directory,
+                    replace=True,
+                )
+            except (OSError, ValueError) as replace_error:
+                self._error_show(replace_error)
+                return
         except (OSError, ValueError) as exc:
             self._error_show(exc)
+            return
+        self._last_directory_store(source if source.is_dir() else source.parent)
+        self._plugins_refresh()
+        if outcome.result is PluginInstallResult.APPLICATION:
+            success_key = "plugins.install_success_application"
+        elif outcome.result is PluginInstallResult.USER_FALLBACK:
+            success_key = "plugins.install_success_user_fallback"
+        else:
+            success_key = "plugins.install_success_user"
+        QMessageBox.information(self, t("page.plugins"), t(success_key))
+        self.statusBar().showMessage(str(outcome.destination), 5000)
+
+    def _plugin_replace_confirm(self, error: PluginAlreadyExistsError) -> bool:
+        t = self.translations.translate
+        dialog = QMessageBox(self)
+        dialog.setIcon(QMessageBox.Icon.Question)
+        dialog.setWindowTitle(t("page.plugins"))
+        dialog.setText(
+            t(
+                "plugins.replace_confirm",
+                current=error.current_version,
+                incoming=error.incoming_version,
+            )
+        )
+        replace_button = dialog.addButton(
+            t("plugins.replace"), QMessageBox.ButtonRole.AcceptRole
+        )
+        cancel_button = dialog.addButton(
+            t("common.cancel"), QMessageBox.ButtonRole.RejectRole
+        )
+        dialog.setDefaultButton(cancel_button)
+        dialog.exec()
+        return dialog.clickedButton() is replace_button
 
     @staticmethod
     def _directory_open(directory: Path) -> None:

@@ -32,6 +32,7 @@ def test_project_json_round_trip_and_source_hash(tmp_path: Path) -> None:
         processors=(
             PluginReference("builtin.processor.vertical_linear_baseline", "1.0.0", "1", {}),
         ),
+        thrust_polarity=-1,
         regions={"pre": (0.0, 0.1), "burn": (0.2, 0.8), "post": (0.9, 1.0)},
         analyzer=analyzer,
         motor_metadata={"propellant_mass_kg": 0.1},
@@ -43,6 +44,26 @@ def test_project_json_round_trip_and_source_hash(tmp_path: Path) -> None:
     Project_Save(document, destination)
     assert Project_Load(destination) == document
     assert len(document.source_hash) == 64
+    assert document.to_dict()["thrust_polarity"] == -1
+
+
+def test_project_migrates_legacy_processor_sign_to_thrust_polarity() -> None:
+    document = ProjectDocument(
+        processors=(
+            PluginReference(
+                "builtin.processor.vertical_linear_baseline",
+                "1.0.0",
+                "1",
+                {"enabled": True, "sign": -1},
+            ),
+        ),
+    )
+    payload = document.to_dict()
+    payload.pop("thrust_polarity")
+    migrated = ProjectDocument.from_dict(payload)
+    assert migrated.thrust_polarity == -1
+    assert migrated.processors[0].config == {"enabled": True}
+    assert migrated.to_dict()["schema"] == PROJECT_SCHEMA
 
 
 def test_incomplete_project_round_trip(tmp_path: Path) -> None:

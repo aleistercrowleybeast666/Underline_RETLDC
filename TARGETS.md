@@ -12,7 +12,11 @@ Project name:
 
 Product:
 
-`Underline RETLDC`
+`Underline_RETLDC`
+
+Current application version:
+
+`0.0.2` (`0.0.x` denotes early-development iterations)
 
 Full meaning:
 
@@ -189,9 +193,11 @@ discovery, Loader, Registry, schema rendering, i18n, and error handling. Core co
 platform capability. Existing `builtin.*` stable IDs remain unchanged for Project compatibility;
 the prefix identifies official provenance, not a source-package registration mechanism.
 
-Runtime merges the repository/portable root with a writable platform user root. Source is assigned
-by the Loader as informational `Bundled` or `User`; it never changes API semantics or grants trust.
-Folder categories organize files, while manifest `plugin_type` is authoritative.
+Runtime merges the Application Plugin Root with a writable platform User Plugin Root. In source
+development, repository-root `plugins/` is the Application Plugin Root. Official `builtin.*`
+plugins shipped there are reported as `Bundled`; later third-party installations in the same root
+are `Application`; the fallback root is `User`. Loader provenance never changes API semantics or
+grants trust. Folder categories organize files, while manifest `plugin_type` is authoritative.
 
 The current API generation is:
 
@@ -413,6 +419,10 @@ official plugin ID. Plugin scalar settings come from `config_schema()`, while sh
 PRE/ACTIVE_TEST/POST
 regions and input-channel state are injected through generic schema-source metadata. `None` stores
 no Processor reference and remains reproducible through a pass-through processing stage.
+
+Project Thrust Polarity (`+1` or `-1`) is a separate mandatory workflow setting applied after
+Calibration and before this optional Processor. The Processor receives oriented thrust and does
+not own a sign parameter. `None` still produces a polarity-correct processed Channel.
 
 The user selects three time regions:
 
@@ -765,22 +775,27 @@ Primary navigation:
 
 ```text
 Project  = source + Parser + quality + Calibration + motor metadata
-Thrust Analysis = test-interval selection + processing + thrust plots + metrics + diagnostics
-Chamber Pressure = pressure channels + shared ACTIVE_TEST statistics/view
-Temperature = temperature channels + shared ACTIVE_TEST marker
+Thrust = test-interval selection + processing + thrust plots + metrics + diagnostics
+Chamber Pressure = pressure channels + shared ACTIVE_TEST + explicit calculation + curve display
+Temperature = temperature channels + shared ACTIVE_TEST + explicit calculation + per-channel curves
 Data Explorer = arbitrary Project channels + shared ACTIVE_TEST marker
 ```
 
 Workspace IDs and export-to-analysis dependencies remain explicit. All measurement workspaces
 share Project Time and the Project-level PRE/ACTIVE_TEST/POST segmentation without overloading the
-Thrust Analysis implementation.
+Thrust implementation.
 
 Export is a unified dialog available from the menu/toolbar at every workflow stage. It always shows
 all output choices, while each checkbox remains unavailable until the stable analyzer IDs declared
 by that output are complete. Newly enabled choices are checked by default. All checkable controls
 show an explicit square indicator, and the output list shows at most ten rows before enabling
-vertical scrolling. Plugin management and Settings are Tools dialogs. These auxiliary operations do
-not consume primary workflow pages.
+vertical scrolling. Output Language defaults to the first `follow_ui` item, followed by explicit
+Simplified Chinese and English choices. The dialog's complete content scrolls vertically when
+needed, while Cancel and Export remain in a fixed reachable bottom row. Plugin management and
+Settings are Tools dialogs. These auxiliary operations do not consume primary workflow pages.
+The Project persists selected exporter IDs separately from IDs whose first-availability defaults
+have already been initialized. Chamber-pressure PNG contains only ACTIVE_TEST samples and uses the
+same interval as its X-axis range.
 
 Chinese equivalents shall be provided through i18n.
 
@@ -832,7 +847,7 @@ plugin ID
 plugin category
 version
 Plugin API version
-source (Bundled/User)
+source (Bundled/Application/User)
 load status
 diagnostics
 ```
@@ -845,11 +860,14 @@ Operations should include:
 
 Trusted local installation should be possible.
 
-Installation targets the writable user plugin root and organizes a plugin by its manifest type.
-Source/portable users may also copy a plugin directory into repository-root
-`plugins/<category>/`. Discovery is recursive, ignores `.venv`, `.git`, caches, and symlink
-recursion, and isolates malformed manifests/imports. There is no separate manual registration
-list for official plugins.
+Interactive installation accepts one plugin folder or ZIP and organizes it by manifest type. It
+first probes and attempts the Application Plugin Root, then falls back to the User Plugin Root only
+for a real access-permission failure. It does not inspect drive letters or require administrator
+rights. ZIP extraction rejects traversal and links; replacement is staged before the old directory
+is switched out. Advanced users may still copy a plugin directory manually into either root and
+refresh. Discovery is recursive, ignores `.venv`, `.git`, caches, and symlink recursion, and
+isolates malformed manifests/imports and duplicate stable IDs. There is no separate manual
+registration list for official plugins.
 
 A later version may support packaged or Python-installed plugins.
 
@@ -1093,6 +1111,9 @@ Identify file format → confirm measurement categories → import → confirm p
 → analyze in the matching workspace
 ```
 
+TR_P and TR_T are valid first imports in an empty Project. Choosing one through either the ordinary
+Parser ComboBox or the ambiguity radio group must enable import without any prior TR_F workflow.
+
 For ordinary tabular files, Quick Import exposes only `Time`, `Thrust`, `Chamber Pressure`,
 `Temperature`, and `Other`. Raw Quantity, Semantic Role, Channel ID, metadata, and Ignore controls
 remain in collapsed Advanced Mapping for specialist use. `Other` preserves the Channel in the
@@ -1122,10 +1143,12 @@ reason. Registry order is never a scientific selection rule.
 
 The Project owns exactly one PRE/ACTIVE_TEST/POST segmentation in Project Time. Thrust and Chamber
 Pressure are bidirectional editors of that state; Temperature and Data Explorer read the same
-markers. No Workspace maintains a separate final interval. Automatic detection uses the explicit
-Primary Chamber Pressure when valid, otherwise Primary Thrust. Pressure activity polarity is
-always positive and does not inherit the thrust installation/Processor sign. Legacy `burn` input
-remains readable but is normalized to `active_test`.
+markers. No Workspace maintains a separate final interval. The Thrust page's automatic-detection
+action uses only the explicitly bound Primary Thrust; the Chamber Pressure page's action uses only
+the explicitly bound Primary Chamber Pressure. Generic non-page orchestration may fall back from
+Primary Chamber Pressure to Primary Thrust. Pressure activity polarity is always positive and does
+not inherit Project Thrust Polarity. Thrust activity detection uses the polarity-normalized thrust
+working Channel. Legacy `burn` input remains readable but is normalized to `active_test`.
 
 ---
 
@@ -1145,8 +1168,12 @@ Exporter desktop metadata declares generic capabilities, grouping, ordering, and
 dialog sorts Overall, Thrust, Chamber Pressure, Temperature, then Other. An unavailable option is
 disabled and unchecked. Its default applies only on first availability and is never silently
 restored after a user unchecks it. Overall, thrust, pressure, and temperature formats depend on
-their own data readiness; OpenRocket ENG additionally requires physical force and segmentation and
-defaults off.
+their own data and analysis readiness. Chamber Pressure and Temperature become analyzed only after
+their explicit Calculate action; binding or segmentation changes invalidate that state. OpenRocket
+ENG additionally requires physical force and segmentation, has no final-curve confirmation gate,
+and defaults on when those requirements first become complete. Selected IDs and initialized-default
+IDs are persisted separately so a manual uncheck survives Project reopen while a still-locked page
+format receives its default when that page is completed later.
 
 ---
 
@@ -1154,6 +1181,39 @@ defaults off.
 
 Removing a parsed Source immediately removes its Streams, calibrated state, Primary bindings, and
 workspace series and invalidates all stale candidates, segmentation references, processing,
-analysis, confirmation, statistics, and export readiness. Removing an unparsed pending Source
+analysis, statistics, and export readiness. Removing an unparsed pending Source
 preserves the parsed Project. Removing the final Source clears parser/configuration/preview/results
 and every measurement workspace without requiring another Parse action.
+
+---
+
+# 48. Responsive Header and Analysis Layout Target
+
+The stable Windows title is exactly `Underline_RETLDC` and never includes a version. The Header
+uses stable `Underline` followed by the localized `火箭发动机试车数据解算` or
+`Rocket Engine Test Log Decoder and Calculator`; it never displays the current Project filename.
+The same row then shows semi-bold `v0.0.2`, regular-weight credit, and synchronized
+Header/Settings language and theme ComboBoxes. The shared-family typography uses a 20 px Header
+title, 13 px version/credit/Header controls, and 14 px navigation items; the full localized title
+remains available as the title tooltip when horizontal space is constrained. Shared analysis
+controls, plot, and results panels have nonzero minimum widths and cannot be collapsed away by
+QSplitter.
+At constrained widths the Project workspace stacks Import above Project Setup without horizontal
+scrollbars; at ordinary desktop widths it returns to the denser side-by-side layout. Header
+language/theme selectors remain compact, and the English export-format list is fully visible in
+the default dialog width.
+
+Header language/theme fields and their detached popup views remain deep blue with white text in
+both themes; popup hover/selection uses the accent blue and never relies on an OS-native palette.
+The File menu command order is Import, Export, Save Project, Save Project As, Open Project, with
+no separator between Import/Export and Save Project or between Save Project As and Open Project.
+The toolbar order is Import, Export, Save Project, Open Project with no separator. Menu, toolbar,
+Header, and navigation blue surfaces touch without light seams. Simplified Chinese uses `工程`
+for this application-document concept and `界面语言` for the Header language selector.
+
+Every interactive 2D workspace exposes a localized Reset Chart action that restores the complete
+data-driven X/Y range after zoom or pan. It preserves the Project's user-selected segmentation
+markers because those markers are shared scientific state rather than transient chart defaults.
+At compact desktop widths, Chamber Pressure gives its control panel enough non-collapsible width
+and wraps interval labels above their fields so the editor remains inside the no-horizontal-scroll
+viewport.

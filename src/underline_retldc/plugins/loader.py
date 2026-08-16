@@ -81,7 +81,9 @@ class PluginLoader:
             child_directories[:] = sorted(
                 name
                 for name in child_directories
-                if name not in excluded_names and not (current / name).is_symlink()
+                if name not in excluded_names
+                and not name.startswith(".underline-retldc-")
+                and not (current / name).is_symlink()
             )
             if "plugin.json" in filenames:
                 discovered.append(current)
@@ -102,6 +104,8 @@ class PluginLoader:
                 str(exc),
                 source_kind=source_kind,
             )
+
+        source_kind = self._source_kind_resolve(source_kind, manifest)
 
         if manifest.api_version != PLUGIN_API_VERSION:
             return self._failure(
@@ -212,6 +216,18 @@ class PluginLoader:
             and descriptor.api_version == manifest.api_version
             and descriptor.version == manifest.version
         )
+
+    @staticmethod
+    def _source_kind_resolve(
+        configured_source_kind: str, manifest: PluginManifest
+    ) -> str:
+        if configured_source_kind == "application":
+            return (
+                "bundled"
+                if manifest.plugin_id.startswith("builtin.")
+                else "application"
+            )
+        return configured_source_kind
 
     def _failure(
         self,

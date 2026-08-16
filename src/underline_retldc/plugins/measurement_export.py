@@ -67,6 +67,7 @@ def MeasurementPng_Write(
     quantity_title_en: str,
     quantity_title_zh: str,
     active_interval: tuple[float, float] | None = None,
+    crop_to_active_interval: bool = False,
 ) -> MeasurementWriteResult:
     selected = tuple(channels)
     if not selected:
@@ -74,11 +75,28 @@ def MeasurementPng_Write(
     if output_locale not in {"zh_CN", "en_US"}:
         raise ValueError("Measurement PNG locale must be 'zh_CN' or 'en_US'")
     project_time = dataset.project_time
-    finite_time = project_time[np.isfinite(project_time)]
+    finite_time_mask = np.isfinite(project_time)
+    finite_time = project_time[finite_time_mask]
+    if finite_time.size == 0:
+        return MeasurementWriteResult.SKIPPED_NO_CHANNEL
+    if crop_to_active_interval:
+        if active_interval is None:
+            raise ValueError("Cropped measurement PNG export requires ACTIVE_TEST")
+        x_min, x_max = (float(active_interval[0]), float(active_interval[1]))
+        if not np.isfinite(x_min) or not np.isfinite(x_max) or x_min >= x_max:
+            raise ValueError("Measurement PNG ACTIVE_TEST must be finite and increasing")
+        time_window = finite_time_mask & (project_time >= x_min) & (project_time <= x_max)
+    else:
+        x_min = float(np.min(finite_time))
+        x_max = float(np.max(finite_time))
+        time_window = finite_time_mask
     finite_values = np.concatenate(
-        [channel.values[np.isfinite(channel.values)] for channel in selected]
+        [
+            channel.values[time_window & np.isfinite(channel.values)]
+            for channel in selected
+        ]
     )
-    if finite_time.size == 0 or finite_values.size == 0:
+    if finite_values.size == 0:
         return MeasurementWriteResult.SKIPPED_NO_CHANNEL
 
     width, height = 1600, 1000
@@ -95,8 +113,6 @@ def MeasurementPng_Write(
     painter.setPen(QColor("#172033"))
     painter.setFont(QFont(font_name, 24, QFont.Weight.Bold))
     painter.drawText(QRectF(0, 30, width, 52), Qt.AlignmentFlag.AlignCenter, title)
-    x_min = float(np.min(finite_time))
-    x_max = float(np.max(finite_time))
     y_min = min(0.0, float(np.min(finite_values)))
     y_max = max(0.0, float(np.max(finite_values)))
     if x_max <= x_min:
@@ -107,7 +123,7 @@ def MeasurementPng_Write(
     y_min -= y_padding
     y_max += y_padding
 
-    if active_interval is not None:
+    if active_interval is not None and not crop_to_active_interval:
         start = max(x_min, float(active_interval[0]))
         end = min(x_max, float(active_interval[1]))
         if start < end:
@@ -142,7 +158,7 @@ def MeasurementPng_Write(
 
     colors = ("#2563eb", "#dc2626", "#059669", "#7c3aed", "#ea580c", "#0891b2")
     for channel_index, channel in enumerate(selected):
-        finite = np.isfinite(project_time) & np.isfinite(channel.values)
+        finite = time_window & np.isfinite(channel.values)
         points = QPolygonF(
             [
                 QPointF(
@@ -158,7 +174,10 @@ def MeasurementPng_Write(
         )
         color = QColor(colors[channel_index % len(colors)])
         painter.setPen(QPen(color, 3))
+        painter.save()
+        painter.setClipRect(plot)
         painter.drawPolyline(points)
+        painter.restore()
         legend_y = 88 + channel_index * 24
         painter.drawLine(QPointF(160, legend_y), QPointF(205, legend_y))
         painter.setPen(QColor("#172033"))

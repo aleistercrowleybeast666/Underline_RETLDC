@@ -23,7 +23,10 @@ from underline_retldc.core.project import (
 )
 from underline_retldc.core.project_data import ProjectData, Source, Stream
 from underline_retldc.core.region_detection import detect_activity_segments
-from underline_retldc.core.segmentation import Segmentation_SelectReference
+from underline_retldc.core.segmentation import (
+    Segmentation_SelectReference,
+    Segmentation_SelectReferenceForRole,
+)
 from underline_retldc.core.units import (
     Unit_ValueFormat,
     UnitDisplayMode,
@@ -243,6 +246,12 @@ def test_segmentation_prefers_semantic_chamber_pressure_even_when_raw() -> None:
     assert selected.reference.channel_id == "pc"
     assert selected.priority == "chamber_pressure"
     assert not selected.physical_unit
+    pressure = Segmentation_SelectReferenceForRole(project, "chamber_pressure")
+    thrust = Segmentation_SelectReferenceForRole(project, "thrust")
+    assert pressure is not None and pressure.reference.channel_id == "pc"
+    assert thrust is not None and thrust.reference.channel_id == "force"
+    with pytest.raises(ValueError, match="Unsupported segmentation reference role"):
+        Segmentation_SelectReferenceForRole(project, "temperature")
 
 
 def test_project_time_offset_does_not_resample_local_data() -> None:

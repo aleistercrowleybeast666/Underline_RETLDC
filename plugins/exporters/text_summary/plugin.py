@@ -84,8 +84,12 @@ class AnalysisTextExporter(ExporterPlugin):
             "calibration_parameters": "Calibration Parameters",
             "processor": "Processor",
             "processor_version": "Processor Version",
-            "compensation": "Motor Weight-Change Compensation Enabled",
-            "sign": "Sign",
+            "thrust_polarity": "Thrust Polarity",
+            "polarity_positive": "Positive (+1)",
+            "polarity_reversed": "Reversed (-1)",
+            "thrust_correction": "Thrust Correction",
+            "correction_none": "None",
+            "correction_motor_weight": "Motor Weight-Change Compensation",
             "pre_baseline": "PRE Baseline",
             "pre_baseline_source": "PRE Baseline Source",
             "post_baseline": "POST Baseline",
@@ -143,8 +147,12 @@ class AnalysisTextExporter(ExporterPlugin):
             "calibration_parameters": "校准参数",
             "processor": "处理器",
             "processor_version": "处理器版本",
-            "compensation": "发动机自重变化补偿已启用",
-            "sign": "推力极性",
+            "thrust_polarity": "推力极性",
+            "polarity_positive": "正向 (+1)",
+            "polarity_reversed": "反向 (-1)",
+            "thrust_correction": "推力修正",
+            "correction_none": "不启用",
+            "correction_motor_weight": "发动机自重变化补偿",
             "pre_baseline": "PRE 基线",
             "pre_baseline_source": "PRE 基线来源",
             "post_baseline": "POST 基线",
@@ -290,9 +298,19 @@ class AnalysisTextExporter(ExporterPlugin):
             plugin = provenance.get(kind)
             return plugin.get(key) if isinstance(plugin, Mapping) else None
 
-        processor_config = plugin_value("processor", "config")
-        if not isinstance(processor_config, Mapping):
-            processor_config = {}
+        thrust_polarity = int(config.get("thrust_polarity", 1))
+        if thrust_polarity not in {-1, 1}:
+            raise ValueError("TXT thrust_polarity must be +1 or -1")
+        polarity_text = labels[
+            "polarity_positive" if thrust_polarity == 1 else "polarity_reversed"
+        ]
+        processor_id = plugin_value("processor", "id")
+        if processor_id in (None, ""):
+            correction_text = labels["correction_none"]
+        elif processor_id == "builtin.processor.vertical_linear_baseline":
+            correction_text = labels["correction_motor_weight"]
+        else:
+            correction_text = str(processor_id)
         lines = [
             f"{FULL_NAME}",
             labels["title"],
@@ -326,8 +344,8 @@ class AnalysisTextExporter(ExporterPlugin):
             f"{labels['processor']}: {field(plugin_value('processor', 'id'))}",
             f"{labels['processor_version']}: "
             f"{field(plugin_value('processor', 'version'))}",
-            f"{labels['compensation']}: {field(processor_config.get('enabled'))}",
-            f"{labels['sign']}: {field(processor_config.get('sign'))}",
+            f"{labels['thrust_polarity']}: {polarity_text}",
+            f"{labels['thrust_correction']}: {correction_text}",
             f"{labels['pre_baseline']}: "
             f"{field(processing_metadata.get('baseline_start'))}",
             f"{labels['pre_baseline_source']}: "

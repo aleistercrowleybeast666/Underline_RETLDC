@@ -25,6 +25,12 @@ class StandardComboBox(QComboBox):
             QAbstractItemView.ScrollMode.ScrollPerItem
         )
 
+    def set_header_variant(self) -> None:
+        """Mark this field and its detached popup for Header-specific QSS."""
+
+        self.setProperty("headerCombo", True)
+        self.view().setObjectName("headerComboPopup")
+
     def showPopup(self) -> None:
         view = self.view()
         vertical_policy = (

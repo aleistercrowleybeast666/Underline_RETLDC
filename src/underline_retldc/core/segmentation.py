@@ -33,29 +33,45 @@ def _signal_is_valid(dataset: Dataset, channel_id: str) -> bool:
 
 
 def Segmentation_SelectReference(project_data: ProjectData) -> SegmentationReference | None:
-    bindings = project_data.primary_channels
-    for reference, priority, dimension in (
-        (bindings.chamber_pressure, "chamber_pressure", "pressure"),
-        (bindings.thrust, "thrust", "force"),
-    ):
-        if reference is None:
-            continue
-        try:
-            stream = project_data.streams[reference.stream_id]
-            channel = project_data.channel(reference)
-        except KeyError:
-            continue
-        if (
-            Quantity_Dimension(channel.quantity) != dimension
-            or not _signal_is_valid(stream.dataset, channel.id)
-        ):
-            continue
-        return SegmentationReference(
-            reference,
-            priority,
-            Unit_IsPhysicalForQuantity(channel.quantity, channel.data_unit),
-        )
+    for priority in ("chamber_pressure", "thrust"):
+        selected = Segmentation_SelectReferenceForRole(project_data, priority)
+        if selected is not None:
+            return selected
     return None
+
+
+def Segmentation_SelectReferenceForRole(
+    project_data: ProjectData,
+    role: str,
+) -> SegmentationReference | None:
+    """Resolve one explicitly requested Project segmentation reference role."""
+
+    bindings = project_data.primary_channels
+    if role == "chamber_pressure":
+        reference = bindings.chamber_pressure
+        dimension = "pressure"
+    elif role == "thrust":
+        reference = bindings.thrust
+        dimension = "force"
+    else:
+        raise ValueError(f"Unsupported segmentation reference role {role!r}")
+    if reference is None:
+        return None
+    try:
+        stream = project_data.streams[reference.stream_id]
+        channel = project_data.channel(reference)
+    except KeyError:
+        return None
+    if (
+        Quantity_Dimension(channel.quantity) != dimension
+        or not _signal_is_valid(stream.dataset, channel.id)
+    ):
+        return None
+    return SegmentationReference(
+        reference,
+        role,
+        Unit_IsPhysicalForQuantity(channel.quantity, channel.data_unit),
+    )
 
 
 def Segmentation_SelectReferenceFromDatasets(

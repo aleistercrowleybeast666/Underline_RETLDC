@@ -54,6 +54,7 @@ class ExportDialog(QDialog):
     MAX_VISIBLE_EXPORT_OPTIONS = 10
 
     EXPORTERS: tuple[ExportOption, ...] = ()
+    OUTPUT_LOCALE_FOLLOW_UI = "follow_ui"
     OUTPUT_SUFFIXES = {"zh_CN": "ZH", "en_US": "EN"}
     ENG_FIELDS = (
         "motor_designation",
@@ -75,7 +76,7 @@ class ExportDialog(QDialog):
         self._user_touched: set[str] = set()
         self._availability_refreshing = False
         self.setModal(True)
-        self.resize(680, 620)
+        self.resize(820, 620)
 
         self.destination_group = QGroupBox()
         destination_layout = QFormLayout(self.destination_group)
@@ -89,14 +90,10 @@ class ExportDialog(QDialog):
         destination_layout.addRow(self.directory_label, directory_row)
         self.output_language_label = QLabel()
         self.output_language_combo = StandardComboBox()
-        self.output_language_combo.addItem("简体中文（_ZH）", "zh_CN")
-        self.output_language_combo.addItem("English (_EN)", "en_US")
-        initial_locale = (
-            translations.locale if translations.locale in self.OUTPUT_SUFFIXES else "en_US"
-        )
-        self.output_language_combo.setCurrentIndex(
-            self.output_language_combo.findData(initial_locale)
-        )
+        self.output_language_combo.addItem("", self.OUTPUT_LOCALE_FOLLOW_UI)
+        self.output_language_combo.addItem("", "zh_CN")
+        self.output_language_combo.addItem("", "en_US")
+        self.output_language_combo.setCurrentIndex(0)
         self.output_language_combo.currentIndexChanged.connect(
             self._format_labels_update
         )
@@ -158,11 +155,31 @@ class ExportDialog(QDialog):
         button_row.addWidget(self.close_button)
         button_row.addWidget(self.export_button)
 
+        self.content_widget = QWidget()
+        content_layout = QVBoxLayout(self.content_widget)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.addWidget(self.destination_group)
+        content_layout.addWidget(self.formats_group)
+        content_layout.addWidget(self.eng_group)
+        content_layout.addStretch(1)
+        self.content_scroll = QScrollArea()
+        self.content_scroll.setObjectName("exportDialogScroll")
+        self.content_scroll.setWidgetResizable(True)
+        self.content_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        self.content_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.content_scroll.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        self.content_scroll.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
+        )
+        self.content_scroll.setWidget(self.content_widget)
+
         layout = QVBoxLayout(self)
-        layout.addWidget(self.destination_group)
-        layout.addWidget(self.formats_group)
-        layout.addWidget(self.eng_group)
-        layout.addStretch(1)
+        layout.addWidget(self.content_scroll, 1)
         layout.addLayout(button_row)
         self._export_options_set(self.EXPORTERS)
         self.retranslate()
@@ -178,6 +195,15 @@ class ExportDialog(QDialog):
         self.directory_label.setText(t("export.directory"))
         self.directory_button.setText(t("common.browse"))
         self.output_language_label.setText(t("export.output_language"))
+        output_language_keys = {
+            self.OUTPUT_LOCALE_FOLLOW_UI: "export.output_language.follow_ui",
+            "zh_CN": "export.output_language.zh_cn",
+            "en_US": "export.output_language.en_us",
+        }
+        for locale_id, translation_key in output_language_keys.items():
+            index = self.output_language_combo.findData(locale_id)
+            if index >= 0:
+                self.output_language_combo.setItemText(index, t(translation_key))
         self.formats_group.setTitle(t("export.formats"))
         self.eng_group.setTitle(t("export.motor_metadata"))
         self._format_labels_update()
@@ -476,17 +502,42 @@ class ExportDialog(QDialog):
             if checkbox.isChecked()
         )
 
-    def set_selected_exporter_ids(self, plugin_ids: list[str] | tuple[str, ...]) -> None:
+    def set_selected_exporter_ids(
+        self,
+        plugin_ids: list[str] | tuple[str, ...],
+        *,
+        initialized_plugin_ids: list[str] | tuple[str, ...] | None = None,
+    ) -> None:
         selected = set(plugin_ids)
+        initialized = (
+            None if initialized_plugin_ids is None else set(initialized_plugin_ids)
+        )
+        known = set(self.exporter_checks)
+        if initialized is None:
+            self._default_applied.clear()
+            self._user_touched.clear()
+        else:
+            self._default_applied = initialized & known
+            self._user_touched = initialized & known
         self._availability_refreshing = True
         try:
             for plugin_id, checkbox in self.exporter_checks.items():
                 checkbox.setChecked(plugin_id in selected and checkbox.isEnabled())
-                self._default_applied.add(plugin_id)
-                self._user_touched.add(plugin_id)
+                if initialized is None and checkbox.isEnabled():
+                    self._default_applied.add(plugin_id)
+                    self._user_touched.add(plugin_id)
         finally:
             self._availability_refreshing = False
+        if initialized is not None:
+            self._availability_refresh()
         self._export_controls_refresh()
+
+    def initialized_exporter_ids(self) -> tuple[str, ...]:
+        return tuple(
+            option.plugin_id
+            for option in self._options
+            if option.plugin_id in self._default_applied
+        )
 
     def reset_default_selection(self) -> None:
         self._default_applied.clear()
@@ -530,13 +581,29 @@ class ExportDialog(QDialog):
         return self.annotate_metrics_check.isChecked()
 
     def output_locale(self) -> str:
-        locale = str(self.output_language_combo.currentData())
+        selection = self.output_locale_selection()
+        locale = (
+            self._translations.locale
+            if selection == self.OUTPUT_LOCALE_FOLLOW_UI
+            else selection
+        )
         return locale if locale in self.OUTPUT_SUFFIXES else "en_US"
 
+    def output_locale_selection(self) -> str:
+        selection = str(self.output_language_combo.currentData())
+        supported = {self.OUTPUT_LOCALE_FOLLOW_UI, *self.OUTPUT_SUFFIXES}
+        return (
+            selection
+            if selection in supported
+            else self.OUTPUT_LOCALE_FOLLOW_UI
+        )
+
     def set_output_locale(self, locale: str) -> None:
-        index = self.output_language_combo.findData(locale)
+        supported = {self.OUTPUT_LOCALE_FOLLOW_UI, *self.OUTPUT_SUFFIXES}
+        selection = locale if locale in supported else self.OUTPUT_LOCALE_FOLLOW_UI
+        index = self.output_language_combo.findData(selection)
         if index < 0:
-            index = self.output_language_combo.findData("en_US")
+            index = self.output_language_combo.findData(self.OUTPUT_LOCALE_FOLLOW_UI)
         self.output_language_combo.setCurrentIndex(index)
 
     def export_filename(self, plugin_id: str) -> str:

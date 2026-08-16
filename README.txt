@@ -1,4 +1,4 @@
-Underline RETLDC 使用说明
+Underline_RETLDC 使用说明
 =========================
 
 英文全称：Underline Rocket Engine Test Log Decode and Compute
@@ -36,6 +36,9 @@ Underline RETLDC 使用说明
 
 如果提示找不到 .venv，请重新执行第 3 步。
 
+顶部“主题”使用普通下拉框选择“浅色”或“深色”，选择会立即生效并在下次启动时保留；
+“设置”中的主题下拉框与顶部始终同步。
+
 
 二、最简单的使用流程
 ------------------
@@ -57,8 +60,11 @@ Underline RETLDC 使用说明
     主要推力。自动结果只是建议，用户保留最终决定权。
     自动识别后，可在推力或燃烧室压力页面拖动、输入同一套试车前/试车/试车后区间；
     两个页面和工程状态会立即同步。
-11. 根据试车方式选择是否启用发动机自重变化补偿，并检查假设基线提示。
-12. 检查修正后的曲线和计算结果；需要时导出 TXT、PNG、CSV、JSON 或 OpenRocket ENG。
+11. 设置“推力极性”。如果传感器方向与软件定义相反，选择“反向 (-1)”。极性会先
+    应用于已校准推力，与下一步的可选推力修正是两件事。
+12. 根据试车方式选择是否启用发动机自重变化补偿，并检查假设基线提示。即使选择
+    “不启用”，推力极性仍然有效，最终处理通道会保留正确方向。
+13. 检查修正后的曲线和计算结果；需要时导出 TXT、PNG、CSV、JSON 或 OpenRocket ENG。
 
 单位只需要这样理解：
 
@@ -113,6 +119,14 @@ Underline RETLDC 使用说明
 
 可在窗口顶部切换。
 
+导出窗口的“输出语言”默认选择“跟随界面”，并放在第一项；切换界面语言后，导出的
+`_ZH`/`_EN` 文件名、表格文字和图片文字会一起变化。也可以固定选择简体中文或 English。
+导出窗口内容可上下滚动，“取消”和“导出所选文件”按钮固定在底部，不会被较长的格式
+列表或发动机信息表单挤出窗口。
+某个页面完成计算后，该页面对应且科学条件已经满足的导出格式会在第一次解锁时自动勾选；
+包括满足物理推力、试车区间等条件后的 ENG。用户手动取消后，刷新或重开工程不会擅自恢复。
+燃烧室压力曲线 PNG 只绘制试车阶段，横轴也只覆盖 ACTIVE_TEST，不包含试车前后数据。
+
 程序支持浅色模式和深色模式；选择会保存，下次启动继续使用。
 
 
@@ -128,10 +142,6 @@ Underline RETLDC 使用说明
 
    plugins/parsers/tr_f/
 
-你自己的 Parser 放在：
-
-   plugins/parsers/<插件文件夹>/
-
 官方插件和用户插件使用完全相同的 plugin.json、plugin.py、Plugin API、Loader、
 SchemaForm 和中英文资源；TR_F 只是软件默认附带的 Parser，不是 Core 特例。
 
@@ -142,17 +152,20 @@ SchemaForm 和中英文资源；TR_F 只是软件默认附带的 Parser，不是
    自动识别依据和坏数据处理要求。
 4. AI 有 Agent 或仓库编辑能力时，让它直接在当前工程中创建插件并运行测试。
 5. AI 无法访问工程时，要求它生成一个可直接安装的插件 ZIP。
-6. 把 ZIP 解压到 plugins/parsers/。解压后应直接得到：
+6. 在 Underline RETLDC 中打开“工具 → 插件”，点击“安装插件...”，选择 AI 生成的 ZIP。
+   软件会读取 plugin.json、判断解析器类别、复制到合适位置并自动刷新。
+7. ZIP 内部仍应直接是一个插件文件夹：
 
-   plugins/parsers/<插件文件夹>/plugin.json
-   plugins/parsers/<插件文件夹>/plugin.py
-   plugins/parsers/<插件文件夹>/i18n/zh_CN.json
-   plugins/parsers/<插件文件夹>/i18n/en_US.json
+   <插件文件夹>/plugin.json
+   <插件文件夹>/plugin.py
+   <插件文件夹>/i18n/zh_CN.json
+   <插件文件夹>/i18n/en_US.json
 
-   ZIP 内不要再套一层 Underline_RETLDC/plugins，也不要把文件散落在 parsers/ 中。
-7. 重启软件，或打开“工具 → 插件”后刷新。新 Parser 应自动出现在解析器下拉框。
+   ZIP 内不要套入 Underline_RETLDC/plugins；安装器会自行选择目标根目录和 parsers 类别。
 
-了解 Python 的用户也可直接以 plugins/parsers/tr_f/ 为模板编写。普通新 Parser
+高级用户也可把解压后的插件文件夹手工复制到程序目录的 plugins/parsers/，或用户插件
+目录的 parsers/，再打开“工具 → 插件 → 刷新”。了解 Python 的用户可直接以
+plugins/parsers/tr_f/ 为模板编写。普通新 Parser
 原则上不需要修改 Core 或主 GUI；如果需求无法由公开 Plugin API 表达，应使用能读取
 完整仓库的 Coding Agent 先扩展平台，而不是让 ZIP 覆盖 Core。
 
@@ -176,9 +189,13 @@ SchemaForm 和中英文资源；TR_F 只是软件默认附带的 Parser，不是
 1. 把“新增校准配置_PROMPT.txt”全文复制给 AI。
 2. 在“【本次具体要求】”写明校准公式、参数、范围、输入意义、输出物理量和单位。
 3. 有 Agent 时让 AI 直接修改当前仓库并测试。
-4. 无 Agent 时让 AI 生成插件 ZIP，再解压到 plugins/calibrations/。
-5. 最终应形成 plugins/calibrations/<插件文件夹>/plugin.json 和 plugin.py；重启或刷新后，
-   新模型应自动出现在校准下拉框。
+4. 无 Agent 时让 AI 生成插件 ZIP。
+5. 打开“工具 → 插件 → 安装插件...”，选择这个 ZIP。软件会自动识别 Calibration 类型、
+   复制到正确类别并刷新，新模型随后会出现在校准下拉框。
+
+ZIP 顶层仍是 <插件文件夹>/，其中直接包含 plugin.json、plugin.py 和可选 i18n/；不要把
+Underline_RETLDC/plugins/calibrations 路径一起打进 ZIP。高级用户仍可手工复制到程序插件
+根的 plugins/calibrations/ 或用户插件根的 calibrations/，然后刷新。
 
 校准模型只负责数值映射，不承担解析、baseline、自重变化补偿、滤波、分析或导出。
 
@@ -186,7 +203,15 @@ SchemaForm 和中英文资源；TR_F 只是软件默认附带的 Parser，不是
 七、插件放在哪里
 --------------
 
-源码版和便携版随软件提供的插件统一位于：
+普通用户推荐这样安装插件：
+
+1. 打开 Underline RETLDC。
+2. 选择“工具 → 插件”。
+3. 点击“安装插件...”。
+4. 选择插件文件夹或 ZIP。
+5. 软件自动读取 plugin.json、判断插件类型、复制到正确类别并刷新。
+
+程序插件目录位于当前应用根目录：
 
    plugins/
    ├─ parsers/
@@ -197,21 +222,42 @@ SchemaForm 和中英文资源；TR_F 只是软件默认附带的 Parser，不是
 
 插件类型以 plugin.json 的 plugin_type 为准，分类文件夹主要帮助人阅读。
 
-软件还会读取当前 Windows 用户目录下的：
+安装器优先把插件放在这个程序插件目录。如果它不可创建/写入，或者实际复制发生权限
+错误，安装器才会自动改用当前 Windows 用户插件目录：
 
    %APPDATA%\Underline_RETLDC\plugins\
 
-“插件管理”安装文件夹时优先使用这个可写目录，因此安装版通常不需要管理员权限。
-源码/便携用户也可手工把可信插件文件夹放入工程根目录 plugins/ 的对应类别。
-无论来源显示为 Bundled 还是 User，它们都进入同一个 Registry，使用同一套 API。
+软件判断的是目标目录的实际写权限，不根据 C:、D: 或其他盘符猜测，也不会要求普通
+插件安装必须以管理员身份运行。D: 只是推荐，不是运行要求；程序可以位于 C:、E:、
+网络/便携目录或其他用户自定义路径。
+
+建议将 Underline RETLDC 安装或解压到 D 盘等可写的非系统目录，例如：
+
+   D:\Tools\Underline_RETLDC
+
+这样程序插件可以直接保存在软件目录中，便于整体移动和备份。如果程序位于
+C:\Program Files 等受保护目录，插件会自动安装到当前用户的插件目录。
+
+Installing or extracting Underline RETLDC to a writable non-system location such as the D: drive
+is recommended, for example:
+
+   D:\Tools\Underline_RETLDC
+
+This allows application plugins to remain with the program for easier backup and portable use.
+If the application is installed in a protected location such as C:\Program Files, plugins will
+automatically be installed to the current user's plugin folder instead.
+
+高级用户/开发者仍可手工把可信插件目录复制到程序 plugins/<category>/ 或用户插件目录的
+对应类别，再选择“工具 → 插件 → 刷新”。列表来源“随软件提供 / 程序目录 / 用户目录”
+仅说明发现位置：随正式程序发布的官方插件为“随软件提供”，后来放入程序插件目录的
+第三方插件为“程序目录”，用户根中的插件为“用户目录”。三者都进入同一个 Registry，
+使用同一套 API；来源标签不代表软件对第三方插件作出安全背书。
 
 
 八、插件安全
 ----------
 
-plugins/ 中的 Python 插件属于“可执行代码”，不是沙箱。
-
-只安装或运行你信任来源的插件。
+外部 Python 插件属于可执行代码，请安装可信来源的插件。插件不是沙箱。
 
 坏插件通常会被程序隔离并显示加载错误，但恶意 Python 插件本身仍可能拥有当前用户权限。
 
@@ -356,6 +402,9 @@ python .\main.py
 
    dist\Underline_RETLDC_0_1_0\Underline_RETLDC_0_1_0.exe
 
+界面中显示的软件版本为 `v0.0.2`；发布文件夹和 EXE 继续使用既定的
+`Underline_RETLDC_0_1_0` 固定交付名称。
+
 发布时必须复制或压缩整个 Underline_RETLDC_0_1_0 文件夹，不能只拿走 EXE。
 `_internal` 中是运行依赖，`plugins` 中是随软件发布的标准插件，二者都不能删除。
 发布文件夹还包含 README、插件生成 Prompt、技术文档和示例数据。
@@ -412,6 +461,9 @@ TR_F、TR_P 和 TR_T 都是“时间 + 一个原始数值”的两列文本，�
    TR_F → 时间 / 原始推力
    TR_P → 时间 / 原始燃烧室压力
    TR_T → 时间 / 原始温度
+
+可以在候选单选项或普通解析器下拉框中直接选择 TR_P。新工程不需要先解析推力文件，室压
+文件就能独立解析并进入燃烧室压力页面。
 
 确认的含义只决定通道的物理类别；原始数值仍使用 raw 单位，必要时还要应用真实校准。
 

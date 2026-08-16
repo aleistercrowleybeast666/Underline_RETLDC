@@ -11,6 +11,46 @@ from underline_retldc.core.units import UnitSource
 from underline_retldc.plugin_api.calibration import CalibrationModelPlugin
 from underline_retldc.plugin_api.common import ProcessingResult
 
+THRUST_ORIENTED_CHANNEL_ID = "thrust_oriented"
+
+
+def ThrustPolarity_Normalize(polarity: int | str) -> int:
+    if isinstance(polarity, bool):
+        raise ValueError("Thrust polarity must be +1 or -1")
+    if isinstance(polarity, int):
+        normalized = polarity
+    elif isinstance(polarity, str) and polarity.strip() in {"+1", "1", "-1"}:
+        normalized = int(polarity)
+    else:
+        raise ValueError("Thrust polarity must be +1 or -1")
+    if normalized not in {-1, 1}:
+        raise ValueError("Thrust polarity must be +1 or -1")
+    return normalized
+
+
+def ThrustPolarity_Apply(
+    dataset: Dataset,
+    *,
+    input_channel_id: str,
+    polarity: int | str,
+    output_channel_id: str = THRUST_ORIENTED_CHANNEL_ID,
+) -> Dataset:
+    """Create the workflow-oriented thrust channel without changing calibrated data."""
+    source = dataset.channel(input_channel_id)
+    normalized = ThrustPolarity_Normalize(polarity)
+    oriented = source.with_values(
+        channel_id=output_channel_id,
+        values=normalized * source.values,
+        role="oriented",
+        metadata={
+            "source_channel_id": input_channel_id,
+            "thrust_polarity": normalized,
+        },
+        semantic_role="thrust",
+        name=f"{source.name} (oriented)",
+    )
+    return dataset.with_channel(oriented)
+
 
 def Calibration_OutputChannelId(source: Channel) -> str:
     return f"{source.id}_calibrated"
@@ -98,6 +138,9 @@ def Processing_Passthrough(
 ) -> ProcessingResult:
     """Create a reproducible processed channel without applying a Processor plugin."""
     source = dataset.channel(input_channel_id)
+    polarity = ThrustPolarity_Normalize(
+        source.metadata.get("thrust_polarity", 1)
+    )
     channel = Channel(
         id=output_channel_id,
         quantity="thrust",
@@ -108,7 +151,7 @@ def Processing_Passthrough(
             "source_channel_id": input_channel_id,
             "processor_id": None,
             "compensation": "none",
-            "user_confirmed": False,
+            "thrust_polarity": polarity,
         },
         unit_source=source.unit_source,
         display_unit=source.display_unit,
@@ -117,5 +160,9 @@ def Processing_Passthrough(
     return ProcessingResult(
         dataset=dataset.with_channel(channel),
         output_channel_ids=(output_channel_id,),
-        metadata={"compensation": "none", "processor_id": None},
+        metadata={
+            "compensation": "none",
+            "processor_id": None,
+            "thrust_polarity": polarity,
+        },
     )

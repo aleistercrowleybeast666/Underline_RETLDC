@@ -32,26 +32,69 @@ QLabel:disabled, QCheckBox:disabled, QRadioButton:disabled {
 QWidget#headerBar {
     background: #123a78;
     border: 0;
-    border-radius: 4px;
+    border-radius: 0;
 }
 QLabel#headerTitle {
     background: transparent;
     color: #ffffff;
-    font-size: 21px;
-    font-weight: 650;
-    padding: 6px;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 4px 2px;
 }
-QLabel#headerVersion, QLabel#headerCredit, QLabel#headerLanguageLabel {
+QLabel#headerVersion {
     background: transparent;
     color: #ffffff;
+    font-weight: 600;
+    font-size: 13px;
 }
-QPushButton#themeToggleButton {
+QLabel#headerCredit {
+    background: transparent;
+    color: #ffffff;
+    font-weight: 400;
+    font-size: 13px;
+}
+QLabel#headerLanguageLabel, QLabel#headerThemeLabel {
+    background: transparent;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 13px;
+}
+QComboBox#headerLanguageCombo, QComboBox#headerThemeCombo {
     background: #1c4f94;
     color: #ffffff;
     border: 1px solid #6f91be;
-    padding: 4px 9px;
+    min-height: 25px;
+    padding: 2px 6px;
+    font-weight: 400;
+    font-size: 13px;
 }
-QPushButton#themeToggleButton:hover { background: #2f6fed; border-color: #9bbcff; }
+QComboBox#headerLanguageCombo { min-width: 100px; }
+QComboBox#headerThemeCombo { min-width: 76px; }
+QComboBox#headerLanguageCombo:hover, QComboBox#headerThemeCombo:hover {
+    background: #2f6fed;
+    border-color: #9bbcff;
+}
+QAbstractItemView#headerComboPopup {
+    background: #1c4f94;
+    color: #ffffff;
+    border: 1px solid #315a94;
+    selection-background-color: #2f6fed;
+    selection-color: #ffffff;
+    outline: 0;
+    font-weight: 400;
+    font-size: 13px;
+}
+QAbstractItemView#headerComboPopup::item {
+    background: #1c4f94;
+    color: #ffffff;
+    min-height: 26px;
+    padding: 3px 6px;
+}
+QAbstractItemView#headerComboPopup::item:hover,
+QAbstractItemView#headerComboPopup::item:selected {
+    background: #2f6fed;
+    color: #ffffff;
+}
 QListWidget#navigation {
     background: #123a78;
     color: #ffffff;
@@ -78,7 +121,7 @@ QGroupBox::title {
     color: #123a78;
 }
 QLineEdit, QPlainTextEdit, QTextEdit, QComboBox, QSpinBox, QDoubleSpinBox,
-QTableWidget, QListWidget:not(#navigation), QTreeWidget {
+QTableWidget, QListWidget, QTreeWidget {
     background: #ffffff;
     color: #111111;
     border: 1px solid #aeb8c8;
@@ -120,11 +163,11 @@ QHeaderView::section {
     border-right: 1px solid #c8d0dd;
     border-bottom: 1px solid #c8d0dd;
 }
-QTableWidget::item, QListWidget:not(#navigation)::item {
+QTableWidget::item, QListWidget::item {
     background: #ffffff;
     color: #111111;
 }
-QTableWidget::item:selected, QListWidget:not(#navigation)::item:selected {
+QTableWidget::item:selected, QListWidget::item:selected {
     background: #2f6fed;
     color: #ffffff;
 }
@@ -150,6 +193,10 @@ QLabel#warningLabel {
     color: #513f00;
     padding: 10px;
     border-radius: 4px;
+}
+QLabel#secondaryLabel {
+    color: #4b5563;
+    padding: 2px 4px 6px 4px;
 }
 QMenuBar, QMenuBar#mainMenuBar, QToolBar, QToolBar#mainToolBar {
     background: #123a78;
@@ -242,26 +289,69 @@ QLabel:disabled, QCheckBox:disabled, QRadioButton:disabled {
 QWidget#headerBar {
     background: #0b2447;
     border: 0;
-    border-radius: 4px;
+    border-radius: 0;
 }
 QLabel#headerTitle {
     background: transparent;
     color: #f8fafc;
-    font-size: 21px;
-    font-weight: 650;
-    padding: 6px;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 4px 2px;
 }
-QLabel#headerVersion, QLabel#headerCredit, QLabel#headerLanguageLabel {
+QLabel#headerVersion {
     background: transparent;
     color: #e5e7eb;
+    font-weight: 600;
+    font-size: 13px;
 }
-QPushButton#themeToggleButton {
+QLabel#headerCredit {
+    background: transparent;
+    color: #e5e7eb;
+    font-weight: 400;
+    font-size: 13px;
+}
+QLabel#headerLanguageLabel, QLabel#headerThemeLabel {
+    background: transparent;
+    color: #e5e7eb;
+    font-weight: 600;
+    font-size: 13px;
+}
+QComboBox#headerLanguageCombo, QComboBox#headerThemeCombo {
     background: #163b6c;
     color: #f8fafc;
     border: 1px solid #4f6f99;
-    padding: 4px 9px;
+    min-height: 25px;
+    padding: 2px 6px;
+    font-weight: 400;
+    font-size: 13px;
 }
-QPushButton#themeToggleButton:hover { background: #245ba0; border-color: #60a5fa; }
+QComboBox#headerLanguageCombo { min-width: 100px; }
+QComboBox#headerThemeCombo { min-width: 76px; }
+QComboBox#headerLanguageCombo:hover, QComboBox#headerThemeCombo:hover {
+    background: #245ba0;
+    border-color: #60a5fa;
+}
+QAbstractItemView#headerComboPopup {
+    background: #163b6c;
+    color: #f8fafc;
+    border: 1px solid #234a76;
+    selection-background-color: #3b82f6;
+    selection-color: #ffffff;
+    outline: 0;
+    font-weight: 400;
+    font-size: 13px;
+}
+QAbstractItemView#headerComboPopup::item {
+    background: #163b6c;
+    color: #f8fafc;
+    min-height: 26px;
+    padding: 3px 6px;
+}
+QAbstractItemView#headerComboPopup::item:hover,
+QAbstractItemView#headerComboPopup::item:selected {
+    background: #3b82f6;
+    color: #ffffff;
+}
 QListWidget#navigation {
     background: #0b2447;
     color: #f8fafc;
@@ -288,7 +378,7 @@ QGroupBox::title {
     color: #93c5fd;
 }
 QLineEdit, QPlainTextEdit, QTextEdit, QComboBox, QSpinBox, QDoubleSpinBox,
-QTableWidget, QListWidget:not(#navigation), QTreeWidget {
+QTableWidget, QListWidget, QTreeWidget {
     background: #182235;
     color: #e5e7eb;
     border: 1px solid #475569;
@@ -332,11 +422,11 @@ QHeaderView::section {
     border-bottom: 1px solid #475569;
 }
 QTableCornerButton::section { background: #1e293b; border: 1px solid #334155; }
-QTableWidget::item, QListWidget:not(#navigation)::item {
+QTableWidget::item, QListWidget::item {
     background: #182235;
     color: #e5e7eb;
 }
-QTableWidget::item:selected, QListWidget:not(#navigation)::item:selected {
+QTableWidget::item:selected, QListWidget::item:selected {
     background: #3b82f6;
     color: #ffffff;
 }
@@ -362,6 +452,10 @@ QLabel#warningLabel {
     color: #fde68a;
     padding: 10px;
     border-radius: 4px;
+}
+QLabel#secondaryLabel {
+    color: #cbd5e1;
+    padding: 2px 4px 6px 4px;
 }
 QMenuBar, QMenuBar#mainMenuBar, QToolBar, QToolBar#mainToolBar {
     background: #0b2447;

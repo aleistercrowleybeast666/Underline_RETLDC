@@ -41,17 +41,16 @@ class OpenRocketEngExporter(ExporterPlugin):
             version="1.0.0",
             api_version="1",
             name="OpenRocket ENG Exporter",
-            description="Exports the confirmed processed thrust curve as a RASP ENG file",
+            description="Exports the analyzed processed thrust curve as a RASP ENG file",
             translation_key="exporter.openrocket_eng.name",
         )
 
     def config_schema(self) -> dict[str, Any]:
         return {
             "type": "object",
-            "required": [*self.REQUIRED_FIELDS, "ignition", "burnout", "curve_confirmed"],
+            "required": [*self.REQUIRED_FIELDS, "ignition", "burnout"],
             "properties": {
                 "channel_id": {"type": "string", "default": "thrust_processed"},
-                "curve_confirmed": {"type": "boolean", "default": False},
                 "motor_designation": {"type": "string"},
                 "diameter_mm": {"type": "number"},
                 "length_mm": {"type": "number"},
@@ -74,7 +73,7 @@ class OpenRocketEngExporter(ExporterPlugin):
                 "group_id": "thrust",
                 "group_order": 10,
                 "format_order": 30,
-                "default_selected": False,
+                "default_selected": True,
                 "locale_qualified": False,
                 "requires_motor_metadata": True,
             },
@@ -123,15 +122,6 @@ class OpenRocketEngExporter(ExporterPlugin):
                         },
                     )
                 )
-        if not bool(config.get("curve_confirmed", False)):
-            diagnostics.append(
-                Diagnostic(
-                    DiagnosticSeverity.ERROR,
-                    "export.eng.unconfirmed_curve",
-                    "Confirm the final processed thrust curve before ENG export",
-                    plugin_id=self.descriptor.plugin_id,
-                )
-            )
         for field in (
             "diameter_mm",
             "length_mm",

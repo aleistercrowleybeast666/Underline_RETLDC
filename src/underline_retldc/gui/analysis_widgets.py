@@ -6,7 +6,7 @@ from typing import Any
 
 import numpy as np
 import pyqtgraph as pg
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QGroupBox,
@@ -256,6 +256,19 @@ class AnalysisPlotWidget(QWidget):
                 maximum += padding
             self.plot_widget.setYRange(minimum, maximum, padding=0.08)
 
+    def reset_view(self) -> None:
+        """Restore the chart's data-driven automatic X/Y range."""
+
+        # PlotDataItem clipping is useful while panning large logs, but its
+        # current viewport bounds would otherwise make autoRange fit only the
+        # already zoomed fragment. Temporarily expose the full curve bounds.
+        self.plot_widget.setClipToView(False)
+        try:
+            self.plot_widget.enableAutoRange(x=True, y=True)
+            self.plot_widget.autoRange(padding=0.05)
+        finally:
+            self.plot_widget.setClipToView(True)
+
     def set_empty_state(
         self,
         message: str | None,
@@ -302,6 +315,12 @@ class AnalysisResultsPanel(QGroupBox):
 
 
 class AnalysisWorkspaceShell(QWidget):
+    CONTROLS_MINIMUM_WIDTH = 320
+    CONTROLS_MAXIMUM_WIDTH = 400
+    PLOT_MINIMUM_WIDTH = 250
+    RESULTS_MINIMUM_WIDTH = 220
+    RESULTS_MAXIMUM_WIDTH = 310
+
     def __init__(
         self,
         controls: QWidget,
@@ -319,11 +338,12 @@ class AnalysisWorkspaceShell(QWidget):
         controls_scroll.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAsNeeded
         )
-        controls_scroll.setMinimumWidth(300)
-        controls_scroll.setMaximumWidth(420)
+        controls_scroll.setMinimumWidth(self.CONTROLS_MINIMUM_WIDTH)
+        controls_scroll.setMaximumWidth(self.CONTROLS_MAXIMUM_WIDTH)
         controls_scroll.setWidget(controls)
-        results.setMinimumWidth(230)
-        results.setMaximumWidth(350)
+        plot.setMinimumWidth(self.PLOT_MINIMUM_WIDTH)
+        results.setMinimumWidth(self.RESULTS_MINIMUM_WIDTH)
+        results.setMaximumWidth(self.RESULTS_MAXIMUM_WIDTH)
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(controls_scroll)
         splitter.addWidget(plot)
@@ -331,7 +351,10 @@ class AnalysisWorkspaceShell(QWidget):
         splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
         splitter.setStretchFactor(2, 0)
-        splitter.setSizes([340, 1000, 260])
+        splitter.setChildrenCollapsible(False)
+        splitter.setCollapsible(0, False)
+        splitter.setCollapsible(1, False)
+        splitter.setCollapsible(2, False)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(splitter)
@@ -340,3 +363,41 @@ class AnalysisWorkspaceShell(QWidget):
         self.controls_scroll = controls_scroll
         self.plot = plot
         self.results = results
+        self._splitter_initialized = False
+
+    def showEvent(self, event: Any) -> None:
+        super().showEvent(event)
+        if not self._splitter_initialized:
+            QTimer.singleShot(0, self._splitter_sizes_initialize)
+
+    def _splitter_sizes_initialize(self) -> None:
+        handle_space = self.splitter.handleWidth() * 2
+        available = max(0, self.splitter.width() - handle_space)
+        if available <= 0:
+            return
+        left = min(
+            self.CONTROLS_MAXIMUM_WIDTH,
+            max(self.CONTROLS_MINIMUM_WIDTH, round(available * 0.28)),
+        )
+        right = min(
+            self.RESULTS_MAXIMUM_WIDTH,
+            max(self.RESULTS_MINIMUM_WIDTH, round(available * 0.23)),
+        )
+        center = available - left - right
+        if center < self.PLOT_MINIMUM_WIDTH:
+            shortfall = self.PLOT_MINIMUM_WIDTH - center
+            left_reduction = min(
+                shortfall,
+                left - self.CONTROLS_MINIMUM_WIDTH,
+            )
+            left -= left_reduction
+            shortfall -= left_reduction
+            right -= min(
+                shortfall,
+                right - self.RESULTS_MINIMUM_WIDTH,
+            )
+            center = available - left - right
+        self.splitter.setSizes(
+            [left, max(self.PLOT_MINIMUM_WIDTH, center), right]
+        )
+        self._splitter_initialized = True

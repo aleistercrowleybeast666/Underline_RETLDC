@@ -10,8 +10,9 @@ file format, scientific algorithm, persistence schema, plugin loader, or i18n be
 
 - `core/` owns generic data, diagnostics, project persistence, task state, and registries.
 - `plugin_api/` owns stable Plugin API v1 contracts and may depend only on `core/`.
-- Repository-root `plugins/` contains every concrete Parser, Calibration, Processor, Analyzer,
-  and Exporter implementation, including the official plugins shipped with the application.
+- The application/repository `plugins/` root contains every official bundled Parser, Calibration,
+  Processor, Analyzer, and Exporter implementation. Third-party plugins may be installed in that
+  root when it is writable or in the platform user plugin root as a permission fallback.
 - `src/underline_retldc/plugins/` owns manifest, recursive discovery, installation, and failure
   isolation infrastructure; it contains no concrete scientific plugin implementation.
 - `gui/` is presentation and orchestration only; scientific formulas must not be copied there.
@@ -82,10 +83,19 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 - Persistent data stores stable plugin ID, plugin version, and API version, never a localized name.
 - Changes that break a v1 signature require a new API generation and migration documentation.
 - A malformed, incompatible, duplicate, or failing optional plugin must not prevent startup.
-- External plugins are trusted executable Python code, not sandboxed code.
+- External Python plugins contain executable code, are not sandboxed, and must be installed only
+  from trusted sources.
 - Plugin folder categories are organizational only; `plugin_type` in the manifest is authoritative.
-- Discovery is recursive across the bundled/project root and writable user root, skips symlinks
-  and environment/cache directories, and records Loader-determined `Bundled`/`User` provenance.
+- Both physical roots use the same Plugin API, Loader, manifest format, Registry, schemas, and
+  i18n path. Discovery is recursive, skips symlinks and environment/cache directories, and records
+  Loader-determined `Bundled`/`Application`/`User` provenance without granting trust.
+- Interactive installation prefers the application plugin root when it is writable and falls back
+  to the user plugin root only when the application root cannot be written. It never requires
+  administrator privileges for normal installation and never infers writability from a drive
+  letter. A preflight write probe does not replace handling an access error from the actual copy.
+- Folder and ZIP installation validates one manifest before copying. ZIP extraction rejects path
+  traversal and links. Replacement is staged and committed as a complete directory so old file
+  remnants are not mixed with the new plugin.
 
 ## Coding conventions
 
@@ -112,7 +122,7 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 
 ## Desktop workflow invariants
 
-- Primary navigation contains stable-ID `Project`, `Thrust Analysis`, `Chamber Pressure`,
+- Primary navigation contains stable-ID `Project`, `Thrust`, `Chamber Pressure`,
   `Temperature`, and `Data Explorer` workspaces. They share Project Time and Test Segmentation.
   Export, plugin management, and settings are dialogs or menu/toolbar actions, not primary
   workflow pages.
@@ -132,14 +142,17 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   remain outside GUI code.
 - Project Test Segmentation is the single source of truth for PRE/ACTIVE_TEST/POST. Never keep a
   separate final interval per Workspace. Thrust and Chamber Pressure both edit the same Project
-  interval; Temperature reads it. Automatic detection uses the explicitly bound Primary Chamber
-  Pressure first, then Primary Thrust. A pressure reference always uses positive activity polarity
-  and never inherits the thrust installation sign.
+  interval; Temperature reads it. The Thrust page detects from its explicitly bound Primary Thrust,
+  while the Chamber Pressure page detects from its explicitly bound Primary Chamber Pressure;
+  generic orchestration may fall back from pressure to thrust. A pressure reference always uses
+  positive activity polarity and never inherits the thrust installation sign.
 - Compatible two-column raw-log Parsers share the Plugin API helper for bounded probing,
   timestamp normalization, malformed-row diagnostics, and immutable Dataset construction. TR_F,
   TR_P, and TR_T differ only in declared measurement semantics and localized presentation.
 - Ambiguous Parser recommendations must be explicitly selectable with a visible exclusive radio
-  group. Registry/discovery order must never silently decide among TR_F, TR_P, and TR_T.
+  group. The ordinary Parser ComboBox and radio group resolve the same selection, and TR_P/TR_T
+  must work in an empty Project without a prior TR_F import. Registry/discovery order must never
+  silently decide among TR_F, TR_P, and TR_T.
 - Parser and Calibration configuration widgets are generated from Plugin API schemas. GUI logic
   must not branch on localized names or reimplement a built-in plugin's parameter model.
 - A Project may be saved at any workflow stage. Project JSON records explicit parsed, calibrated,
@@ -149,6 +162,9 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 - Export is allowed without saving a Project. Unified exports use language-qualified fixed
   filenames (`_ZH`/`_EN`, except locale-neutral ENG) and replace the same files on repeat export;
   they never invent numbered or `_final` copies.
+- Export Output Language defaults to stable `follow_ui`, followed by explicit `zh_CN` and `en_US`.
+  Follow mode resolves the current UI locale at export time. Export content scrolls vertically when
+  constrained, while the bottom Cancel/Export action row remains outside the scroll viewport.
 - Plot axis labels and tick formatting must use the resolved Display Unit and must not rely on
   pyqtgraph automatic SI prefixes. Unit Display Mode is a persisted UI preference: `engineering`
   uses configured engineering Display Units and `si_scientific` converts display values to
@@ -159,18 +175,35 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   grouped and sorted by generic metadata, with unknown third-party groups placed last.
 - Default export selection depends on the option's actual capability and `default_selected`
   metadata. A default is applied only the first time that option becomes available; a user's
-  unchecked choice is not silently restored by later availability refreshes. Unavailable formats
-  stay disabled and unchecked. The list displays at most ten option rows before vertical scrolling,
-  and every checkbox retains a visible square indicator in every state.
+  unchecked choice is not silently restored by later availability refreshes or Project reopen.
+  Persist selected IDs separately from initialized-default IDs. Unavailable formats stay disabled
+  and unchecked. The list displays at most ten option rows before vertical scrolling, and every
+  checkbox retains a visible square indicator in every state.
+- Chamber-pressure PNG requires ACTIVE_TEST and clips both its plotted samples and X-axis range to
+  that interval; it must not merely shade ACTIVE_TEST over the full PRE/POST record.
 - Formal curve exports use the selected final processed channel and ACTIVE_TEST interval with
   ignition as time zero. Legacy persisted `burn` remains a read-compatible alias. Any export-only
   endpoint interpolation must be disclosed in result metadata and docs.
 - Removing a parsed Source immediately removes its Streams, calibrated state, Primary bindings,
   and workspace series, then invalidates candidates, segmentation references, processing,
-  analysis, curve confirmation, cached statistics, and export availability. Removing a pending
+  analysis, cached statistics, and export availability. Removing a pending
   unparsed Source must not invalidate unrelated parsed Project data.
 - Theme IDs are `light` and `dark`, selected at runtime and persisted under QSettings `ui/theme`.
   Theme is a UI preference, never Project scientific state. Formal exports must not depend on it.
+- Header theme selection uses a ComboBox with stable `light`/`dark` item data and the same
+  SettingsService value as the Settings ComboBox; the two views must remain synchronized.
+- The stable English window product title and the localized workspace/header title are separate
+  presentation concepts and must not be derived from one another.
+- Critical left, plot, and right panels in `AnalysisWorkspaceShell` must not be collapsible to
+  zero width; constrained side-panel content scrolls instead.
+- Applicable PySide6 presentation work follows `docs/CXYL_Python_GUI_STYLE_GUIDE.md`; explicit
+  product/workflow rules in this file take precedence where the generic guide differs.
+- The Project workspace is responsive: constrained widths stack Import and Project Setup
+  vertically, ordinary-width windows place them side by side, and neither pane may collapse or
+  require horizontal scrolling for its normal form controls.
+- Thrust polarity is a Project Thrust Workflow setting, not a compensation Processor parameter.
+  It is applied after Calibration and before optional correction, and `None` correction must still
+  create a polarity-correct `thrust_processed` Channel.
 - The motor-weight selector lists only Processor plugins whose `requirements()` declares
   `processor_role = motor_weight_compensation`; its remaining form fields come from schema
   metadata rather than plugin-ID branches. `None` means a real pass-through processing stage.

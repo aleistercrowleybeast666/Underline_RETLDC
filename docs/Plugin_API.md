@@ -169,6 +169,11 @@ in that selector; future filter, resampler, or smoother workspaces should define
 Selecting `None` stores no Processor reference and uses a Core pass-through stage that preserves
 the calibrated input in a new processed channel.
 
+Thrust polarity is not a motor-weight compensation parameter and is not part of a Processor
+schema. The Thrust Workflow applies the Project's `+1`/`-1` polarity first and supplies a fresh,
+polarity-normalized input Channel to compatible correction Processors. A Processor fits and
+subtracts its baseline in that orientation and must not apply another sign transform.
+
 ## Analyzer
 
 ```python
@@ -250,13 +255,16 @@ API v1 plugins for non-desktop clients.
 `required_capability_ids` is optional and generic. Current stable desktop capabilities are
 `project_summary_ready`, `thrust_ready`, `physical_force`, `chamber_pressure_ready`,
 `temperature_ready`, and `segmentation_ready`. OpenRocket ENG declares the thrust, physical-force,
-and segmentation capabilities and sets `default_selected=false`, so a relative analysis in
-raw/count/ADC can unlock compatible reports without making ENG selectable. Overall, thrust,
+and segmentation capabilities and sets `default_selected=true`; a relative analysis in
+raw/count/ADC can unlock compatible reports without making ENG selectable because `physical_force`
+remains incomplete. Overall, thrust,
 pressure, and temperature groups use `group_order` 0/10/20/30; missing group metadata falls back to
 Other at 1000. `format_order` provides CSV 10, PNG 20, and special format 30 ordering. A metadata
-default is applied once when its requirements first become available; user choices survive later
-refreshes. The Exporter still validates Quantity, Unit, curve confirmation, and motor metadata at
-execution.
+default is applied once when its requirements first become available; selected IDs and initialized
+default IDs are persisted separately so user choices survive later refreshes and Project reopen.
+Each Exporter still validates its declared requirements at execution, including
+Quantity, Unit, ACTIVE_TEST segmentation, and motor metadata where applicable. ENG does not expose
+or require a separate final-curve confirmation setting.
 
 ## Manifest, roots, and discovery
 
@@ -284,10 +292,19 @@ plugins/
 └─ exporters/<folder>/plugin.json + plugin.py
 ```
 
-The repository/portable `plugins/` root is `Bundled`; the writable platform user root is `User`
-(`%APPDATA%/Underline_RETLDC/plugins/` on Windows). Both roots use identical APIs and feed one
-Registry. Provenance comes from the configured root, never a plugin manifest claim. The category
-directory is for organization only; manifest `plugin_type` determines the required abstract class.
+Three runtime concepts are distinct:
+
+- **Application Plugin Root**: `Application_ProjectRoot()/plugins`. In source development this is
+  repository-root `plugins/`; in the folder package it is the `plugins/` directory beside the EXE.
+- **User Plugin Root**: the platform-writable per-user directory, on Windows
+  `%APPDATA%/Underline_RETLDC/plugins/`.
+- **Plugin Registry**: the single in-memory Registry fed by recursive discovery of both roots.
+
+Both physical roots use identical APIs and manifests. Official shipped `builtin.*` plugins in the
+Application Root are displayed as `Bundled`; third-party IDs in that root are `Application`; the
+per-user root is `User`. This Loader-assigned display provenance is informational and grants no
+trust. The category directory is organizational only; manifest `plugin_type` determines the
+required abstract class.
 
 Discovery is recursive and prunes `.venv`, `.git`, `__pycache__`, and symlink directories. A plugin
 directory is loaded at most once. Failures are isolated and reported as manifest, API, import,
@@ -295,8 +312,27 @@ initialization, descriptor, discovery, or duplicate-ID diagnostics. API generati
 `1` are disabled, and a failing optional plugin never prevents application startup.
 
 There is no separate built-in registration path. Official IDs retain the `builtin.*` prefix for
-Project compatibility, while their concrete code lives in repository-root `plugins/`. Installing
-a third-party directory copies it under the appropriate category in the writable user root.
+Project compatibility, while their concrete code lives in the Application/Repository Plugin Root.
+
+Interactive installation accepts either a plugin directory or a ZIP whose single top-level plugin
+folder contains `plugin.json`. It validates the stable ID, manifest type, and API generation, then:
+
+```text
+Application Plugin Root, if an actual write probe and copy succeed
+    ↓ access-permission failure only
+User Plugin Root
+    ↓
+refresh the shared Plugin Registry
+```
+
+The decision never depends on `C:`/`D:` or another drive letter and normal installation never
+requires administrator rights. Even after a successful write probe, an access-related error from
+the real staged copy triggers the User Root fallback. Invalid manifests, unsupported APIs, corrupt
+ZIPs, duplicate IDs, and other non-permission errors remain explicit errors and do not trigger a
+fallback. ZIP extraction rejects absolute/traversal paths, links, encrypted entries, and excessive
+entry/expanded-size limits. Replacing an existing ID first copies and validates a complete staging
+directory on the target filesystem, then swaps directories so obsolete files are not retained.
+Advanced users may still copy a folder manually into either root and refresh.
 
 Optional translations live at `i18n/zh_CN.json` and `i18n/en_US.json`. Keys should be prefixed by
 the plugin ID. Missing requested strings fall back to the English bundle and then descriptor text.

@@ -71,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
         if not bundled_records:
             logging.getLogger(__name__).error(
                 "Smoke test found no bundled plugins below %s",
-                window.development_plugin_directory,
+                window.application_plugin_directory,
             )
             smoke_exit_code = 1
         elif failed_records:

@@ -71,9 +71,7 @@ class ImportPage(QWidget):
 
         self.parser_label = QLabel()
         self.parser_combo = StandardComboBox()
-        self.parser_combo.currentIndexChanged.connect(
-            lambda _index: self.parser_changed.emit(self.parser_combo.currentData())
-        )
+        self.parser_combo.currentIndexChanged.connect(self._parser_combo_changed)
         self.detect_button = QPushButton()
         self.detect_button.clicked.connect(self.detect_requested)
         self.parse_button = QPushButton()
@@ -235,6 +233,37 @@ class ImportPage(QWidget):
             if button.property("parserPluginId") == plugin_id:
                 button.setChecked(True)
                 break
+
+    def _parser_combo_changed(self, _index: int) -> None:
+        plugin_id = self.selected_parser_id()
+        if self._ambiguity_buttons:
+            selected_button = next(
+                (
+                    button
+                    for button in self._ambiguity_buttons
+                    if button.property("parserPluginId") == plugin_id
+                ),
+                None,
+            )
+            if selected_button is not None:
+                selected_button.setChecked(True)
+            else:
+                self.ambiguity_button_group.setExclusive(False)
+                for button in self._ambiguity_buttons:
+                    button.setChecked(False)
+                self.ambiguity_button_group.setExclusive(True)
+                self.parse_button.setEnabled(plugin_id is not None)
+                self.ambiguity_selected.setText(
+                    self._translations.translate(
+                        "parser.ambiguous_selected",
+                        parser=(
+                            self.parser_combo.currentText()
+                            if plugin_id is not None
+                            else self._translations.translate("primary_channels.none")
+                        ),
+                    )
+                )
+        self.parser_changed.emit(plugin_id)
 
     def source_path(self) -> Path:
         entries = self.source_entries()

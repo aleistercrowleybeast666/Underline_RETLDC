@@ -3,9 +3,11 @@ import numpy as np
 from underline_retldc.core.channel import Channel
 from underline_retldc.core.dataset import Dataset
 from underline_retldc.core.pipeline import (
+    THRUST_ORIENTED_CHANNEL_ID,
     Calibration_Apply,
     Calibration_OutputChannelId,
     Processing_Passthrough,
+    ThrustPolarity_Apply,
 )
 from underline_retldc.core.region_detection import Burn_DetectCandidates
 from underline_retldc.core.units import G0_STANDARD_M_S2
@@ -39,13 +41,17 @@ def test_dynamic_primary_thrust_id_flows_through_processing_analysis_and_export(
         unit="N",
         parameters={"K": 1.0, "B": 0.0},
     )
+    oriented = ThrustPolarity_Apply(
+        calibrated,
+        input_channel_id=output_id,
+        polarity=1,
+    )
     processor = bundled_registry.get("builtin.processor.vertical_linear_baseline")
     processing = processor.process(
-        calibrated,
+        oriented,
         {
-            "input_channel_id": output_id,
+            "input_channel_id": THRUST_ORIENTED_CHANNEL_ID,
             "enabled": True,
-            "sign": 1,
             "regions": {
                 "pre": [0.0, 2.0],
                 "burn": [3.0, 7.0],
@@ -131,7 +137,6 @@ def test_vertical_compensation_recovers_known_thrust_and_preserves_input(
         {
             "enabled": True,
             "input_channel_id": "force_calibrated",
-            "sign": 1,
             "regions": {
                 "pre": [0.0, 2.5],
                 "burn": [ignition, burnout],
@@ -153,7 +158,43 @@ def test_vertical_compensation_recovers_known_thrust_and_preserves_input(
     assert result.diagnostics == ()
 
 
-def test_vertical_compensation_sign_is_explicit(bundled_registry) -> None:
+def test_thrust_polarity_is_independent_when_processing_is_passthrough() -> None:
+    dataset = Dataset(
+        time=[0.0, 1.0, 2.0],
+        channels={
+            "force_calibrated": Channel(
+                "force_calibrated",
+                "force",
+                "N",
+                [1.0, 2.0, 3.0],
+                "calibrated",
+            )
+        },
+    )
+    for polarity, expected in ((1, [1.0, 2.0, 3.0]), (-1, [-1.0, -2.0, -3.0])):
+        oriented = ThrustPolarity_Apply(
+            dataset,
+            input_channel_id="force_calibrated",
+            polarity=polarity,
+        )
+        result = Processing_Passthrough(
+            oriented,
+            input_channel_id=THRUST_ORIENTED_CHANNEL_ID,
+        )
+        np.testing.assert_allclose(
+            result.dataset.channel("thrust_processed").values,
+            expected,
+        )
+        assert result.metadata["thrust_polarity"] == polarity
+    np.testing.assert_allclose(
+        dataset.channel("force_calibrated").values,
+        [1.0, 2.0, 3.0],
+    )
+
+
+def test_vertical_compensation_after_reversed_polarity_matches_old_math(
+    bundled_registry,
+) -> None:
     time = np.linspace(0.0, 6.0, 61)
     positive_thrust = np.where((time >= 2.0) & (time <= 4.0), 5.0, 0.0)
     measured = 10.0 - positive_thrust
@@ -165,13 +206,17 @@ def test_vertical_compensation_sign_is_explicit(bundled_registry) -> None:
             )
         },
     )
+    oriented = ThrustPolarity_Apply(
+        dataset,
+        input_channel_id="force_calibrated",
+        polarity=-1,
+    )
     result = bundled_registry.get(
         "builtin.processor.vertical_linear_baseline"
     ).process(
-        dataset,
+        oriented,
         {
-            "input_channel_id": "force_calibrated",
-            "sign": -1,
+            "input_channel_id": THRUST_ORIENTED_CHANNEL_ID,
             "regions": {"pre": [0.0, 1.5], "burn": [2.0, 4.0], "post": [4.5, 6.0]},
         },
         TaskContext(),
@@ -179,6 +224,22 @@ def test_vertical_compensation_sign_is_explicit(bundled_registry) -> None:
     np.testing.assert_allclose(
         result.dataset.channel("thrust_corrected").values, positive_thrust, atol=1e-10
     )
+    expected_old_formula = -1 * (measured - 10.0)
+    np.testing.assert_allclose(
+        result.dataset.channel("thrust_corrected").values,
+        expected_old_formula,
+        atol=1e-10,
+    )
+
+
+def test_vertical_compensation_schema_has_no_polarity_parameter(
+    bundled_registry,
+) -> None:
+    schema = bundled_registry.get(
+        "builtin.processor.vertical_linear_baseline"
+    ).config_schema()
+    assert "sign" not in schema["properties"]
+    assert set(schema["required"]) == {"input_channel_id", "regions"}
 
 
 def test_burn_detection_returns_multiple_ranked_candidates() -> None:
@@ -233,7 +294,6 @@ def test_missing_pre_and_post_assume_zero_and_analysis_continues(
         dataset,
         {
             "input_channel_id": "force_calibrated",
-            "sign": 1,
             "regions": {"pre": None, "burn": [1.0, 3.0], "post": None},
         },
         TaskContext(),

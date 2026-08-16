@@ -4,7 +4,6 @@ from collections.abc import Mapping
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QCheckBox,
     QGroupBox,
     QListWidget,
     QPushButton,
@@ -28,7 +27,6 @@ from underline_retldc.plugin_api.common import AnalysisResult
 
 class AnalyzePage(QWidget):
     calculate_requested = Signal()
-    confirmation_changed = Signal(bool)
 
     METRIC_ORDER = (
         "peak_value",
@@ -52,13 +50,10 @@ class AnalyzePage(QWidget):
         self.calculate_button = QPushButton()
         self.calculate_button.setObjectName("primaryButton")
         self.calculate_button.clicked.connect(self.calculate_requested)
-        self.confirm_check = QCheckBox()
-        self.confirm_check.setEnabled(False)
-        self.confirm_check.toggled.connect(self.confirmation_changed)
 
         self.metrics_group = AnalysisResultsPanel()
         self.metrics_table = self.metrics_group.table
-        self.metrics_table.setMinimumWidth(300)
+        self.metrics_table.setMinimumWidth(0)
 
         self.diagnostics_group = QGroupBox()
         self.diagnostics_list = QListWidget()
@@ -67,7 +62,6 @@ class AnalyzePage(QWidget):
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.calculate_button)
-        layout.addWidget(self.confirm_check)
         layout.addWidget(self.metrics_group, 2)
         layout.addWidget(self.diagnostics_group, 1)
         self.retranslate()
@@ -75,16 +69,15 @@ class AnalyzePage(QWidget):
     def retranslate(self) -> None:
         t = self._translations.translate
         self.calculate_button.setText(t("analyze.calculate"))
-        self.confirm_check.setText(t("analyze.confirmed"))
         self.metrics_group.setTitle(t("page.analyze"))
         self.diagnostics_group.setTitle(t("import.diagnostics"))
         self.metrics_table.setHorizontalHeaderLabels(
-            [t("page.analyze"), t("common.value")]
+            [t("workspace.metric"), t("common.value")]
         )
         if self._result is not None:
-            self.set_result(self._result, confirmed=self.confirm_check.isChecked())
+            self.set_result(self._result)
 
-    def set_result(self, result: AnalysisResult, *, confirmed: bool = False) -> None:
+    def set_result(self, result: AnalysisResult) -> None:
         self._result = result
         available = [key for key in self.METRIC_ORDER if key in result.metrics]
         self.metrics_table.setRowCount(len(available))
@@ -112,11 +105,6 @@ class AnalyzePage(QWidget):
             self.diagnostics_list.addItem(
                 f"[{diagnostic.severity.value}] {diagnostic.code}: {message}"
             )
-        self.confirm_check.setEnabled(True)
-        self.confirm_check.blockSignals(True)
-        self.confirm_check.setChecked(confirmed)
-        self.confirm_check.blockSignals(False)
-
     def set_display_configuration(
         self,
         preferences: Mapping[str, str],
@@ -125,10 +113,7 @@ class AnalyzePage(QWidget):
         self._display_preferences = dict(preferences)
         self._display_mode = UnitDisplayMode_Normalize(display_mode)
         if self._result is not None:
-            self.set_result(
-                self._result,
-                confirmed=self.confirm_check.isChecked(),
-            )
+            self.set_result(self._result)
 
     def _metric_display(
         self,
@@ -188,7 +173,3 @@ class AnalyzePage(QWidget):
         self._result = None
         self.metrics_table.setRowCount(0)
         self.diagnostics_list.clear()
-        self.confirm_check.blockSignals(True)
-        self.confirm_check.setChecked(False)
-        self.confirm_check.blockSignals(False)
-        self.confirm_check.setEnabled(False)

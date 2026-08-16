@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "underline-retldc"
-version = "0.1.0"
+version = "0.0.2"
 description = "Offline rocket-engine test log decoding and computation platform"
 requires-python = ">=3.11"
 dependencies = [

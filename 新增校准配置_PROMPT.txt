@@ -28,6 +28,8 @@ Loader、Registry、SchemaForm 和 API；正常新模型应在现有 Calibration
 【模式 B：没有 Agent / 不能访问用户仓库】
 - 不要假装已经检查或修改用户工程。
 - 依据本 Prompt 中的 Plugin API v1 语义生成可直接安装的 <calibration_name>.zip。
+- 普通用户将在 Underline RETLDC 中选择“工具 → 插件 → 安装插件...”，直接选择该 ZIP；
+  软件负责识别 Calibration 类别和安装位置。
 - ZIP 顶层必须直接是 <plugin_folder>/，不能额外包含 Underline_RETLDC/plugins 层。
 - ZIP 原则上只能包含插件自身目录，不得包含 main.py、AGENTS.md、TARGETS.md、
   src/underline_retldc/core、src/underline_retldc/gui 等覆盖平台文件。
@@ -75,7 +77,15 @@ Calibration 的唯一核心职责是：
 
 
 【插件安装位置】
-标准源码/便携位置为工程根目录：
+普通用户的推荐安装方式是：
+
+工具 → 插件 → 安装插件... → 选择插件文件夹或 ZIP
+
+安装器优先使用可写的程序插件根，并自动归类到 calibrations；程序根不可写或实际复制
+发生权限错误时，自动使用用户插件根。不要根据 C:、D: 等盘符推断权限，也不要要求
+普通用户以管理员身份运行。
+
+高级/手工安装时，程序插件位置为：
 
 plugins/calibrations/<你的插件目录名>/
 
@@ -91,9 +101,9 @@ plugins/calibrations/<plugin_slug>/
 官方参考模板是 plugins/calibrations/linear/ 和 identity/。用户插件与官方插件结构相同；
 不要在 src/underline_retldc/ 下新增具体 Calibration 实现。
 
-正式安装版还可使用 %APPDATA%\Underline_RETLDC\plugins\calibrations\。插件管理安装到
-可写的用户插件根；源码/便携用户可直接复制到工程 plugins/calibrations/。插件真实类型
-来自 manifest 的 plugin_type，不依赖父文件夹名称。
+用户插件位置为 %APPDATA%\Underline_RETLDC\plugins\calibrations\。高级用户可复制到
+任一位置后在“工具 → 插件”中刷新。插件真实类型来自 manifest 的 plugin_type，不依赖
+父文件夹名称。
 
 
 【plugin.json】
@@ -126,10 +136,10 @@ plugins/calibrations/<plugin_slug>/
         zh_CN.json
         en_US.json
 
-如果需要辅助模块，只能放在同一插件文件夹内。用户把 ZIP 解压到
-Underline_RETLDC/plugins/calibrations/ 后，必须直接得到
-plugins/calibrations/<plugin_folder>/plugin.json，不能多一层压缩包名目录，也不能让
-plugin.json 直接散落在 calibrations/ 根部。
+如果需要辅助模块，只能放在同一插件文件夹内。普通用户直接用
+“工具 → 插件 → 安装插件...”选择 ZIP，不要要求用户先寻找 calibrations 目录。高级
+用户手工解压时，应直接得到 plugins/calibrations/<plugin_folder>/plugin.json，不能
+多一层压缩包名目录，也不能让 plugin.json 直接散落在 calibrations/ 根部。
 
 
 【Calibration 类必须实现的接口】

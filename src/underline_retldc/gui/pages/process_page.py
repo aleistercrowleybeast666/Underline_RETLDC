@@ -35,6 +35,7 @@ class ProcessPage(QWidget):
     regions_changed = Signal(object)
     candidate_selected = Signal(int)
     primary_thrust_changed = Signal(object)
+    thrust_polarity_changed = Signal(int)
     select_thrust_requested = Signal()
 
     def __init__(self, translations: TranslationService) -> None:
@@ -71,34 +72,24 @@ class ProcessPage(QWidget):
         )
 
         controls = QWidget()
-        controls.setMinimumWidth(300)
+        controls.setMinimumWidth(260)
         controls_layout = QVBoxLayout(controls)
         self.input_group = QGroupBox()
         input_layout = QVBoxLayout(self.input_group)
         self.input_label = QLabel()
         self.input_combo = StandardComboBox()
         self.input_combo.currentIndexChanged.connect(self._input_selection_changed)
-        self.select_input_button = QPushButton()
-        self.select_input_button.clicked.connect(self.select_thrust_requested)
         self.input_hint = QLabel()
         self.input_hint.setWordWrap(True)
         input_layout.addWidget(self.input_label)
         input_layout.addWidget(self.input_combo)
-        input_layout.addWidget(self.select_input_button)
         input_layout.addWidget(self.input_hint)
         controls_layout.addWidget(self.input_group)
-        self.curves_group = QGroupBox()
-        curves_layout = QVBoxLayout(self.curves_group)
-        self.curve_checks: dict[str, QCheckBox] = {}
-        for key in ("uncorrected", "corrected"):
-            checkbox = QCheckBox()
-            checkbox.setChecked(True)
-            checkbox.toggled.connect(self._plot_refresh)
-            self.curve_checks[key] = checkbox
-            curves_layout.addWidget(checkbox)
-        controls_layout.addWidget(self.curves_group)
 
-        self.interval_editor = TestIntervalEditor(translations)
+        self.interval_editor = TestIntervalEditor(
+            translations,
+            detect_translation_key="process.detect_with_thrust",
+        )
         self.interval_editor.detect_requested.connect(self.detect_requested.emit)
         self.interval_editor.fit_requested.connect(self._regions_view_fit)
         self.interval_editor.candidate_selected.connect(self.candidate_selected.emit)
@@ -117,6 +108,32 @@ class ProcessPage(QWidget):
         self.region_edits = dict(self.interval_editor.region_edits)
         self.region_edits["burn"] = self.region_edits["active_test"]
         self.region_use_checks = self.interval_editor.region_use_checks
+
+        self.polarity_group = QGroupBox()
+        polarity_layout = QFormLayout(self.polarity_group)
+        self.polarity_label = QLabel()
+        self.polarity_combo = StandardComboBox()
+        self.polarity_combo.addItem("", 1)
+        self.polarity_combo.addItem("", -1)
+        self.polarity_combo.currentIndexChanged.connect(
+            self._polarity_selection_changed
+        )
+        polarity_layout.addRow(self.polarity_label, self.polarity_combo)
+        controls_layout.addWidget(self.polarity_group)
+
+        self.curves_group = QGroupBox()
+        curves_layout = QVBoxLayout(self.curves_group)
+        self.curve_checks: dict[str, QCheckBox] = {}
+        for key in ("uncorrected", "corrected"):
+            checkbox = QCheckBox()
+            checkbox.setChecked(True)
+            checkbox.toggled.connect(self._plot_refresh)
+            self.curve_checks[key] = checkbox
+            curves_layout.addWidget(checkbox)
+        self.reset_chart_button = QPushButton()
+        self.reset_chart_button.clicked.connect(self.analysis_plot.reset_view)
+        curves_layout.addWidget(self.reset_chart_button)
+        controls_layout.addWidget(self.curves_group)
 
         self.baseline_status_group = QGroupBox()
         baseline_status_layout = QFormLayout(self.baseline_status_group)
@@ -159,9 +176,13 @@ class ProcessPage(QWidget):
         self.curves_group.setTitle(t("process.curves"))
         self.input_group.setTitle(t("primary_channels.title"))
         self.input_label.setText(t("workspace.thrust_data"))
-        self.select_input_button.setText(t("workspace.select_thrust"))
+        self.polarity_group.setTitle(t("process.thrust_polarity"))
+        self.polarity_label.setText(t("process.polarity"))
+        self.polarity_combo.setItemText(0, t("process.polarity_positive"))
+        self.polarity_combo.setItemText(1, t("process.polarity_reversed"))
         for key, checkbox in self.curve_checks.items():
             checkbox.setText(t(f"process.{key}"))
+        self.reset_chart_button.setText(t("workspace.reset_chart"))
         self.interval_editor.retranslate()
         self.processing_group.setTitle(t("page.process"))
         self.compensation_label.setText(t("process.enable_baseline"))
@@ -232,6 +253,29 @@ class ProcessPage(QWidget):
         self.primary_thrust_changed.emit(
             self._thrust_references.get(str(stable_id)) if stable_id else None
         )
+
+    def _polarity_selection_changed(self, _index: int) -> None:
+        polarity = int(self.polarity_combo.currentData())
+        if polarity not in {-1, 1}:
+            raise ValueError("Thrust polarity must be +1 or -1")
+        self.thrust_polarity_changed.emit(polarity)
+
+    def thrust_polarity(self) -> int:
+        polarity = int(self.polarity_combo.currentData())
+        if polarity not in {-1, 1}:
+            raise ValueError("Thrust polarity must be +1 or -1")
+        return polarity
+
+    def set_thrust_polarity(self, polarity: int) -> None:
+        normalized = int(polarity)
+        if normalized not in {-1, 1}:
+            raise ValueError("Thrust polarity must be +1 or -1")
+        index = self.polarity_combo.findData(normalized)
+        if index < 0:
+            raise ValueError(f"Unsupported Thrust polarity {normalized!r}")
+        self.polarity_combo.blockSignals(True)
+        self.polarity_combo.setCurrentIndex(index)
+        self.polarity_combo.blockSignals(False)
 
     def set_candidates(
         self,
@@ -419,11 +463,6 @@ class ProcessPage(QWidget):
         self.processor_form.set_values(config)
         if config.get("regions"):
             self.set_regions(config["regions"])
-
-    def detection_sign(self) -> int:
-        if "sign" not in self.processor_form.field_names:
-            return 1
-        return int(self.processor_form.values().get("sign", 1))
 
     def set_theme(self, theme: str) -> None:
         self._theme = Theme_Normalize(theme)

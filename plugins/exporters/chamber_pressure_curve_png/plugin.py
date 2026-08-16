@@ -44,7 +44,10 @@ class ChamberPressurePngExporter(ExporterPlugin):
                 "filename": "chamber_pressure_curve.png",
                 "translation_key": "export.chamber_pressure_png",
                 "required_analysis_ids": [],
-                "required_capability_ids": ["chamber_pressure_ready"],
+                "required_capability_ids": [
+                    "chamber_pressure_ready",
+                    "segmentation_ready",
+                ],
                 "group_id": "chamber_pressure",
                 "group_order": 20,
                 "format_order": 20,
@@ -83,6 +86,7 @@ class ChamberPressurePngExporter(ExporterPlugin):
             quantity_title_en="Chamber Pressure Curve",
             quantity_title_zh="燃烧室压力曲线",
             active_interval=interval,
+            crop_to_active_interval=True,
         )
         if result is MeasurementWriteResult.SKIPPED_NO_CHANNEL:
             Path(destination).unlink(missing_ok=True)
@@ -93,6 +97,8 @@ class ChamberPressurePngExporter(ExporterPlugin):
                 "write_result": result.value,
                 "channel_ids": [channel.id for channel in channels],
                 "output_locale": str(config.get("output_locale", "en_US")),
+                "active_interval": list(interval) if interval is not None else None,
+                "cropped_to_active_test": interval is not None,
             },
         )
 

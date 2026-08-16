@@ -11,6 +11,7 @@ from typing import Any
 
 from underline_retldc.app.version import __version__
 from underline_retldc.core.diagnostics import Diagnostic
+from underline_retldc.core.pipeline import ThrustPolarity_Normalize
 from underline_retldc.core.project_data import PrimaryChannelBindings
 
 PROJECT_SCHEMA = "underline-retldc-project/2"
@@ -198,6 +199,7 @@ class ProjectDocument:
         default_factory=PrimaryChannelBindings
     )
     primary_channels_explicit: bool = True
+    thrust_polarity: int = 1
     processing_metadata: Mapping[str, Any] = field(default_factory=dict)
     analyzer: PluginReference | None = None
     motor_metadata: Mapping[str, Any] = field(default_factory=dict)
@@ -213,6 +215,8 @@ class ProjectDocument:
             regions["active_test"] = regions["burn"]
         regions.pop("burn", None)
         object.__setattr__(self, "regions", regions)
+        polarity = ThrustPolarity_Normalize(self.thrust_polarity)
+        object.__setattr__(self, "thrust_polarity", polarity)
 
     def to_dict(self) -> dict[str, Any]:
         source = None
@@ -237,6 +241,7 @@ class ProjectDocument:
                 key: value.to_dict() for key, value in self.channels.items()
             },
             "primary_channels": self.primary_channels.to_dict(),
+            "thrust_polarity": self.thrust_polarity,
             "processing_metadata": dict(self.processing_metadata),
             "analyzer": self.analyzer.to_dict() if self.analyzer is not None else None,
             "motor_metadata": dict(self.motor_metadata),
@@ -322,6 +327,36 @@ class ProjectDocument:
         processors_payload = payload.get("processors", [])
         if not isinstance(processors_payload, (list, tuple)):
             raise ValueError("Project processors must be an array")
+        if any(not isinstance(item, Mapping) for item in processors_payload):
+            raise ValueError("Every Project Processor must be an object")
+        processor_references: list[PluginReference] = []
+        legacy_processor_sign: Any = None
+        for index, item in enumerate(processors_payload):
+            reference = PluginReference.from_dict(item)
+            config = dict(reference.config)
+            if (
+                index == 0
+                and reference.id == "builtin.processor.vertical_linear_baseline"
+                and "sign" in config
+            ):
+                if legacy_processor_sign is None:
+                    legacy_processor_sign = config["sign"]
+                config.pop("sign", None)
+                reference = PluginReference(
+                    id=reference.id,
+                    version=reference.version,
+                    api_version=reference.api_version,
+                    config=config,
+                )
+            processor_references.append(reference)
+        thrust_polarity_value = payload.get(
+            "thrust_polarity",
+            legacy_processor_sign if legacy_processor_sign is not None else 1,
+        )
+        try:
+            thrust_polarity = ThrustPolarity_Normalize(thrust_polarity_value)
+        except ValueError as exc:
+            raise ValueError("Project thrust_polarity must be +1 or -1") from exc
         motor_metadata_payload = payload.get("motor_metadata", {})
         if not isinstance(motor_metadata_payload, Mapping):
             raise ValueError("Project motor_metadata must be an object")
@@ -379,13 +414,12 @@ class ProjectDocument:
                 if isinstance(calibration_payload, Mapping)
                 else None
             ),
-            processors=tuple(
-                PluginReference.from_dict(item) for item in processors_payload
-            ),
+            processors=tuple(processor_references),
             regions=regions,
             channels=channels,
             primary_channels=primary_channels,
             primary_channels_explicit=primary_channels_explicit,
+            thrust_polarity=thrust_polarity,
             processing_metadata=dict(processing_metadata_payload),
             analyzer=(
                 PluginReference.from_dict(analyzer_payload)

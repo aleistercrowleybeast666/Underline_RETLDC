@@ -121,12 +121,14 @@ Writers use schema ID `underline-retldc-project/2`; readers migrate
 `underline-retldc-project/1`. Writers emit `schema`, `software_version`, legacy
 primary `source`, `sources`, `streams`, `parser`, `calibration`, `channels`, `processors`,
 `regions`, `processing_metadata`, `analyzer`, `motor_metadata`, `export_settings`,
-`workflow_state`, `locale`, and `diagnostics`.
+`workflow_state`, top-level `thrust_polarity`, `locale`, and `diagnostics`.
 
 `source`, `parser`, `calibration`, and `analyzer` may be `null`; `processors` and `regions` may be
 empty. This represents a valid incomplete Project, not corrupt data. `workflow_state` explicitly
-records the `parsed`, `calibrated`, `processed`, and `analyzed` booleans so reopening does not
-advance past the saved stage. Readers infer legacy stage state only when that field is absent.
+records the `parsed`, `calibrated`, `processed`, and `analyzed` booleans plus the workspace-specific
+`chamber_pressure_analyzed` and `temperature_analyzed` booleans, so reopening does not advance past
+the saved stage. Readers infer the legacy pipeline stage only when `workflow_state` is absent;
+missing workspace-specific analysis flags default to `false`.
 
 When present, each Source records stable ID, path, SHA-256, and Parser reference. Each Stream
 records stable ID, owning Source, optional name, and `time_offset_s`; its Project Time is local time
@@ -145,6 +147,12 @@ those references. These explicit bindings are the final inputs to workspaces and
 semantic roles remain hints. Legacy Projects without this object are migrated by conservative
 auto-binding and can then be saved in schema v2.
 
+`thrust_polarity` is the Thrust Workflow's stable numeric `+1` or `-1` setting and defaults to
+`+1`. It is independent of `processors`. A development-era v2 document with `sign` inside its
+first Processor config is read by moving that value to `thrust_polarity` when the top-level field
+is absent, then removing `sign` from the effective Processor config. This migration does not
+change the `underline-retldc-project/2` schema ID.
+
 Regions record PRE, ACTIVE_TEST, and POST in Project Time. PRE and POST may be null; legacy
 `burn` input is normalized to ACTIVE_TEST. If a
 Processor assumes a missing baseline is zero, `processing_metadata` records both numeric value and
@@ -153,31 +161,42 @@ physical force Unit. Source data is referenced, not embedded or modified. A miss
 replaced only when SHA-256 matches. Unknown extra keys are accepted where practical; unsupported
 schema IDs are rejected rather than guessed.
 
-`export_settings` stores a locale-neutral directory, `selected_exporter_ids`, curve confirmation,
-metric-annotation preference, and `output_locale`. Older Projects may retain an
-`openrocket_exporter_id` extension key; readers accept it, but current writers need only the
-generic selected-ID list. Localized exporter names are never persisted.
+`export_settings` stores a locale-neutral directory, `selected_exporter_ids`,
+`selection_initialized_exporter_ids`, metric-annotation preference, and the stable `output_locale`
+mode (`follow_ui`, `zh_CN`, or `en_US`). The initialized-ID list distinguishes formats whose
+first-availability default has already been applied from formats that are still locked in an
+incomplete Project. `follow_ui` is the default and resolves only when an export is executed. Older
+Projects without the initialized-ID list remain readable. They may also retain
+`curve_confirmed` or an
+`openrocket_exporter_id` extension key; readers accept the legacy keys, but current writers omit
+curve confirmation and need only the generic selected-ID list. Localized exporter names are never
+persisted.
 
 The Export dialog is visible before analysis, but a file can be selected only after its declared
 Analyzer IDs and generic data capabilities are complete. Overall reports require
-`project_summary_ready`; thrust CSV/PNG require `thrust_ready`; pressure CSV/PNG require
-`chamber_pressure_ready`; temperature CSV/PNG require `temperature_ready`; ENG additionally
-requires `physical_force` and `segmentation_ready`. Disabled items stay unchecked. Each metadata
-default is applied only the first time the option becomes available, and a later availability
-refresh does not undo a user's manual uncheck. ENG defaults off. Group and format ordering come
-from exporter metadata; absent metadata places a third-party option in Other at the end. The list
-shows at most ten option rows and scrolls when more are registered.
+`project_summary_ready`; thrust CSV/PNG require `thrust_ready`; pressure CSV/PNG require an explicit
+Chamber Pressure calculation and `chamber_pressure_ready`, while pressure PNG additionally requires
+`segmentation_ready`; temperature CSV/PNG require an explicit
+Temperature calculation and `temperature_ready`; ENG additionally requires `physical_force` and
+`segmentation_ready`, but no separate final-curve confirmation. Changing the relevant Primary
+binding or Project segmentation invalidates the affected workspace calculation. Disabled items
+stay unchecked. Each metadata default is applied only the first time the option becomes available,
+and a later availability refresh does not undo a user's manual uncheck. Every bundled format,
+including ENG, defaults on once its own requirements are met. Group and
+format ordering come from exporter metadata; absent metadata places a third-party option in Other
+at the end. The list shows at most ten option rows and scrolls when more are registered.
 
 Removing a parsed Source immediately removes its Source/Stream/Channel-backed state and Primary
-bindings, then clears stale candidates, segmentation reference, processing, analysis, curve
-confirmation, statistics, and export readiness. Removing a pending unparsed entry does not alter
-the remaining parsed Project. Removing the final Source also clears parser selection, schema,
-preview, diagnostics, workspaces, plots, and result panels.
+bindings, then clears stale candidates, segmentation reference, processing, analysis, statistics,
+and export readiness. Removing a pending unparsed entry does not alter the remaining parsed
+Project. Removing the final Source also clears parser selection, schema, preview, diagnostics,
+workspaces, plots, and result panels.
 
 ## Export artifacts
 
-The unified dialog owns language-qualified fixed names. The selected report language determines
-the suffix, independently of the current GUI language:
+The unified dialog owns language-qualified fixed names. Output Language defaults to Follow UI;
+users may instead pin Simplified Chinese or English independently of the current GUI language. The
+resolved report language determines the suffix:
 
 ```text
 thrust_data_ZH.csv / thrust_data_EN.csv
@@ -195,9 +214,11 @@ ENG remains locale-neutral and receives no language suffix. Existing files are a
 replaced. CSV headers, JSON display metadata, TXT labels, and all PNG text use the selected Chinese
 or English output language; stable IDs and machine-readable schema keys remain unchanged. TXT is
 UTF-8 and contains provenance, metrics, diagnostics, and a final test-interval time/thrust table.
-Thrust PNG is 1600×1000 and displays only the selected final processed test curve. Pressure and
-temperature outputs query stable Quantity/Semantic Role and are omitted when no matching Channel
-exists. The single TXT summary also records chamber-pressure and per-temperature-channel metrics
+Thrust PNG is 1600×1000 and displays only the selected final processed test curve. Chamber-pressure
+PNG likewise clips its data and X axis to ACTIVE_TEST; it does not include PRE/POST samples around a
+highlighted band. Pressure and temperature outputs query stable Quantity/Semantic Role and are
+omitted when no matching Channel exists. The single TXT summary also records chamber-pressure and
+per-temperature-channel metrics
 when those measurements exist. TXT, thrust PNG, and ENG shift
 ignition to `t = 0`; export-only endpoint interpolation may add ignition/burnout points and is
 disclosed in ExportResult metadata and TXT.

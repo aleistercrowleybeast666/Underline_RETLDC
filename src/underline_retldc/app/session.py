@@ -42,6 +42,7 @@ class AnalysisSession:
         default_factory=dict
     )
     calibrated_dataset: Dataset | None = None
+    thrust_polarity: int = 1
     processor_id: str | None = None
     processor_config: dict[str, Any] = field(default_factory=dict)
     processing_result: ProcessingResult | None = None
@@ -55,7 +56,6 @@ class AnalysisSession:
     analysis_result: AnalysisResult | None = None
     motor_metadata: dict[str, Any] = field(default_factory=dict)
     export_settings: dict[str, Any] = field(default_factory=dict)
-    curve_confirmed: bool = False
 
     @property
     def processed_dataset(self) -> Dataset | None:
@@ -79,7 +79,6 @@ class AnalysisSession:
         self.analyzer_id = None
         self.analyzer_config.clear()
         self.analysis_result = None
-        self.curve_confirmed = False
 
     def reset_after_calibration(self) -> None:
         self.processor_id = None
@@ -93,10 +92,8 @@ class AnalysisSession:
         self.analyzer_id = None
         self.analyzer_config.clear()
         self.analysis_result = None
-        self.curve_confirmed = False
 
     def reset_after_processing(self) -> None:
         self.analyzer_id = None
         self.analyzer_config.clear()
         self.analysis_result = None
-        self.curve_confirmed = False

@@ -43,7 +43,7 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
     def config_schema(self) -> dict[str, Any]:
         return {
             "type": "object",
-            "required": ["input_channel_id", "sign", "regions"],
+            "required": ["input_channel_id", "regions"],
             "properties": {
                 "enabled": {
                     "type": "boolean",
@@ -55,17 +55,6 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
                     "type": "string",
                     "x-ui-hidden": True,
                     "x-ui-source": "thrust_analysis.input_channel",
-                },
-                "sign": {
-                    "type": "integer",
-                    "enum": [-1, 1],
-                    "default": 1,
-                    "title": "Thrust Sign",
-                    "x-i18n-key": "process.sign",
-                    "x-enum-i18n-keys": {
-                        "1": "process.sign_positive",
-                        "-1": "process.sign_negative",
-                    },
                 },
                 "regions": {
                     "type": "object",
@@ -131,9 +120,6 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
         source = dataset.channel(input_id)
         if source.quantity.lower() not in {"force", "thrust"}:
             raise ValueError("Vertical baseline processor requires a force/thrust channel")
-        sign = int(config.get("sign", 1))
-        if sign not in {-1, 1}:
-            raise ValueError("Thrust sign must be +1 or -1")
         enabled = bool(config.get("enabled", True))
         time = dataset.project_time
         measured = source.values
@@ -194,7 +180,7 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
             baseline = np.zeros_like(measured)
 
         context.raise_if_cancelled()
-        corrected = sign * (measured - baseline)
+        corrected = measured - baseline
         baseline_channel = Channel(
             id="baseline_model",
             quantity=source.quantity,
@@ -212,7 +198,7 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
             unit=source.data_unit,
             values=corrected,
             role="corrected",
-            metadata={"source_channel_id": input_id, "sign": sign},
+            metadata={"source_channel_id": input_id},
             unit_source=source.unit_source,
             display_unit=source.display_unit,
             semantic_role="thrust",
@@ -223,7 +209,7 @@ class VerticalLinearBaselineProcessor(ProcessorPlugin):
             unit=source.data_unit,
             values=corrected,
             role="processed",
-            metadata={"source_channel_id": corrected_channel.id, "user_confirmed": False},
+            metadata={"source_channel_id": corrected_channel.id},
             unit_source=source.unit_source,
             display_unit=source.display_unit,
             semantic_role="thrust",

@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -28,9 +29,15 @@ class TestIntervalEditor(QGroupBox):
     candidate_selected = Signal(int)
     regions_changed = Signal(object)
 
-    def __init__(self, translations: TranslationService) -> None:
+    def __init__(
+        self,
+        translations: TranslationService,
+        *,
+        detect_translation_key: str = "process.detect_candidates",
+    ) -> None:
         super().__init__()
         self._translations = translations
+        self._detect_translation_key = detect_translation_key
         self._candidates: tuple[ActivityCandidate, ...] = ()
         self._syncing = False
         self._has_active = False
@@ -45,8 +52,12 @@ class TestIntervalEditor(QGroupBox):
         layout.addWidget(self.reference_label)
         layout.addWidget(self.modification_label)
 
-        buttons = QHBoxLayout()
+        buttons = QVBoxLayout()
         self.detect_button = QPushButton()
+        self.detect_button.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Fixed,
+        )
         self.detect_button.clicked.connect(self.detect_requested)
         self.fit_button = QPushButton()
         self.fit_button.clicked.connect(self.fit_requested)
@@ -67,11 +78,19 @@ class TestIntervalEditor(QGroupBox):
         region_widget = QWidget()
         region_layout = QFormLayout(region_widget)
         region_layout.setContentsMargins(0, 0, 0, 0)
+        region_layout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
+        region_layout.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow
+        )
         self.region_labels: dict[str, QLabel] = {}
         self.region_edits: dict[str, tuple[QDoubleSpinBox, QDoubleSpinBox]] = {}
         self.region_use_checks: dict[str, QCheckBox] = {}
         for region_name in ("pre", "active_test", "post"):
+            header_widget = QWidget()
+            header = QHBoxLayout(header_widget)
+            header.setContentsMargins(0, 0, 0, 0)
             label = QLabel()
+            label.setWordWrap(True)
             row_widget = QWidget()
             row = QHBoxLayout(row_widget)
             row.setContentsMargins(0, 0, 0, 0)
@@ -80,7 +99,8 @@ class TestIntervalEditor(QGroupBox):
                 use_check.setChecked(False)
                 use_check.toggled.connect(self._regions_emit)
                 self.region_use_checks[region_name] = use_check
-                row.addWidget(use_check)
+                header.addWidget(use_check)
+            header.addWidget(label, 1)
             start_edit = self._time_edit_create()
             end_edit = self._time_edit_create()
             start_edit.valueChanged.connect(self._regions_emit)
@@ -88,9 +108,10 @@ class TestIntervalEditor(QGroupBox):
             row.addWidget(start_edit)
             row.addWidget(QLabel("→"))
             row.addWidget(end_edit)
+            row.addStretch(1)
             self.region_labels[region_name] = label
             self.region_edits[region_name] = (start_edit, end_edit)
-            region_layout.addRow(label, row_widget)
+            region_layout.addRow(header_widget, row_widget)
         layout.addWidget(region_widget)
         self.clear()
         self.retranslate()
@@ -111,7 +132,9 @@ class TestIntervalEditor(QGroupBox):
     def retranslate(self) -> None:
         translate = self._translations.translate
         self.setTitle(translate("process.test_interval"))
-        self.detect_button.setText(translate("process.detect_candidates"))
+        detect_text = translate(self._detect_translation_key)
+        self.detect_button.setText(detect_text)
+        self.detect_button.setToolTip(detect_text)
         self.fit_button.setText(translate("process.fit_regions"))
         self.region_hint.setText(translate("process.region_hint"))
         for key, label in self.region_labels.items():
