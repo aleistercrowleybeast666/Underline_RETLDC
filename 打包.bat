@@ -3,7 +3,7 @@ setlocal EnableExtensions
 chcp 65001 >nul
 cd /d "%~dp0"
 
-set "APP_NAME=Underline_RETLDC_0_1_0"
+set "APP_NAME=Underline_RETLDC"
 set "VENV_PYTHON=%CD%\.venv\Scripts\python.exe"
 set "DIST_ROOT=%CD%\dist"
 set "DIST_DIR=%DIST_ROOT%\%APP_NAME%"
