@@ -314,8 +314,26 @@ initialization, descriptor, discovery, or duplicate-ID diagnostics. API generati
 There is no separate built-in registration path. Official IDs retain the `builtin.*` prefix for
 Project compatibility, while their concrete code lives in the Application/Repository Plugin Root.
 
-Interactive installation accepts either a plugin directory or a ZIP whose single top-level plugin
-folder contains `plugin.json`. It validates the stable ID, manifest type, and API generation, then:
+Interactive installation accepts a folder or ZIP containing one or more plugins at arbitrary
+wrapper-directory depth. Folder and ZIP input share one recursive package-discovery rule: every
+directory containing a valid `plugin.json` is a Candidate Plugin Root. A candidate containing a
+descendant candidate is marked as a nested container, and only the deepest roots are installable by
+default so copying an ancestor cannot introduce duplicate nested manifests. Multiple deepest roots
+with the same Plugin ID are source conflicts; that ID is not installed, while unrelated candidates
+remain available.
+
+For every selected candidate, `plugin_type` in `plugin.json` is the sole category authority:
+
+```text
+parser      → parsers/
+calibration → calibrations/
+processor   → processors/
+analyzer    → analyzers/
+exporter    → exporters/
+```
+
+The Installer copies only the resolved Plugin Root, never its outer ZIP/folder wrappers, and then
+uses this destination policy independently for each plugin:
 
 ```text
 Application Plugin Root, if an actual write probe and copy succeed
@@ -323,16 +341,27 @@ Application Plugin Root, if an actual write probe and copy succeed
 User Plugin Root
     ↓
 refresh the shared Plugin Registry
+    ↓
+verify the installed path has a PluginRecord with result LOADED
 ```
 
 The decision never depends on `C:`/`D:` or another drive letter and normal installation never
 requires administrator rights. Even after a successful write probe, an access-related error from
-the real staged copy triggers the User Root fallback. Invalid manifests, unsupported APIs, corrupt
-ZIPs, duplicate IDs, and other non-permission errors remain explicit errors and do not trigger a
-fallback. ZIP extraction rejects absolute/traversal paths, links, encrypted entries, and excessive
-entry/expanded-size limits. Replacing an existing ID first copies and validates a complete staging
-directory on the target filesystem, then swaps directories so obsolete files are not retained.
-Advanced users may still copy a folder manually into either root and refresh.
+the real staged copy triggers the User Root fallback. Both roots retain the same category layout.
+Invalid manifests, unsupported APIs, corrupt ZIPs, duplicate IDs, missing entry modules, and other
+non-permission errors remain explicit errors and do not trigger fallback. ZIP extraction rejects
+absolute/traversal/drive paths, links, encrypted
+entries, duplicate paths, special entries, more than 4096 entries, and more than 512 MiB expanded
+content. Replacing an existing ID occurs at its current root (it does not migrate to the other root),
+first copies and validates a complete sibling staging directory, and then swaps directories so an
+interrupted copy neither destroys the old plugin nor retains obsolete files.
+
+The interactive workflow runs package discovery, copy, Registry refresh, and load verification
+through the shared `TaskManager` and main-window status/progress area. Its stable diagnostic stages
+are `DISCOVERY`, `MANIFEST_VALIDATION`, `CONFLICT_CHECK`, `DESTINATION_RESOLUTION`, `EXTRACTION`,
+`COPY`, `REGISTRY_REFRESH`, and `LOAD_VERIFY`. A copied plugin whose Registry record is not `LOADED`
+is reported as installed-but-failed, not as a successful installation. Advanced users may still
+copy a folder manually into either root and refresh; Loader discovery remains recursive.
 
 Optional translations live at `i18n/zh_CN.json` and `i18n/en_US.json`. Keys should be prefixed by
 the plugin ID. Missing requested strings fall back to the English bundle and then descriptor text.

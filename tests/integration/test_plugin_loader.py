@@ -427,8 +427,8 @@ def test_distinct_plugin_ids_cannot_collide_in_installed_folder_names(
     )
 
     assert dotted_outcome.destination != underscored_outcome.destination
-    assert dotted_outcome.destination.name == "plugin-example.parser.a.b"
-    assert underscored_outcome.destination.name == "plugin-example.parser.a_b"
+    assert dotted_outcome.destination.name == "dotted"
+    assert underscored_outcome.destination.name == "underscored"
 
 
 def test_application_and_user_roots_report_duplicate_without_override(

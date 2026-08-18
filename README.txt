@@ -154,14 +154,9 @@ SchemaForm 和中英文资源；TR_F 只是软件默认附带的 Parser，不是
 5. AI 无法访问工程时，要求它生成一个可直接安装的插件 ZIP。
 6. 在 Underline RETLDC 中打开“工具 → 插件”，点击“安装插件...”，选择 AI 生成的 ZIP。
    软件会读取 plugin.json、判断解析器类别、复制到合适位置并自动刷新。
-7. ZIP 内部仍应直接是一个插件文件夹：
-
-   <插件文件夹>/plugin.json
-   <插件文件夹>/plugin.py
-   <插件文件夹>/i18n/zh_CN.json
-   <插件文件夹>/i18n/en_US.json
-
-   ZIP 内不要套入 Underline_RETLDC/plugins；安装器会自行选择目标根目录和 parsers 类别。
+7. ZIP 可以只有一个插件，也可以包含多个相关插件和任意层说明/包装目录。安装器会递归
+   查找每个 plugin.json，把其所在目录识别为真正插件根，并根据 plugin_type 分别分类。
+   不需要先解压、寻找 plugin.json 或手工判断 parsers/calibrations 等目录。
 
 高级用户也可把解压后的插件文件夹手工复制到程序目录的 plugins/parsers/，或用户插件
 目录的 parsers/，再打开“工具 → 插件 → 刷新”。了解 Python 的用户可直接以
@@ -193,9 +188,9 @@ plugins/parsers/tr_f/ 为模板编写。普通新 Parser
 5. 打开“工具 → 插件 → 安装插件...”，选择这个 ZIP。软件会自动识别 Calibration 类型、
    复制到正确类别并刷新，新模型随后会出现在校准下拉框。
 
-ZIP 顶层仍是 <插件文件夹>/，其中直接包含 plugin.json、plugin.py 和可选 i18n/；不要把
-Underline_RETLDC/plugins/calibrations 路径一起打进 ZIP。高级用户仍可手工复制到程序插件
-根的 plugins/calibrations/ 或用户插件根的 calibrations/，然后刷新。
+ZIP 可以包含任意层包装目录或多个相关插件；软件只复制每个真正包含 plugin.json 的最深层
+插件根，不会把外层说明文件和打包目录塞进 plugins。高级用户仍可手工复制到程序插件根的
+plugins/calibrations/ 或用户插件根的 calibrations/，然后刷新。
 
 校准模型只负责数值映射，不承担解析、baseline、自重变化补偿、滤波、分析或导出。
 
@@ -209,7 +204,14 @@ Underline_RETLDC/plugins/calibrations 路径一起打进 ZIP。高级用户仍�
 2. 选择“工具 → 插件”。
 3. 点击“安装插件...”。
 4. 选择插件文件夹或 ZIP。
-5. 软件自动读取 plugin.json、判断插件类型、复制到正确类别并刷新。
+5. 安装前检查检测到的插件列表；可逐项取消、全选或全不选。
+6. 软件根据每个 plugin.json 的 plugin_type 自动分类，优先安装到程序插件目录；只有对应
+   程序目录无写入权限时，才按插件回退到用户插件目录。
+7. 软件自动刷新 Registry，并且只有插件状态确实为“已加载”时才报告安装成功。
+
+一个文件夹或 ZIP 可以包含多个插件，也可以套任意层包装目录。安装器递归扫描 plugin.json，
+只复制真正插件根；如果祖先和后代目录都含 manifest，默认只安装最深层插件，避免重复发现。
+同一来源内重复 Plugin ID 会明确标记冲突，但不会阻止其他不同 ID 的插件继续安装。
 
 程序插件目录位于当前应用根目录：
 
@@ -226,6 +228,14 @@ Underline_RETLDC/plugins/calibrations 路径一起打进 ZIP。高级用户仍�
 错误，安装器才会自动改用当前 Windows 用户插件目录：
 
    %APPDATA%\Underline_RETLDC\plugins\
+   ├─ parsers\
+   ├─ calibrations\
+   ├─ processors\
+   ├─ analyzers\
+   └─ exporters\
+
+如果同一 Plugin ID 已经存在，安装预览会显示当前/待安装版本和已有路径。选择“替换”时
+始终原位置原子替换，不会在程序根和用户根各留下一个副本；选择“跳过”不会影响同包其他插件。
 
 软件判断的是目标目录的实际写权限，不根据 C:、D: 或其他盘符猜测，也不会要求普通
 插件安装必须以管理员身份运行。D: 只是推荐，不是运行要求；程序可以位于 C:、E:、
@@ -390,22 +400,21 @@ python .\main.py
 
 需要制作无需安装 Python 的 Windows 版本时，双击根目录：
 
-   打包_文件夹版.bat
+   打包.bat
 
 脚本只使用当前工程的 .venv；如果其中没有 PyInstaller，会先自动安装。随后使用文件夹
 模式构建并自动执行浅色、深色两次启动检查，同时确认所有随包插件均可载入。成功后的
 发布位置是：
 
-   dist\Underline_RETLDC_0_1_0\
+   dist\Underline_RETLDC\
 
 主程序是：
 
-   dist\Underline_RETLDC_0_1_0\Underline_RETLDC_0_1_0.exe
+   dist\Underline_RETLDC\Underline_RETLDC.exe
 
-界面中显示的软件版本为 `v0.0.2`；发布文件夹和 EXE 继续使用既定的
-`Underline_RETLDC_0_1_0` 固定交付名称。
+界面中显示的软件版本为 `v0.0.3`；发布文件夹和 EXE 使用稳定名称 `Underline_RETLDC`。
 
-发布时必须复制或压缩整个 Underline_RETLDC_0_1_0 文件夹，不能只拿走 EXE。
+发布时必须复制或压缩整个 Underline_RETLDC 文件夹，不能只拿走 EXE。
 `_internal` 中是运行依赖，`plugins` 中是随软件发布的标准插件，二者都不能删除。
 发布文件夹还包含 README、插件生成 Prompt、技术文档和示例数据。
 

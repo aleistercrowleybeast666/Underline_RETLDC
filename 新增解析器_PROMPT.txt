@@ -87,11 +87,13 @@ Loader、Registry、SchemaForm 和 API。不要修改 TR_F，不把新格式硬�
 
 【模式 B：没有 Agent / 不能访问用户仓库】
 - 不要假装已经检查或修改用户工程。
-- 依据本 Prompt 中的 Plugin API v1 语义生成一个可直接安装的 <plugin_name>.zip。
+- 依据本 Prompt 中的 Plugin API v1 语义生成可直接安装的 <plugin_name>.zip；合理场景下
+  也可以把多个相关插件放在同一个 ZIP 中。
 - 普通用户将在 Underline RETLDC 中选择“工具 → 插件 → 安装插件...”，直接选择该 ZIP；
   软件负责识别 Parser 类别和安装位置。
-- ZIP 顶层必须直接是 <plugin_folder>/，不能额外包含 Underline_RETLDC/plugins 层。
-- ZIP 原则上只能包含插件自身目录，不得包含 main.py、AGENTS.md、TARGETS.md、
+- GUI Installer 会递归扫描任意层包装目录中的 plugin.json，并按每个 manifest 自动分类；
+  不要求 ZIP 只有一个顶层插件目录。
+- ZIP 只能包含插件及其合理的包级说明，不得包含 main.py、AGENTS.md、TARGETS.md、
   src/underline_retldc/core、src/underline_retldc/gui 等覆盖平台文件。
 - 如果需求确实超出本 Prompt 描述的公开 API，明确告诉用户需要有仓库访问能力的
   Coding Agent 扩展平台，不要用隐藏 hack 或把 Core 塞进 ZIP。
@@ -187,8 +189,8 @@ src/underline_retldc/ 下新增具体 Parser 实现。
 - manifest 的 plugin_id、plugin_type、api_version、version 必须与代码 descriptor 完全一致，否则 Loader 会判定 descriptor mismatch。
 
 
-【无 Agent ZIP 的精确结构】
-模式 B 交付的 ZIP 内部必须是：
+【无 Agent ZIP 的推荐结构】
+模式 B 交付单插件 ZIP 时推荐：
 
 <plugin_folder>/
     plugin.json
@@ -197,11 +199,12 @@ src/underline_retldc/ 下新增具体 Parser 实现。
         zh_CN.json
         en_US.json
 
-如果需要辅助模块，只能放在同一插件文件夹内，例如 decoder.py、utils.py。相对导入应在
-Loader 创建的插件包内工作。普通用户直接用“工具 → 插件 → 安装插件...”选择 ZIP，
-不要要求用户先寻找 parsers 目录。高级用户手工解压时，应直接得到
-plugins/parsers/<plugin_folder>/plugin.json，不能多一层压缩包名目录，也不能让
-plugin.json 直接散落在 parsers/ 根部。
+如果需要辅助模块，应放在其所属插件根内，例如 decoder.py、utils.py。相对导入应在
+Loader 创建的插件包内工作。多个相关插件可以各自拥有 plugin.json 并一起打包，外面也可
+有合理的说明/包装目录；GUI Installer 会递归发现、逐项预览并根据 plugin_type 分类，只
+复制真正插件根。普通用户直接用“工具 → 插件 → 安装插件...”选择 ZIP，不要要求用户先
+寻找 parsers 目录。高级用户手工安装时仍推荐整理为
+plugins/parsers/<plugin_folder>/plugin.json。
 
 
 【Parser 类必须实现的接口】

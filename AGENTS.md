@@ -93,13 +93,25 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   to the user plugin root only when the application root cannot be written. It never requires
   administrator privileges for normal installation and never infers writability from a drive
   letter. A preflight write probe does not replace handling an access error from the actual copy.
-- Folder and ZIP installation validates one manifest before copying. ZIP extraction rejects path
-  traversal and links. Replacement is staged and committed as a complete directory so old file
-  remnants are not mixed with the new plugin.
+- Plugin installation derives type and destination category from `plugin.json`, never from source
+  folder placement, folder name, or ZIP name.
+- Folder and ZIP packages may contain arbitrary wrapper depth and multiple plugins. The Installer
+  recursively resolves each manifest directory, copies the deepest Plugin Roots rather than their
+  wrapper package directories, and rejects duplicate IDs within one source.
+- New plugins prefer the matching category under the writable Application Plugin Root. The User
+  Plugin Root is a per-plugin permission fallback, not a fallback for manifest, API, conflict, ZIP,
+  entry, or other ordinary errors. Existing IDs are replaced at their current physical location.
+- Interactive installation uses the shared TaskManager and global status/progress UI. Installation
+  success means the installed PluginRecord is discoverable with result `LOADED`, not merely copied.
+- ZIP extraction rejects traversal, absolute/drive paths, links, encryption, special entries, and
+  configured entry/expanded-size excess. Replacement is staged and committed as a complete
+  directory so old file remnants are not mixed with the new plugin.
 
 ## Coding conventions
 
 - Python requires type hints, explicit exceptions, UTF-8, and a 100-column soft limit.
+- Compare Qt dialog and standard-button return values by value (`==` / `!=`), never by Python
+  object identity (`is` / `is not`).
 - Plugin contract names (`probe`, `parse`, `evaluate`, `process`, `analyze`, `export`) remain
   exactly as documented. Project-level free functions otherwise prefer a subsystem/verb-object
   form such as `Project_Save` or `Burn_DetectCandidates` when it improves clarity.

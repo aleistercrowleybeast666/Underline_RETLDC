@@ -114,6 +114,7 @@ from underline_retldc.gui.pages.workspace_pages import (
     ThrustAnalysisWorkspacePage,
     WorkspaceSeries,
 )
+from underline_retldc.gui.plugin_install_dialog import PluginInstallPreviewDialog
 from underline_retldc.gui.theme import Theme_Apply, Theme_DarkBarApply
 from underline_retldc.gui.widgets import StandardComboBox
 from underline_retldc.i18n.service import TranslationService
@@ -132,9 +133,15 @@ from underline_retldc.plugin_api.processor import (
 )
 from underline_retldc.plugins.installer import (
     Plugin_UserDirectory,
-    PluginAlreadyExistsError,
-    PluginInstaller_Install,
+    PluginInstallBatchOutcome,
+    PluginInstallDecision,
+    PluginInstaller_InstallBatch,
+    PluginInstallError,
+    PluginInstallItemState,
+    PluginInstallPackage,
     PluginInstallResult,
+    PluginInstallStage,
+    PluginPackage_Discover,
 )
 from underline_retldc.plugins.loader import PluginDiscoveryRoot, PluginLoader
 
@@ -195,6 +202,7 @@ class MainWindow(QMainWindow):
         self.task_manager = TaskManager(max_workers=2)
         self._active_task: TaskHandle[Any] | None = None
         self._active_success: Callable[[Any], None] | None = None
+        self._active_task_indeterminate = False
         self._recommendations: list[tuple[Any, ProbeResult]] = []
         self._recommendation_source: Path | None = None
         self._recomputed_project_data = ProjectData()
@@ -985,24 +993,37 @@ class MainWindow(QMainWindow):
         name: str,
         operation: Callable[[TaskContext], Any],
         success: Callable[[Any], None],
-    ) -> None:
+        *,
+        indeterminate: bool = False,
+    ) -> TaskHandle[Any] | None:
         if self._active_task is not None and not self._active_task.done:
             QMessageBox.information(self, PRODUCT_NAME, self._active_task.name)
-            return
+            return None
         self._active_success = success
         self._active_task = self.task_manager.submit(name, operation)
-        self.progress_bar.setValue(0)
+        self._active_task_indeterminate = indeterminate
+        if indeterminate:
+            self.progress_bar.setRange(0, 0)
+        else:
+            self.progress_bar.setRange(0, 1000)
+            self.progress_bar.setValue(0)
         self.progress_bar.show()
         self.cancel_button.show()
         self.statusBar().showMessage(name)
         self.task_timer.start()
+        return self._active_task
 
     def _task_poll(self) -> None:
         handle = self._active_task
         if handle is None:
             self.task_timer.stop()
             return
-        self.progress_bar.setValue(round(handle.progress * 1000))
+        if self._active_task_indeterminate and handle.progress <= 0.0:
+            self.progress_bar.setRange(0, 0)
+        else:
+            if self.progress_bar.maximum() == 0:
+                self.progress_bar.setRange(0, 1000)
+            self.progress_bar.setValue(round(handle.progress * 1000))
         if handle.message:
             self.statusBar().showMessage(handle.message)
         if not handle.done:
@@ -1013,6 +1034,8 @@ class MainWindow(QMainWindow):
         callback = self._active_success
         self._active_task = None
         self._active_success = None
+        self._active_task_indeterminate = False
+        self.progress_bar.setRange(0, 1000)
         if handle.state is TaskResult.SUCCESS:
             try:
                 if callback is not None:
@@ -1037,7 +1060,9 @@ class MainWindow(QMainWindow):
 
     def _error_show(self, error: BaseException) -> None:
         message = str(error)
-        if isinstance(error, ProjectSourceHashMismatchError):
+        if isinstance(error, PluginInstallError):
+            message = self._plugin_install_error_text(error)
+        elif isinstance(error, ProjectSourceHashMismatchError):
             message = self.translations.translate(
                 "project.source_hash_mismatch",
                 expected=error.expected_hash,
@@ -1048,6 +1073,34 @@ class MainWindow(QMainWindow):
             self.translations.translate("common.error"),
             message,
         )
+
+    def _plugin_install_error_text(self, error: PluginInstallError) -> str:
+        t = self.translations.translate
+        issue = error.issue
+        lines = [
+            t("plugins.status.failed"),
+            "",
+            t("plugins.detail.source", source=str(issue.source)),
+            t("plugins.detail.stage", stage=issue.stage.value.upper()),
+        ]
+        if issue.plugin_id:
+            lines.append(t("plugins.detail.plugin_id", plugin_id=issue.plugin_id))
+        if issue.plugin_type is not None:
+            lines.append(
+                t(
+                    "plugins.detail.plugin_type",
+                    plugin_type=t(
+                        f"plugin.type.{issue.plugin_type.value}",
+                        issue.plugin_type.value,
+                    ),
+                )
+            )
+        if issue.target_path is not None:
+            lines.append(t("plugins.detail.target", target=str(issue.target_path)))
+        for existing_path in issue.existing_paths:
+            lines.append(t("plugins.detail.existing", path=str(existing_path)))
+        lines.append(t("plugins.detail.reason", reason=issue.reason))
+        return "\n".join(lines)
 
     def _dialog_start_directory(self) -> str:
         return str(self.settings.last_directory())
@@ -1478,7 +1531,7 @@ class MainWindow(QMainWindow):
                 self,
                 self.translations.translate("tabular.preset_save"),
                 self.translations.translate("tabular.preset_replace"),
-            ) is not QMessageBox.StandardButton.Yes:
+            ) != QMessageBox.StandardButton.Yes:
                 return
             TabularPreset_Save(preset, destination)
             self._tabular_presets_refresh(str(destination))
@@ -1495,7 +1548,7 @@ class MainWindow(QMainWindow):
                 self,
                 self.translations.translate("tabular.preset_delete"),
                 self.translations.translate("tabular.preset_delete_confirm"),
-            ) is not QMessageBox.StandardButton.Yes:
+            ) != QMessageBox.StandardButton.Yes:
                 return
             destination.unlink()
             self._tabular_presets_refresh()
@@ -1531,7 +1584,7 @@ class MainWindow(QMainWindow):
                 self,
                 self.translations.translate("tabular.preset_import"),
                 self.translations.translate("tabular.preset_replace"),
-            ) is not QMessageBox.StandardButton.Yes:
+            ) != QMessageBox.StandardButton.Yes:
                 return
             TabularPreset_Save(preset, destination)
             self._last_directory_store(source)
@@ -3697,12 +3750,8 @@ class MainWindow(QMainWindow):
         )
 
     def _plugins_refresh(self) -> None:
-        selected_parser = self.import_page.selected_parser_id()
-        selected_calibration = self.setup_page.calibration_id()
-        selected_processor = self.process_page.processor_id()
-        self.registry = PluginRegistry()
-        self.plugin_loader = PluginLoader(self.registry)
-        self.plugin_loader.discover(
+        registry = PluginRegistry()
+        PluginLoader(registry).discover(
             (
                 PluginDiscoveryRoot(
                     self.application_plugin_directory, "application"
@@ -3710,6 +3759,14 @@ class MainWindow(QMainWindow):
                 PluginDiscoveryRoot(self.user_plugin_directory, "user"),
             )
         )
+        self._plugins_registry_apply(registry)
+
+    def _plugins_registry_apply(self, registry: PluginRegistry) -> None:
+        selected_parser = self.import_page.selected_parser_id()
+        selected_calibration = self.setup_page.calibration_id()
+        selected_processor = self.process_page.processor_id()
+        self.registry = registry
+        self.plugin_loader = PluginLoader(self.registry)
         for record in self.registry.records:
             if record.result is PluginLoadResult.LOADED:
                 translation_directory = Path(record.source) / "i18n"
@@ -3804,69 +3861,182 @@ class MainWindow(QMainWindow):
         if not selected:
             return
         source = Path(selected)
-        answer = QMessageBox.warning(
-            self,
-            t("page.plugins"),
-            t("plugins.security_notice"),
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
-            QMessageBox.StandardButton.Cancel,
-        )
-        if answer is not QMessageBox.StandardButton.Yes:
+        if not self._plugin_install_confirm():
             return
+        LOGGER.info("Plugin installation confirmed: %s", source)
         try:
-            outcome = PluginInstaller_Install(
-                source,
-                self.application_plugin_directory,
-                self.user_plugin_directory,
-            )
-        except PluginAlreadyExistsError as exc:
-            if not self._plugin_replace_confirm(exc):
-                return
-            try:
-                outcome = PluginInstaller_Install(
+            self._last_directory_store(source if source.is_dir() else source.parent)
+            status_messages = self._plugin_install_status_messages()
+
+            def operation(context: TaskContext) -> PluginInstallPackage:
+                return PluginPackage_Discover(
                     source,
                     self.application_plugin_directory,
                     self.user_plugin_directory,
-                    replace=True,
+                    context=context,
+                    status_messages=status_messages,
                 )
-            except (OSError, ValueError) as replace_error:
-                self._error_show(replace_error)
-                return
-        except (OSError, ValueError) as exc:
-            self._error_show(exc)
-            return
-        self._last_directory_store(source if source.is_dir() else source.parent)
-        self._plugins_refresh()
-        if outcome.result is PluginInstallResult.APPLICATION:
-            success_key = "plugins.install_success_application"
-        elif outcome.result is PluginInstallResult.USER_FALLBACK:
-            success_key = "plugins.install_success_user_fallback"
-        else:
-            success_key = "plugins.install_success_user"
-        QMessageBox.information(self, t("page.plugins"), t(success_key))
-        self.statusBar().showMessage(str(outcome.destination), 5000)
 
-    def _plugin_replace_confirm(self, error: PluginAlreadyExistsError) -> bool:
-        t = self.translations.translate
-        dialog = QMessageBox(self)
-        dialog.setIcon(QMessageBox.Icon.Question)
-        dialog.setWindowTitle(t("page.plugins"))
-        dialog.setText(
-            t(
-                "plugins.replace_confirm",
-                current=error.current_version,
-                incoming=error.incoming_version,
+            def success(package: PluginInstallPackage) -> None:
+                dialog = PluginInstallPreviewDialog(
+                    self.translations,
+                    package,
+                    self,
+                )
+                if dialog.exec() != QDialog.DialogCode.Accepted:
+                    package.close()
+                    return
+                decisions = dialog.decisions()
+                self._plugin_install_start(package, decisions)
+
+            handle = self._task_start(
+                t("plugins.task.discovery"),
+                operation,
+                success,
+                indeterminate=True,
             )
+            if handle is None:
+                return
+            if self._active_task is not handle:
+                raise RuntimeError("Plugin discovery task was not activated")
+            self.statusBar().showMessage(status_messages[PluginInstallStage.DISCOVERY])
+        except Exception as exc:
+            LOGGER.exception("Unable to start plugin installation discovery: %s", source)
+            self._error_show(exc)
+
+    def _plugin_install_confirm(self) -> bool:
+        t = self.translations.translate
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle(t("page.plugins"))
+        box.setText(t("plugins.security_notice"))
+        box.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
         )
-        replace_button = dialog.addButton(
-            t("plugins.replace"), QMessageBox.ButtonRole.AcceptRole
+        box.setDefaultButton(QMessageBox.StandardButton.Cancel)
+        box.setEscapeButton(QMessageBox.StandardButton.Cancel)
+        install_button = box.button(QMessageBox.StandardButton.Yes)
+        cancel_button = box.button(QMessageBox.StandardButton.Cancel)
+        if install_button is not None:
+            install_button.setText(t("plugins.install_confirm"))
+        if cancel_button is not None:
+            cancel_button.setText(t("common.cancel"))
+        box.exec()
+        clicked_button = box.clickedButton()
+        return (
+            clicked_button is not None
+            and box.standardButton(clicked_button) == QMessageBox.StandardButton.Yes
         )
-        cancel_button = dialog.addButton(
-            t("common.cancel"), QMessageBox.ButtonRole.RejectRole
+
+    def _plugin_install_start(
+        self,
+        package: PluginInstallPackage,
+        decisions: Mapping[str, PluginInstallDecision],
+    ) -> None:
+        t = self.translations.translate
+        status_messages = self._plugin_install_status_messages()
+
+        def operation(context: TaskContext) -> PluginInstallBatchOutcome:
+            try:
+                return PluginInstaller_InstallBatch(
+                    package,
+                    decisions,
+                    self.application_plugin_directory,
+                    self.user_plugin_directory,
+                    context=context,
+                    status_messages=status_messages,
+                )
+            finally:
+                package.close()
+
+        def success(outcome: PluginInstallBatchOutcome) -> None:
+            self._plugins_registry_apply(outcome.registry)
+            self._plugin_install_result_show(outcome)
+            if outcome.failure_count == 0:
+                status = t("plugins.status.complete")
+            elif outcome.success_count:
+                status = t(
+                    "plugins.status.partial",
+                    success=outcome.success_count,
+                    failed=outcome.failure_count,
+                )
+            else:
+                status = t("plugins.status.failed")
+            self.statusBar().showMessage(status, 7000)
+
+        self._task_start(
+            t("plugins.task.install"),
+            operation,
+            success,
         )
-        dialog.setDefaultButton(cancel_button)
-        dialog.exec()
-        return dialog.clickedButton() is replace_button
+
+    def _plugin_install_status_messages(self) -> dict[PluginInstallStage, str]:
+        t = self.translations.translate
+        return {
+            stage: t(f"plugins.progress.{stage.value}")
+            for stage in PluginInstallStage
+        }
+
+    def _plugin_install_result_show(
+        self,
+        outcome: PluginInstallBatchOutcome,
+    ) -> None:
+        t = self.translations.translate
+        lines = [
+            t(
+                "plugins.result_summary",
+                total=len(outcome.items),
+                success=outcome.success_count,
+                failed=outcome.failure_count,
+                skipped=outcome.skipped_count,
+            )
+        ]
+        for item in outcome.items:
+            candidate = item.candidate
+            state_text = t(f"plugins.result.{item.state.value}", item.state.value)
+            state_symbol = (
+                "✓"
+                if item.loaded
+                else "—"
+                if item.state is PluginInstallItemState.SKIPPED
+                else "✕"
+            )
+            type_text = t(
+                f"plugin.type.{candidate.plugin_type.value}",
+                candidate.plugin_type.value,
+            )
+            lines.extend(
+                [
+                    "",
+                    f"{state_symbol} {candidate.name}",
+                    f"  {state_text}",
+                    f"  {type_text} · {candidate.plugin_id}",
+                    f"  {t('plugins.detail.stage', stage=item.stage.value.upper())}",
+                ]
+            )
+            install_outcome = item.install_outcome
+            if install_outcome is not None:
+                location_key = (
+                    "plugins.location.application"
+                    if install_outcome.result is PluginInstallResult.APPLICATION
+                    else "plugins.location.user"
+                )
+                lines.append(f"  {t(location_key)}: {install_outcome.destination}")
+                if install_outcome.result is PluginInstallResult.USER_FALLBACK:
+                    lines.append(f"  {t('plugins.location.user_fallback')}")
+            if not item.loaded and item.message:
+                reason = item.message
+                if item.state is PluginInstallItemState.FAILED and not candidate.installable:
+                    reason = t(
+                        f"plugins.candidate_status.{candidate.conflict_status.value}",
+                        candidate.conflict_status.value,
+                    )
+                lines.append(f"  {t('plugins.detail.reason', reason=reason)}")
+        message = "\n".join(lines)
+        if outcome.failure_count:
+            QMessageBox.warning(self, t("plugins.result_title"), message)
+        else:
+            QMessageBox.information(self, t("plugins.result_title"), message)
 
     @staticmethod
     def _directory_open(directory: Path) -> None:

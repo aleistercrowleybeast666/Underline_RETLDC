@@ -38,7 +38,7 @@ def test_python_file_entry_points_start_gui(entry: Path) -> None:
 def test_frozen_launch_roots_use_executable_directory(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    executable = tmp_path / "Underline_RETLDC_0_1_0.exe"
+    executable = tmp_path / "Underline_RETLDC.exe"
     monkeypatch.setattr(sys, "frozen", True, raising=False)
     monkeypatch.setattr(sys, "executable", str(executable))
     assert launcher.Launcher_ProjectRoot() == tmp_path.resolve()
@@ -46,12 +46,12 @@ def test_frozen_launch_roots_use_executable_directory(
 
 
 def test_folder_packaging_batch_has_stable_output_contract() -> None:
-    script_path = PROJECT_ROOT / "打包_文件夹版.bat"
+    script_path = PROJECT_ROOT / "打包.bat"
     script_bytes = script_path.read_bytes()
     assert b"\r\n" in script_bytes
     assert b"\n" not in script_bytes.replace(b"\r\n", b"")
     script = script_bytes.decode("utf-8")
-    assert 'set "APP_NAME=Underline_RETLDC_0_1_0"' in script
+    assert 'set "APP_NAME=Underline_RETLDC"' in script
     assert "--onedir" in script
     assert "--windowed" in script
     assert '"%DIST_DIR%\\plugins"' in script

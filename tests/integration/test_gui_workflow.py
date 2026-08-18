@@ -10,6 +10,7 @@ from PySide6.QtGui import QPalette
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import (
     QApplication,
+    QDialog,
     QFileDialog,
     QHeaderView,
     QInputDialog,
@@ -50,6 +51,7 @@ from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
 from underline_retldc.gui.main_window import MainWindow
 from underline_retldc.gui.pages.export_page import ExportDialog, ExportOption
 from underline_retldc.gui.pages.workspace_pages import WorkspaceSeries
+from underline_retldc.gui.plugin_install_dialog import PluginInstallPreviewDialog
 from underline_retldc.gui.tabular_mapping_editor import TabularMappingEditor
 from underline_retldc.gui.theme import RetldcApplicationStyle, Theme_Apply, Theme_Current
 from underline_retldc.gui.widgets import StandardComboBox
@@ -440,7 +442,7 @@ def test_runtime_theme_header_and_settings_stay_synchronized(tmp_path: Path) -> 
 
     assert window.language_label.text() == "界面语言"
     assert window.theme_label.text() == "主题"
-    assert window.version_label.text() == "v0.0.2"
+    assert window.version_label.text() == "v0.0.3"
     assert window.credit_label.text() == "辰星引力开发"
     assert window.version_label.font().weight() > window.credit_label.font().weight()
     assert window.language_label.font().weight() > window.language_combo.font().weight()
@@ -518,7 +520,7 @@ def test_runtime_theme_header_and_settings_stay_synchronized(tmp_path: Path) -> 
     app.processEvents()
     assert window.language_label.text() == "UI Language"
     assert window.theme_label.text() == "Theme"
-    assert window.version_label.text() == "v0.0.2"
+    assert window.version_label.text() == "v0.0.3"
     assert window.credit_label.text() == "By CXYL"
     assert window.header_title.text() == (
         "Underline Rocket Engine Test Log Decoder and Calculator"
@@ -974,11 +976,7 @@ class ExampleParser(ParserPlugin):
         "getExistingDirectory",
         lambda *_args, **_kwargs: str(selected_source),
     )
-    monkeypatch.setattr(
-        QMessageBox,
-        "warning",
-        lambda *_args, **_kwargs: QMessageBox.StandardButton.Yes,
-    )
+    monkeypatch.setattr(window, "_plugin_install_confirm", lambda: True)
     monkeypatch.setattr(
         QMessageBox,
         "information",
@@ -986,8 +984,14 @@ class ExampleParser(ParserPlugin):
             messages.append(str(message)) or QMessageBox.StandardButton.Ok
         ),
     )
+    monkeypatch.setattr(
+        PluginInstallPreviewDialog,
+        "exec",
+        lambda _dialog: QDialog.DialogCode.Accepted,
+    )
 
     window._plugin_install_dialog()
+    _task_wait(window)
 
     record = next(
         item
@@ -997,9 +1001,9 @@ class ExampleParser(ParserPlugin):
     assert record.source_kind == "application"
     assert Path(record.source).is_relative_to(application_root.resolve())
     assert not user_root.exists()
-    assert messages == [
-        "Plugin installed successfully.\n\nLocation:\nApplication plugin folder"
-    ]
+    assert len(messages) == 1
+    assert "Install GUI Parser" in messages[0]
+    assert "Application plugin folder" in messages[0]
     window.close()
     app.processEvents()
 

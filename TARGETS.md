@@ -16,7 +16,7 @@ Product:
 
 Current application version:
 
-`0.0.2` (`0.0.x` denotes early-development iterations)
+`0.0.3` (`0.0.x` denotes early-development iterations)
 
 Full meaning:
 
@@ -860,14 +860,19 @@ Operations should include:
 
 Trusted local installation should be possible.
 
-Interactive installation accepts one plugin folder or ZIP and organizes it by manifest type. It
-first probes and attempts the Application Plugin Root, then falls back to the User Plugin Root only
-for a real access-permission failure. It does not inspect drive letters or require administrator
-rights. ZIP extraction rejects traversal and links; replacement is staged before the old directory
-is switched out. Advanced users may still copy a plugin directory manually into either root and
-refresh. Discovery is recursive, ignores `.venv`, `.git`, caches, and symlink recursion, and
-isolates malformed manifests/imports and duplicate stable IDs. There is no separate manual
-registration list for official plugins.
+Interactive installation accepts a folder or ZIP with arbitrary wrapper depth and one or more
+plugins. It recursively treats each valid manifest directory as a Candidate Plugin Root, installs
+only deepest roots when manifests are nested, classifies every candidate from manifest type, and
+handles conflicts independently. New plugins first probe and attempt their Application category,
+then fall back to the matching User category only for a real access-permission failure. Existing
+IDs are replaced at their current location. It does not inspect drive letters or require
+administrator rights. ZIP extraction rejects traversal, links, encryption, unsafe/special paths,
+and resource-limit excess; replacement is staged before the old directory is switched out.
+Interactive work uses the shared TaskManager/status progress, refreshes the Registry, and reports
+success only when the installed record is `LOADED`. Advanced users may still copy a plugin
+directory manually into either root and refresh. Loader discovery is recursive, ignores `.venv`,
+`.git`, caches, and symlink recursion, and isolates malformed manifests/imports and duplicate stable
+IDs. There is no separate manual registration list for official plugins.
 
 A later version may support packaged or Python-installed plugins.
 
@@ -1192,7 +1197,7 @@ and every measurement workspace without requiring another Parse action.
 The stable Windows title is exactly `Underline_RETLDC` and never includes a version. The Header
 uses stable `Underline` followed by the localized `火箭发动机试车数据解算` or
 `Rocket Engine Test Log Decoder and Calculator`; it never displays the current Project filename.
-The same row then shows semi-bold `v0.0.2`, regular-weight credit, and synchronized
+The same row then shows semi-bold `v0.0.3`, regular-weight credit, and synchronized
 Header/Settings language and theme ComboBoxes. The shared-family typography uses a 20 px Header
 title, 13 px version/credit/Header controls, and 14 px navigation items; the full localized title
 remains available as the title tooltip when horizontal space is constrained. Shared analysis

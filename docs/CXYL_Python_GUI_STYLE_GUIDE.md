@@ -115,8 +115,8 @@ The top brand bar must contain:
 Example:
 
 ```text
-简体中文：SilverStar 飞行日志解析器    v0.0.2    辰星引力开发
-English:  SilverStar Flight Log Parser    v0.0.2    By CXYL
+简体中文：SilverStar 飞行日志解析器    v0.0.3    辰星引力开发
+English:  SilverStar Flight Log Parser    v0.0.3    By CXYL
 ```
 
 Recommended implementation:
@@ -135,7 +135,7 @@ Keep one authoritative version source, e.g.:
 
 ```python
 PRODUCT_NAME = "SilverStar_FLP"
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 ```
 
 Packaging metadata, About text, installer metadata, and header display should derive from the same value when practical.
@@ -143,7 +143,7 @@ Packaging metadata, About text, installer metadata, and header display should de
 Do not allow:
 
 ```text
-GUI: 0.0.2
+GUI: 0.0.3
 pyproject: 0.1.0.dev0
 exe metadata: 0.0.1
 ```
@@ -1251,6 +1251,8 @@ Do not:
 13. Put navigation algorithms in page classes.
 14. Create many primary pages for individual charts.
 15. Make dialogs the only way to see critical mission setup data.
+16. Compare `QMessageBox.StandardButton` or `QDialog.DialogCode` return values with Python object
+    identity (`is` / `is not`); Qt enum wrappers require value comparison (`==` / `!=`).
 
 ---
 

@@ -141,14 +141,17 @@ plugins in the Application Root are shown as `Bundled`; later third-party instal
 alternate API, permission, or trust. Folder categories are organizational; manifest `plugin_type`
 is authoritative.
 
-The interactive Installer accepts a plugin folder or one safely structured ZIP. It validates the
-manifest, determines the category, performs a real write probe against the Application Root, and
-attempts a staged copy there. Only an access-permission failure from the probe or actual copy moves
-the new installation to the User Root. It never derives permission from a drive letter and never
-requires administrator execution. Invalid metadata, API mismatch, archive corruption, and ID
-conflicts remain errors. Existing IDs require explicit replacement; staging plus a directory swap
-prevents old files from being mixed into the new version. Both roots remain available for manual
-copy followed by Registry refresh.
+The interactive Installer accepts a folder or safely structured ZIP, recursively resolves one or
+more Candidate Plugin Roots from manifest locations, excludes ancestor containers when descendant
+plugins exist, and derives every category from manifest `plugin_type`. Each selected plugin gets an
+independent destination decision and staged copy. Only an access-permission failure from the
+Application category write probe or actual copy moves that new plugin to the matching User category.
+It never derives permission from a drive letter or requires administrator execution. Invalid
+metadata, API mismatch, archive corruption, duplicate IDs, and entry errors remain explicit errors.
+Existing IDs require explicit replacement at their current location; staging plus a directory swap
+prevents old files from being mixed into the new version or duplicated across roots. Discovery,
+copy, Registry refresh, and load verification run through the shared TaskManager/status progress.
+Both roots remain available for manual copy followed by recursive Registry refresh.
 
 Discovery recursively finds `plugin.json`, while pruning `.venv`, `.git`, `__pycache__`, and
 symlink directories. `PluginLoader` validates a manifest, API compatibility, imports, descriptor
@@ -234,8 +237,9 @@ and `enum`) and retain stable plugin IDs as ComboBox data.
 The Plugin dialog presents the executable-code warning as an emphasized notice and the portable
 installation recommendation as readable secondary text in both themes. Its actions are Refresh,
 Install Plugin, Open Application Plugin Folder, and Open User Plugin Folder. Install Plugin asks
-for a folder or ZIP, copies it to the resolved category, refreshes the shared Registry, and reports
-whether the Application or User location was used.
+for a folder or ZIP, scans it in the existing global task area, presents a selectable multi-plugin
+preview with per-conflict Replace/Skip choices, then performs categorized installation and Registry
+verification in the background. It reports Application/User location and load result per plugin.
 
 The Export dialog places its destination, format list, and optional ENG metadata inside one
 vertically scrollable content viewport while keeping Cancel and Export in a fixed bottom action
@@ -339,8 +343,8 @@ environment/bootstrap logic only.
 
 ## Windows folder package
 
-Root `打包_文件夹版.bat` builds a PyInstaller `onedir` distribution named
-`dist/Underline_RETLDC_0_1_0/`. Its GUI executable is `Underline_RETLDC_0_1_0.exe`; this fixed
+Root `打包.bat` builds a PyInstaller `onedir` distribution named
+`dist/Underline_RETLDC/`. Its GUI executable is `Underline_RETLDC.exe`; this fixed
 delivery filename is independent of the visible application version. Frozen startup
 uses the executable's parent as the project/portable root and bypasses the source launcher's
 `.venv` bootstrap. Python/Qt dependencies remain in `_internal/`, while the recursively discovered
@@ -350,7 +354,7 @@ copied into the distribution.
 
 The entire distribution directory is the release unit: moving only the EXE is unsupported. The
 build script installs PyInstaller into the project `.venv` only when missing, replaces the same
-versioned build output, and smoke-starts the packaged executable once per theme before reporting
+stable-name build output, and smoke-starts the packaged executable once per theme before reporting
 success. A smoke run also fails when no bundled plugins are found or any bundled plugin cannot be
 loaded. The script never packages source test data, rewrites raw logs, or modifies the user plugin
 root.
