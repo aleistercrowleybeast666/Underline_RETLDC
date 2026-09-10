@@ -161,6 +161,16 @@ class ThrustCurvePngExporter(ExporterPlugin):
         painter.setPen(QPen(QColor("#172033"), 2))
         painter.drawRect(plot)
 
+        zero_y = plot.bottom() - (0.0 - y_min) / (y_max - y_min) * plot.height()
+        painter.setPen(QPen(QColor("#64748b"), 2, Qt.PenStyle.DashLine))
+        painter.drawLine(QPointF(plot.left(), zero_y), QPointF(plot.right(), zero_y))
+        painter.setPen(QColor("#344054"))
+        painter.drawText(
+            QRectF(20, zero_y - 15, 110, 30),
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+            "0",
+        )
+
         points = QPolygonF(
             [
                 QPointF(
@@ -232,5 +242,6 @@ class ThrustCurvePngExporter(ExporterPlugin):
                 "height": height,
                 "output_locale": output_locale,
                 "title": title,
+                "zero_reference_visible": True,
             },
         )

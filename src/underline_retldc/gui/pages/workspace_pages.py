@@ -8,6 +8,8 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QResizeEvent
 from PySide6.QtWidgets import (
     QCheckBox,
+    QDoubleSpinBox,
+    QFormLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -30,11 +32,13 @@ from underline_retldc.core.regions import ActivityCandidate
 from underline_retldc.core.units import (
     Quantity_Dimension,
     Unit_AreConvertible,
+    Unit_ConvertValue,
     Unit_ValueFormat,
     UnitDisplayMode,
     UnitDisplayMode_Normalize,
 )
 from underline_retldc.gui.analysis_widgets import (
+    AnalysisDiagnosticsPanel,
     AnalysisPlotWidget,
     AnalysisResultsPanel,
     AnalysisWorkspaceShell,
@@ -167,6 +171,19 @@ class WorkspaceSeries:
     auxiliary: bool = False
 
 
+class ReferencePressureSpinBox(QDoubleSpinBox):
+    def __init__(self) -> None:
+        super().__init__()
+        self._scientific = False
+
+    def set_scientific(self, scientific: bool) -> None:
+        self._scientific = bool(scientific)
+        self.lineEdit().setText(self.textFromValue(self.value()))
+
+    def textFromValue(self, value: float) -> str:
+        return f"{value:.5e}" if self._scientific else f"{value:.9g}"
+
+
 class MeasurementWorkspacePage(QWidget):
     """Binding-driven workspace built from the shared analysis shell and plot."""
 
@@ -177,6 +194,7 @@ class MeasurementWorkspacePage(QWidget):
     candidate_selected = Signal(int)
     regions_changed = Signal(object)
     analysis_state_changed = Signal(bool)
+    reference_pressure_changed = Signal(float, bool)
 
     def __init__(
         self,
@@ -209,6 +227,9 @@ class MeasurementWorkspacePage(QWidget):
         self._syncing = False
         self._regions_syncing = False
         self._analysis_complete = self._metric_mode == "generic"
+        self._reference_pressure_pa = 101325.0
+        self._reference_visible = True
+        self._reference_syncing = False
 
         controls = QWidget()
         controls_layout = QVBoxLayout(controls)
@@ -228,26 +249,16 @@ class MeasurementWorkspacePage(QWidget):
         channel_layout.addWidget(self.channel_summary)
         controls_layout.addWidget(self.channel_group)
 
-        self.interval_editor: TestIntervalEditor | None = None
-        if self._metric_mode == "pressure":
-            self.interval_editor = TestIntervalEditor(
-                translations,
-                detect_translation_key="process.detect_with_pressure",
-            )
-            self.interval_editor.detect_requested.connect(self.detect_requested.emit)
-            self.interval_editor.fit_requested.connect(self._fit_view)
-            self.interval_editor.candidate_selected.connect(
-                self.candidate_selected.emit
-            )
-            self.interval_editor.regions_changed.connect(
-                self._interval_regions_changed
-            )
-            controls_layout.addWidget(self.interval_editor)
-
         self.view_group: QGroupBox | None = None
         self.display_unit_text: QLabel | None = None
         self.segmentation_status: QLabel | None = None
         self.fit_button: QPushButton | None = None
+        self.display_group: QGroupBox | None = None
+        self.interval_status_group: QGroupBox | None = None
+        self.reference_group: QGroupBox | None = None
+        self.reference_label: QLabel | None = None
+        self.reference_spin: ReferencePressureSpinBox | None = None
+        self.reference_visible_check: QCheckBox | None = None
         self.curves_group: QGroupBox | None = None
         self.curves_layout: QVBoxLayout | None = None
         self.curve_checks: dict[str, QCheckBox] = {}
@@ -255,17 +266,72 @@ class MeasurementWorkspacePage(QWidget):
         self.show_auxiliary_check.toggled.connect(self._series_controls_rebuild)
         self.reset_chart_button = QPushButton()
         if self._metric_mode in {"pressure", "temperature"}:
-            self.curves_group = QGroupBox()
-            self.curves_layout = QVBoxLayout(self.curves_group)
+            self.display_group = QGroupBox()
+            display_layout = QVBoxLayout(self.display_group)
+            self.fit_button = QPushButton()
+            self.fit_button.clicked.connect(self._fit_view)
             if self._metric_mode == "pressure":
                 pressure_check = QCheckBox()
                 pressure_check.setChecked(True)
                 pressure_check.toggled.connect(self._plot_refresh)
                 self.curve_checks["pressure"] = pressure_check
-                self.curves_layout.addWidget(pressure_check)
-            self.curves_layout.addWidget(self.reset_chart_button)
-            controls_layout.addWidget(self.curves_group)
+                display_layout.addWidget(pressure_check)
+            else:
+                # Temperature curve toggles occupy the same place as thrust toggles.
+                self.curves_layout = QVBoxLayout()
+                display_layout.addLayout(self.curves_layout)
+            display_layout.addWidget(self.fit_button)
+            display_layout.addWidget(self.reset_chart_button)
+            controls_layout.addWidget(self.display_group)
+
+            self.interval_editor = None
+            if self._metric_mode == "pressure":
+                self.interval_editor = TestIntervalEditor(
+                    translations,
+                    detect_translation_key="process.detect_with_pressure",
+                )
+                self.interval_editor.detect_requested.connect(self.detect_requested.emit)
+                self.interval_editor.fit_requested.connect(self._fit_view)
+                self.interval_editor.fit_button.hide()
+                self.interval_editor.candidate_selected.connect(
+                    self.candidate_selected.emit
+                )
+                self.interval_editor.regions_changed.connect(
+                    self._interval_regions_changed
+                )
+                controls_layout.addWidget(self.interval_editor)
+            else:
+                self.interval_status_group = QGroupBox()
+                interval_status_layout = QVBoxLayout(self.interval_status_group)
+                self.segmentation_status = QLabel()
+                self.segmentation_status.setWordWrap(True)
+                interval_status_layout.addWidget(self.segmentation_status)
+                controls_layout.addWidget(self.interval_status_group)
+
+            if self._metric_mode == "pressure":
+                self.reference_group = QGroupBox()
+                reference_layout = QFormLayout(self.reference_group)
+                reference_layout.setRowWrapPolicy(
+                    QFormLayout.RowWrapPolicy.WrapAllRows
+                )
+                reference_layout.setFieldGrowthPolicy(
+                    QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow
+                )
+                self.reference_label = QLabel()
+                self.reference_spin = ReferencePressureSpinBox()
+                self.reference_spin.setDecimals(9)
+                self.reference_spin.setRange(-1.0e12, 1.0e12)
+                self.reference_spin.valueChanged.connect(self._reference_value_changed)
+                self.reference_visible_check = QCheckBox()
+                self.reference_visible_check.setChecked(True)
+                self.reference_visible_check.toggled.connect(
+                    self._reference_visibility_changed
+                )
+                reference_layout.addRow(self.reference_label, self.reference_spin)
+                reference_layout.addRow(self.reference_visible_check)
+                controls_layout.addWidget(self.reference_group)
         else:
+            self.interval_editor = None
             self.view_group = QGroupBox()
             view_layout = QVBoxLayout(self.view_group)
             self.display_unit_text = QLabel()
@@ -310,6 +376,8 @@ class MeasurementWorkspacePage(QWidget):
         self.statistics_group = self.results_panel
         self.metrics_table = self.results_panel.table
         self.calculate_button: QPushButton | None = None
+        self.diagnostics_group: AnalysisDiagnosticsPanel | None = None
+        self.diagnostics_list: QListWidget | None = None
         results_widget: QWidget = self.results_panel
         if self._metric_mode in {"pressure", "temperature"}:
             self.calculate_button = QPushButton()
@@ -317,9 +385,11 @@ class MeasurementWorkspacePage(QWidget):
             self.calculate_button.clicked.connect(self._analysis_calculate)
             results_widget = QWidget()
             results_layout = QVBoxLayout(results_widget)
-            results_layout.setContentsMargins(0, 0, 0, 0)
+            self.diagnostics_group = AnalysisDiagnosticsPanel(translations)
+            self.diagnostics_list = self.diagnostics_group.list
             results_layout.addWidget(self.calculate_button)
-            results_layout.addWidget(self.results_panel, 1)
+            results_layout.addWidget(self.results_panel, 2)
+            results_layout.addWidget(self.diagnostics_group, 1)
         self.results_widget = results_widget
         self.shell = AnalysisWorkspaceShell(
             controls,
@@ -345,15 +415,19 @@ class MeasurementWorkspacePage(QWidget):
             )
         )
         if self._selection_mode == "multiple":
-            self.channel_label.setText(translate("primary_channels.temperature"))
+            self.channel_label.setText(translate("workspace.temperature_data"))
         elif self._metric_mode == "pressure":
-            self.channel_label.setText(translate("primary_channels.pressure"))
+            self.channel_label.setText(translate("workspace.pressure_data"))
         else:
             self.channel_label.setText(translate("setup.channel"))
         if self.view_group is not None:
             self.view_group.setTitle(translate("workspace.view_controls"))
+        if self.display_group is not None:
+            self.display_group.setTitle(translate("workspace.display"))
         if self.fit_button is not None:
-            self.fit_button.setText(translate("process.fit_regions"))
+            self.fit_button.setText(translate("workspace.fit_view"))
+        if self.interval_status_group is not None:
+            self.interval_status_group.setTitle(translate("process.test_interval"))
         if self.curves_group is not None:
             self.curves_group.setTitle(translate("process.curves"))
         if "pressure" in self.curve_checks:
@@ -361,15 +435,17 @@ class MeasurementWorkspacePage(QWidget):
                 translate("primary_channels.pressure")
             )
         self.reset_chart_button.setText(translate("workspace.reset_chart"))
+        if self.reference_group is not None:
+            self.reference_group.setTitle(translate("workspace.reference_pressure"))
+        if self.reference_label is not None:
+            self.reference_label.setText(translate("workspace.reference_pressure"))
+        if self.reference_visible_check is not None:
+            self.reference_visible_check.setText(
+                translate("workspace.show_reference_line")
+            )
         self.show_auxiliary_check.setText(translate("workspace.show_auxiliary"))
         if self.calculate_button is not None:
-            self.calculate_button.setText(
-                translate(
-                    "workspace.calculate_pressure"
-                    if self._metric_mode == "pressure"
-                    else "workspace.calculate_temperature"
-                )
-            )
+            self.calculate_button.setText(translate("analyze.calculate"))
         self.results_panel.setTitle(translate(self._title_key))
         self.results_panel.set_headers(
             translate("workspace.metric"),
@@ -382,6 +458,7 @@ class MeasurementWorkspacePage(QWidget):
             y_label=self._axis_label(()),
         )
         self._plot_refresh()
+        self._reference_control_refresh()
 
     def _axis_label(self, selected: tuple[WorkspaceSeries, ...]) -> str:
         translate = self._translations.translate
@@ -396,6 +473,93 @@ class MeasurementWorkspacePage(QWidget):
 
     def set_theme(self, theme: str) -> None:
         self.analysis_plot.apply_theme(theme)
+
+    @property
+    def reference_pressure_pa(self) -> float:
+        return self._reference_pressure_pa
+
+    @property
+    def reference_line_visible(self) -> bool:
+        return self._reference_visible
+
+    def set_pressure_reference(self, pressure_pa: float, visible: bool = True) -> None:
+        value = float(pressure_pa)
+        if not np.isfinite(value):
+            raise ValueError("Reference pressure must be finite")
+        self._reference_pressure_pa = value
+        self._reference_visible = bool(visible)
+        if self.reference_visible_check is not None:
+            self.reference_visible_check.blockSignals(True)
+            self.reference_visible_check.setChecked(self._reference_visible)
+            self.reference_visible_check.blockSignals(False)
+        self._reference_control_refresh()
+        self._reference_plot_refresh()
+
+    def _pressure_display_unit(self) -> str:
+        selected = self._selected_series()
+        if selected:
+            channel = selected[0].dataset.channel(selected[0].channel_id)
+            unit = channel.effective_display_unit(
+                self._display_preferences,
+                display_mode=self._display_mode,
+            )
+            if Unit_AreConvertible("Pa", unit):
+                return unit
+        if self._display_mode is UnitDisplayMode.SI_SCIENTIFIC:
+            return "Pa"
+        preferred = self._display_preferences.get("pressure", "MPa")
+        return preferred if Unit_AreConvertible("Pa", preferred) else "MPa"
+
+    def _reference_control_refresh(self) -> None:
+        if self.reference_spin is None:
+            return
+        unit = self._pressure_display_unit()
+        value = Unit_ConvertValue(self._reference_pressure_pa, "Pa", unit)
+        self._reference_syncing = True
+        self.reference_spin.set_scientific(
+            self._display_mode is UnitDisplayMode.SI_SCIENTIFIC
+        )
+        self.reference_spin.setSuffix(f" {unit}")
+        self.reference_spin.setValue(value)
+        self._reference_syncing = False
+        self.reference_spin.setToolTip(
+            self._translations.translate("workspace.standard_atmosphere")
+            + " = 101325 Pa"
+        )
+
+    def _reference_plot_refresh(self) -> None:
+        if self._metric_mode != "pressure":
+            return
+        unit = self._pressure_display_unit()
+        display_value = Unit_ConvertValue(self._reference_pressure_pa, "Pa", unit)
+        self.analysis_plot.set_horizontal_reference(
+            "pressure_reference",
+            display_value,
+            self._translations.translate("workspace.reference_pressure"),
+            self._reference_visible,
+            {"color": "#fbbf24", "width": 1.2},
+        )
+
+    def _reference_value_changed(self, display_value: float) -> None:
+        if self._reference_syncing:
+            return
+        unit = self._pressure_display_unit()
+        self._reference_pressure_pa = Unit_ConvertValue(float(display_value), unit, "Pa")
+        self._reference_plot_refresh()
+        self.reference_pressure_changed.emit(
+            self._reference_pressure_pa,
+            self._reference_visible,
+        )
+
+    def _reference_visibility_changed(self, visible: bool) -> None:
+        if self._reference_syncing:
+            return
+        self._reference_visible = bool(visible)
+        self._reference_plot_refresh()
+        self.reference_pressure_changed.emit(
+            self._reference_pressure_pa,
+            self._reference_visible,
+        )
 
     def set_series(
         self,
@@ -430,6 +594,7 @@ class MeasurementWorkspacePage(QWidget):
         self._series = updated_series
         self._series_by_id = updated_by_id
         self._series_controls_rebuild(selected_ids=selected_ids)
+        self._reference_control_refresh()
 
     def selected_references(self) -> tuple[ChannelReference, ...]:
         return tuple(item.reference for item in self._selected_series())
@@ -659,11 +824,13 @@ class MeasurementWorkspacePage(QWidget):
     def set_display_preferences(self, preferences: Mapping[str, str]) -> None:
         self._display_preferences = dict(preferences)
         self._plot_refresh()
+        self._reference_control_refresh()
 
     def set_display_mode(self, mode: UnitDisplayMode | str) -> None:
         self._display_mode = UnitDisplayMode_Normalize(mode)
         self.analysis_plot.set_display_mode(self._display_mode)
         self._plot_refresh()
+        self._reference_control_refresh()
 
     def _plot_refresh(self) -> None:
         selected = self._selected_series()
@@ -708,6 +875,7 @@ class MeasurementWorkspacePage(QWidget):
             y_unit=unit,
         )
         self.analysis_plot.set_regions(self._regions)
+        self._reference_plot_refresh()
         self.analysis_plot.set_empty_state(
             None if selected else self._translations.translate(self._empty_key),
             button_text=self._translations.translate("workspace.select_channel"),
@@ -722,14 +890,18 @@ class MeasurementWorkspacePage(QWidget):
                 if selected
                 else ""
             )
-        self.channel_summary.setText(
-            self._translations.translate(
+        summary = ""
+        if self._selection_mode == "multiple":
+            summary = self._translations.translate(
                 "workspace.selected_count",
                 count=len(selected),
             )
-            if self._selection_mode == "multiple"
-            else (selected[0].label if selected else "")
-        )
+        elif self._metric_mode == "pressure" and not selected:
+            summary = self._translations.translate("workspace.no_primary_pressure")
+        elif self._metric_mode == "generic" and selected:
+            summary = selected[0].label
+        self.channel_summary.setText(summary)
+        self.channel_summary.setVisible(bool(summary))
         self._results_refresh()
         self._segmentation_status_refresh()
         if self.calculate_button is not None:
@@ -773,6 +945,21 @@ class MeasurementWorkspacePage(QWidget):
         return statistics, unit
 
     def _results_refresh(self) -> None:
+        if self.diagnostics_group is not None:
+            selected = self._selected_series()
+            datasets = {id(item.dataset): item.dataset for item in selected}
+            self.diagnostics_group.set_diagnostics(
+                (
+                    diagnostic
+                    for dataset in datasets.values()
+                    for diagnostic in dataset.diagnostics
+                ),
+                notice=(
+                    self._translations.translate("workspace.segmentation_missing")
+                    if selected and self._active_interval() is None
+                    else ""
+                ),
+            )
         if (
             self._metric_mode in {"pressure", "temperature"}
             and not self._analysis_complete
@@ -888,7 +1075,7 @@ class MeasurementWorkspacePage(QWidget):
             self.curves_layout.removeWidget(checkbox)
             checkbox.deleteLater()
         self.curve_checks.clear()
-        reset_index = self.curves_layout.indexOf(self.reset_chart_button)
+        reset_index = self.curves_layout.count()
         for item in self._selected_series():
             stable_id = item.reference.stable_id
             checkbox = QCheckBox(item.label)

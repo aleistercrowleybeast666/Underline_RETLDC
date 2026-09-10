@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+import traceback
+from contextlib import suppress
 from pathlib import Path
 
 from PySide6.QtCore import QTimer
@@ -34,6 +36,19 @@ def Application_ProjectRoot() -> Path:
     return Path(__file__).resolve().parents[3]
 
 
+def _smoke_failure_write(details: str) -> None:
+    if not bool(getattr(sys, "frozen", False)):
+        return
+    destination = Application_ProjectRoot() / "smoke-test-error.txt"
+    try:
+        destination.write_text(str(details).rstrip() + "\n", encoding="utf-8")
+    except OSError:
+        logging.getLogger(__name__).exception(
+            "Unable to write smoke-test failure report to %s",
+            destination,
+        )
+
+
 def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
     options, qt_arguments = _arguments_parse(arguments)
@@ -49,12 +64,23 @@ def main(argv: list[str] | None = None) -> int:
     Theme_Apply(app, options.theme or settings.theme())
     locale = options.locale or settings.locale()
     translations = TranslationService(locale)
-    window = MainWindow(
-        translations,
-        settings,
-        project_root=Application_ProjectRoot(),
-        initial_theme=options.theme,
-    )
+    if options.smoke_test and bool(getattr(sys, "frozen", False)):
+        with suppress(OSError):
+            (Application_ProjectRoot() / "smoke-test-error.txt").unlink(
+                missing_ok=True
+            )
+    try:
+        window = MainWindow(
+            translations,
+            settings,
+            project_root=Application_ProjectRoot(),
+            initial_theme=options.theme,
+        )
+    except BaseException:
+        if options.smoke_test:
+            _smoke_failure_write(traceback.format_exc())
+            return 1
+        raise
     window.show()
     if options.smoke_test:
         bundled_records = tuple(
@@ -83,5 +109,20 @@ def main(argv: list[str] | None = None) -> int:
                 ),
             )
             smoke_exit_code = 1
+        if smoke_exit_code:
+            lines = [
+                "Underline_RETLDC packaged smoke test failed.",
+                f"Plugin root: {window.application_plugin_directory}",
+                f"Bundled records: {len(bundled_records)}",
+            ]
+            for record in failed_records:
+                lines.append(
+                    f"{record.plugin_id}: {record.result.value} ({record.source})"
+                )
+                lines.extend(
+                    f"  {diagnostic.code}: {diagnostic.message}"
+                    for diagnostic in record.diagnostics
+                )
+            _smoke_failure_write("\n".join(lines))
         QTimer.singleShot(500, lambda: app.exit(smoke_exit_code))
     return app.exec()

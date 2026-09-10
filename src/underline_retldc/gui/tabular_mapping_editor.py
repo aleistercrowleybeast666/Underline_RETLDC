@@ -241,6 +241,10 @@ class TabularMappingEditor(QWidget):
 
         self.quick_group = QGroupBox()
         quick_layout = QVBoxLayout(self.quick_group)
+        self.auto_status = QLabel()
+        self.auto_status.setObjectName("tabularAutoStatus")
+        self.auto_status.setWordWrap(True)
+        self.auto_status.hide()
         self.quick_hint = QLabel()
         self.quick_hint.setWordWrap(True)
         self.quick_table = QTableWidget(0, 4)
@@ -256,6 +260,7 @@ class TabularMappingEditor(QWidget):
         quick_header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         self.quick_status = QLabel()
         self.quick_status.setWordWrap(True)
+        quick_layout.addWidget(self.auto_status)
         quick_layout.addWidget(self.quick_hint)
         quick_layout.addWidget(self.quick_table)
         quick_layout.addWidget(self.quick_status)
@@ -315,6 +320,54 @@ class TabularMappingEditor(QWidget):
     def set_advanced_expanded(self, expanded: bool) -> None:
         self.advanced_button.setChecked(bool(expanded))
 
+    def set_auto_detection_result(self, result: Any | None) -> None:
+        if result is None:
+            self.auto_status.clear()
+            self.auto_status.hide()
+            return
+        if result.can_parse:
+            counts: dict[str, int] = {}
+            lines = [
+                self._translations.translate(
+                    "tabular.auto_success",
+                    confidence=f"{float(result.confidence):.0%}",
+                )
+            ]
+            for suggestion in result.column_suggestions:
+                category = str(suggestion.suggested_user_category)
+                counts[category] = counts.get(category, 0) + 1
+                if category == "other":
+                    continue
+                label = self._quick_type_text(category)
+                header = suggestion.header or Tabular_ColumnLabel(suggestion.column_index)
+                unit = f" · {suggestion.unit}" if suggestion.unit else ""
+                lines.append(
+                    f"{label}: {Tabular_ColumnLabel(suggestion.column_index)} · "
+                    f"{header}{unit} · {suggestion.confidence:.0%}"
+                )
+            lines.append(
+                self._translations.translate(
+                    "tabular.auto_other_count",
+                    count=counts.get("other", 0),
+                )
+            )
+        else:
+            lines = [
+                self._translations.translate("tabular.auto_failure"),
+                str(result.blocking_reason or ""),
+            ]
+        self.auto_status.setText("\n".join(item for item in lines if item))
+        self.auto_status.show()
+
+    def set_auto_parse_failure(self, message: str) -> None:
+        self.auto_status.setText(
+            self._translations.translate("tabular.auto_failure")
+            + "\n"
+            + str(message)
+        )
+        self.auto_status.show()
+        self.set_advanced_expanded(True)
+
     def _advanced_visibility_update(self, expanded: bool) -> None:
         self.advanced_container.setVisible(bool(expanded))
         self._advanced_button_text_update()
@@ -347,6 +400,8 @@ class TabularMappingEditor(QWidget):
         self.mapping_table.setRowCount(0)
         self.quick_table.setRowCount(0)
         self._quick_rows.clear()
+        self.set_auto_detection_result(None)
+        self.set_advanced_expanded(False)
         self._reader_controls_refresh()
 
     def _common_signals_connect(self) -> None:
@@ -454,7 +509,7 @@ class TabularMappingEditor(QWidget):
         none_index = self.preset_combo.findData(None)
         if none_index >= 0:
             self.preset_combo.setItemText(none_index, t("tabular.preset_none"))
-        self.quick_group.setTitle(t("tabular.quick_import"))
+        self.quick_group.setTitle(t("tabular.detected_mapping"))
         self.quick_hint.setText(t("tabular.quick_hint"))
         self.quick_table.setHorizontalHeaderLabels(
             [

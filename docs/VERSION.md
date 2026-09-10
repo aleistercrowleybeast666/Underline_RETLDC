@@ -5,19 +5,19 @@ Project: Underline_RETLDC
 Name: Underline
 Product: Underline_RETLDC
 Full Name: Underline Rocket Engine Test Log Decode and Compute
-Current Version: 0.0.3
+Current Version: 0.0.4
 Plugin API: 1
 ```
 
 The directory name is never versioned. Application versions, Git tags, and schema versions are
 independent identifiers.
 
-Version `0.0.3` is an early-development iteration. The `0.0.x` line is used while the platform and
+Version `0.0.4` is an early-development iteration. The `0.0.x` line is used while the platform and
 workflow are still being established; the first formal release may advance to `0.1.0` according
 to the release policy. Application version numbers never alter Project, Calibration, Analysis,
 or Plugin API schema generations.
 
-Version `0.0.3` uses the five-workspace Project/Thrust/Chamber Pressure/Temperature/Data
+Version `0.0.4` uses the five-workspace Project/Thrust/Chamber Pressure/Temperature/Data
 Explorer desktop workflow with stable workspace and export-analysis dependency IDs, centralized
 Quantity/Data Unit/Display Unit handling, multi-Source Stream offsets, Plugin API v1, Project schema
 `underline-retldc-project/2` (with `/1` migration) and backward-compatible nullable stages,
@@ -32,6 +32,22 @@ All official concrete plugins are recursively discovered from repository-root `p
 the same manifest/Loader/Registry path as user plugins; their existing `builtin.*` IDs remain
 unchanged. The desktop theme IDs are `light` and `dark` and are persisted as UI preference under
 QSettings `ui/theme` without changing any science or Project schema version.
+
+## 0.0.4 changes
+
+- Ordinary CSV, TSV, and XLSX files now use a deterministic local detector for structure, header,
+  data start, time, units, and conservative measurement-category suggestions, then parse
+  automatically when no blocking ambiguity remains.
+- Advanced table mapping stays complete but collapsed by default and opens automatically after
+  failed detection. Unknown numeric, Kn, Ab, and burned-web columns default to preserved Other
+  Channels rather than being guessed as Temperature.
+- Thrust plots and formal thrust PNG exports preserve a visible 0 N tick and reference line for
+  positive-only and negative-only records.
+- Chamber Pressure adds an editable, Project-persisted display reference stored in Pa and
+  defaulting to one standard atmosphere. The enabled overlay is included in its cropped PNG but
+  never changes measurement or analysis data.
+- Thrust, Chamber Pressure, and Temperature controls now share the Primary Channels, Display, and
+  Test Interval ordering, with corrected compact-width pressure controls.
 
 ## 0.0.3 changes
 
@@ -55,11 +71,11 @@ QSettings `ui/theme` without changing any science or Project schema version.
 - ZIP traversal, absolute/drive paths, links, encrypted entries, duplicate paths, special entries,
   the 4096-entry limit, and the 512 MiB expanded-size limit remain enforced.
 
-Application version `0.0.3` does not change Plugin API `1`, Project schema
+Application version `0.0.4` does not change Plugin API `1`, Project schema
 `underline-retldc-project/2`, Calibration schema `underline-retldc-calibration/1`, or Analysis JSON
 schema `underline-retldc-analysis/1`.
 
 When the Windows portable release is produced, the release archive name is
-`Underline_RETLDC_0_0_3_Windows_Portable.zip`; it contains the stable `Underline_RETLDC/` folder
+`Underline_RETLDC_0_0_4_Windows_Portable.zip`; it contains the stable `Underline_RETLDC/` folder
 and `Underline_RETLDC.exe`. The archive/version naming does not rename the repository directory or
 the executable inside the portable folder.

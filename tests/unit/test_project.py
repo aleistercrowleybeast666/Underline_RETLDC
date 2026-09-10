@@ -224,3 +224,20 @@ def test_project_v2_preserves_source_tabular_mapping_and_reads_v1() -> None:
     assert migrated.sources[0].parser is not None
     assert migrated.sources[0].parser.config["columns"][1]["channel_id"] == "pc"
     assert migrated.to_dict()["schema"] == PROJECT_SCHEMA
+
+
+def test_project_v2_pressure_reference_round_trip_and_legacy_default() -> None:
+    document = ProjectDocument(
+        reference_pressure_pa=98_500.0,
+        pressure_reference_visible=False,
+    )
+    payload = document.to_dict()
+    loaded = ProjectDocument.from_dict(payload)
+    assert loaded.reference_pressure_pa == 98_500.0
+    assert not loaded.pressure_reference_visible
+
+    payload.pop("reference_pressure_pa")
+    payload.pop("pressure_reference_visible")
+    legacy = ProjectDocument.from_dict(payload)
+    assert legacy.reference_pressure_pa == 101_325.0
+    assert legacy.pressure_reference_visible

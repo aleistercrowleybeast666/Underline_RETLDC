@@ -85,7 +85,9 @@ class ImportPage(QWidget):
         offset_row = QHBoxLayout()
         offset_row.addWidget(self.time_offset_edit)
         offset_row.addStretch(1)
-        parser_row = QHBoxLayout()
+        parser_row_widget = QWidget()
+        parser_row = QHBoxLayout(parser_row_widget)
+        parser_row.setContentsMargins(0, 0, 0, 0)
         parser_row.addWidget(self.parser_combo, 1)
         parser_row.addWidget(self.detect_button)
         parser_row.addWidget(self.parse_button)
@@ -154,16 +156,25 @@ class ImportPage(QWidget):
         form.addRow(self.source_label, source_row)
         form.addRow("", self.source_list)
         form.addRow(self.time_offset_label, offset_row)
-        form.addRow(self.parser_label, parser_row)
+        parser_form = QFormLayout()
+        parser_form.addRow(self.parser_label, parser_row_widget)
+        self.parser_details = QWidget()
+        parser_details_layout = QVBoxLayout(self.parser_details)
+        parser_details_layout.setContentsMargins(0, 0, 0, 0)
+        parser_details_layout.addLayout(parser_form)
+        parser_details_layout.addWidget(self.ambiguity_group)
+        parser_details_layout.addWidget(self.recommendation_group)
+        parser_details_layout.addWidget(self.diagnostics_group)
         layout = QVBoxLayout(self)
         layout.addLayout(form)
+        layout.addWidget(self.parser_details)
         layout.addWidget(self.configuration_group)
-        layout.addWidget(self.ambiguity_group)
-        middle = QHBoxLayout()
-        middle.addWidget(self.recommendation_group, 1)
-        middle.addWidget(self.summary_group, 1)
-        layout.addLayout(middle)
-        layout.addWidget(self.diagnostics_group, 1)
+        layout.addWidget(self.summary_group)
+        layout.addStretch(1)
+        self._root_layout = layout
+        self.tabular_mapping_editor.advanced_button.toggled.connect(
+            self._parser_details_visibility_update
+        )
         self.retranslate()
 
     def retranslate(self) -> None:
@@ -426,14 +437,31 @@ class ImportPage(QWidget):
             )
             self.tabular_mapping_editor.set_config(config or {})
             self.parse_button.setText(self._translations.translate("tabular.import"))
+            self._parser_details_relocate(tabular=True)
             return
         self.tabular_mapping_editor.hide()
         self.configuration_form.show()
         self.configuration_form.set_schema(schema, config)
         self.parse_button.setText(self._translations.translate("import.parse"))
+        self._parser_details_relocate(tabular=False)
 
     def uses_tabular_mapping(self) -> bool:
         return not self.tabular_mapping_editor.isHidden()
+
+    def _parser_details_relocate(self, *, tabular: bool) -> None:
+        self._root_layout.removeWidget(self.parser_details)
+        configuration_index = self._root_layout.indexOf(self.configuration_group)
+        insert_index = configuration_index + 1 if tabular else configuration_index
+        self._root_layout.insertWidget(insert_index, self.parser_details)
+        self._parser_details_visibility_update()
+
+    def _parser_details_visibility_update(self, _expanded: bool | None = None) -> None:
+        visible = (
+            not self.uses_tabular_mapping()
+            or self.tabular_mapping_editor.advanced_button.isChecked()
+            or bool(self._ambiguity_candidates)
+        )
+        self.parser_details.setVisible(visible)
 
     def set_recommendations(self, recommendations: list[tuple[Any, ProbeResult]]) -> None:
         self.recommendation_table.setRowCount(len(recommendations))
@@ -475,6 +503,9 @@ class ImportPage(QWidget):
     ) -> None:
         self._ambiguity_candidates = tuple(candidates)
         self._ambiguity_rebuild()
+        if self._ambiguity_candidates and self.uses_tabular_mapping():
+            self.tabular_mapping_editor.set_advanced_expanded(True)
+        self._parser_details_visibility_update()
 
     def _ambiguity_rebuild(self) -> None:
         selected_id = self.selected_parser_id()

@@ -58,6 +58,18 @@ class ProcessPage(QWidget):
             translations,
             regions_movable=True,
         )
+        self.analysis_plot.set_horizontal_reference(
+            "thrust_zero",
+            0.0,
+            "0 N",
+            True,
+            {
+                "color": "#94a3b8",
+                "width": 1.2,
+                "force_fit": True,
+                "force_tick": True,
+            },
+        )
         # Compatibility aliases retained for extensions and existing tests.
         self.plot_widget = self.analysis_plot.plot_widget
         self.plot_legend = self.analysis_plot.legend
@@ -130,6 +142,9 @@ class ProcessPage(QWidget):
             checkbox.toggled.connect(self._plot_refresh)
             self.curve_checks[key] = checkbox
             curves_layout.addWidget(checkbox)
+        self.display_fit_button = QPushButton()
+        self.display_fit_button.clicked.connect(self._regions_view_fit)
+        curves_layout.addWidget(self.display_fit_button)
         self.reset_chart_button = QPushButton()
         self.reset_chart_button.clicked.connect(self.analysis_plot.reset_view)
         curves_layout.addWidget(self.reset_chart_button)
@@ -163,6 +178,24 @@ class ProcessPage(QWidget):
         processing_layout.addRow(self.processor_form)
         processing_layout.addRow(self.apply_button)
         controls_layout.addWidget(self.processing_group)
+        for group in (
+            self.interval_editor,
+            self.polarity_group,
+            self.curves_group,
+            self.baseline_status_group,
+            self.processing_group,
+        ):
+            controls_layout.removeWidget(group)
+        for group in (
+            self.curves_group,
+            self.interval_editor,
+            self.polarity_group,
+            self.processing_group,
+            self.baseline_status_group,
+        ):
+            controls_layout.addWidget(group)
+        self.interval_editor.fit_button.hide()
+        self.fit_button = self.display_fit_button
         controls_layout.addStretch(1)
 
         self.controls_widget = controls
@@ -173,7 +206,7 @@ class ProcessPage(QWidget):
 
     def retranslate(self) -> None:
         t = self._translations.translate
-        self.curves_group.setTitle(t("process.curves"))
+        self.curves_group.setTitle(t("workspace.display"))
         self.input_group.setTitle(t("primary_channels.title"))
         self.input_label.setText(t("workspace.thrust_data"))
         self.polarity_group.setTitle(t("process.thrust_polarity"))
@@ -183,6 +216,7 @@ class ProcessPage(QWidget):
         for key, checkbox in self.curve_checks.items():
             checkbox.setText(t(f"process.{key}"))
         self.reset_chart_button.setText(t("workspace.reset_chart"))
+        self.display_fit_button.setText(t("workspace.fit_view"))
         self.interval_editor.retranslate()
         self.processing_group.setTitle(t("page.process"))
         self.compensation_label.setText(t("process.enable_baseline"))
@@ -225,6 +259,8 @@ class ProcessPage(QWidget):
         self.apply_button.setEnabled(input_channel_id is not None)
         self.interval_editor.set_detection_enabled(input_channel_id is not None)
         self._plot_refresh()
+        if input_channel_id is not None:
+            self.analysis_plot.fit_view()
 
     def set_thrust_choices(
         self,
@@ -489,6 +525,18 @@ class ProcessPage(QWidget):
         )
 
     def _plot_refresh(self) -> None:
+        self.analysis_plot.set_horizontal_reference(
+            "thrust_zero",
+            0.0,
+            self._translations.translate("plot.thrust_zero"),
+            True,
+            {
+                "color": "#94a3b8",
+                "width": 1.2,
+                "force_fit": True,
+                "force_tick": True,
+            },
+        )
         self.analysis_plot.clear_series()
         self._curve_items.clear()
         uncorrected_dataset = self._calibrated_dataset or self._raw_dataset

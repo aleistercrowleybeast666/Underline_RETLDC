@@ -45,13 +45,21 @@ Channel or reopens a multi-Source Project.
 
 Thrust, Chamber Pressure, and Temperature share PRE/ACTIVE_TEST/POST markers, plot behavior,
 legend, theme handling, empty state, and a non-shrinking results panel. Chamber Pressure and
-Temperature do not duplicate a separate View Controls group. Each instead has Curve Display plus
-Reset Chart; pressure exposes one `Chamber Pressure` visibility checkbox and temperature mirrors
+Temperature follow Thrust's Primary Channels, Display, Test Interval control order. Display
+contains curve visibility toggles followed by Fit View and Reset Chart; temperature does not put
+its curve toggles in a separate trailing group. Display omits a redundant unit-only label because
+the plot axis and result values already identify units. Pressure exposes one `Chamber Pressure`
+visibility checkbox and temperature mirrors
 the selected imported temperature Channels with one checkbox per curve. The pressure workspace
 reports value at test start plus active-test mean, maximum, time to maximum, and minimum. The
 temperature workspace reports the test-start value, active-test maximum, full-record maximum, and
 full-record time to maximum for each selected Channel. These two result tables remain empty until
-the user presses their localized Calculate Analysis Results button. A binding or segmentation
+the user presses their localized Calculate Analysis Results button. All three analysis pages
+use the same calculation label, right-panel margins, and top-to-bottom Calculate / Results /
+Diagnostics arrangement, with a 2:1 stretch ratio for results and diagnostics. Chamber Pressure
+and Temperature show diagnostics from selected datasets (once per dataset), plus the existing
+missing-interval notice when applicable. Temperature retains its read-only Test Interval summary;
+pressure retains editable segmentation and its pressure reference. A binding or segmentation
 change invalidates the saved completion state and requires recalculation. Reset Chart restores the
 complete data-driven automatic X/Y range after zoom or pan and preserves PRE/ACTIVE_TEST/POST
 because those markers are shared Project state, not disposable viewport annotations.
@@ -60,6 +68,20 @@ The chamber-pressure PNG export is stricter than the interactive full-record vie
 valid ACTIVE_TEST and clips both plotted samples and the X-axis to that interval. PRE and POST remain
 available in the Project and interactive workspace but are not rendered into the formal pressure
 curve image.
+
+## Plot reference overlays
+
+The Thrust workspace always includes a dashed 0 N line and forces 0 into the visible Y range and
+axis ticks, including positive-only and negative-only records. The formal thrust PNG also draws
+that reference. This makes return-to-zero and baseline behavior visible without changing samples.
+
+Chamber Pressure defaults to a one-standard-atmosphere reference of 101325 Pa. The editable
+Project value is stored in Pa and converted to the current Display Unit, for example 0.101325 MPa
+or 1.01325e5 Pa in SI Scientific mode. It may be hidden or changed to 0 for gauge data. The line is
+a display overlay only: it is not subtracted from raw/calibrated data and does not change pressure
+statistics, CSV, or analysis values. Fit View includes a nearby reference but ignores an extreme
+reference when choosing a useful curve scale. The pressure PNG records and draws the enabled
+reference while retaining ACTIVE_TEST-only cropping.
 
 Plot axes disable pyqtgraph automatic SI prefixes. In `engineering` Unit Display Mode, the GUI
 uses resolved engineering Display Units such as N, MPa, °C, and mm. In `si_scientific` mode it

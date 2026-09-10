@@ -70,7 +70,9 @@ flowchart LR
     XLSX["XLSX"] --> XR["Workbook / Sheet Reader"]
     DR --> T["Read-only Tabular Cell Matrix"]
     XR --> T
-    T --> M["Tabular Mapping Engine"]
+    T --> AD["TabularAutoDetector"]
+    PS["Pure-JSON Presets"] --> AD
+    AD --> M["Explicit Tabular Mapping"]
     WC["Workspace Capability Registry"] --> QI["Quick Import categories"]
     QI --> M
     M --> TIME["Explicit Time Source"]
@@ -80,12 +82,16 @@ flowchart LR
     CH --> ST
 ```
 
-Readers only decode external syntax into a bounded preview or sparse cell matrix. The shared
-Mapping Engine applies one-based data-row bounds, an explicit time column/sample rate/sample
-period, zero-based column-index mappings, missing-value policy, and header-hint diagnostics.
-Header text is never the parse contract. Auto Mapping may inspect it to pre-fill an editable GUI
-configuration, but `parse()` executes only the saved mapping. An absent time source blocks parsing;
-there is no implicit 1 Hz fallback.
+Readers only decode external syntax into a bounded preview or sparse cell matrix.
+`TabularAutoDetector` sits between the Generic Reader and the Mapping Engine. It uses bounded
+local data, stable scoring rules, and optional pure-JSON Presets to detect the data start, header,
+time source, units, and conservative user categories. It has no LLM or network dependency.
+Unknown numeric columns remain `Other`; failed or ambiguous detection expands Advanced instead
+of guessing. The shared Mapping Engine applies one-based data-row bounds, an explicit time
+column/sample rate/sample period, zero-based column-index mappings, missing-value policy, and
+header-hint diagnostics. Header text is never the parse contract. Automatic detection may inspect
+it to produce an editable explicit GUI configuration, but `parse()` executes only the saved
+mapping. An absent time source blocks parsing; there is no implicit 1 Hz fallback.
 
 The ordinary Quick Import view obtains its categories from the Workspace Capability Registry and
 currently presents `Time`, `Thrust`, `Chamber Pressure`, `Temperature`, and `Other`. It translates
@@ -189,9 +195,11 @@ consistent. Reset Chart temporarily disables display-only curve clipping before
 restoring the full data-driven automatic X/Y range; it does not alter the Project's shared
 segmentation. Thrust adds processing controls, chamber pressure selects one bound Channel, and
 temperature supports multiple bound Channels without duplicating the common presentation code.
-Pressure and Temperature omit the redundant View Controls group, expose measurement-specific Curve
-Display checkboxes, and require an explicit Calculate action before their result tables and export
-capabilities become ready.
+The shared control order begins with Primary Channels, Display, and Test Interval. Pressure and
+Temperature omit the redundant View Controls group, expose measurement-specific curve controls,
+and require an explicit Calculate action before their result tables and export capabilities become
+ready. Thrust adds a forced 0 N tick and horizontal display reference. Chamber Pressure adds an
+editable display-only pressure reference stored by the Project in Pa, defaulting to 101325 Pa.
 The shell disables child collapsing for controls, plot, and results, gives all three reasonable
 minimum widths, and initializes splitter sizes from the actual available width. Narrow side-panel
 content scrolls instead of allowing the splitter to hide a critical panel. Chamber Pressure stacks

@@ -8,6 +8,7 @@ from underline_retldc.core.dataset import Dataset
 from underline_retldc.core.measurement_export import (
     Measurement_ChannelsSelect,
 )
+from underline_retldc.core.units import Unit_AreConvertible, Unit_ConvertValue
 from underline_retldc.plugin_api.common import (
     AnalysisResult,
     Diagnostic,
@@ -39,7 +40,10 @@ class ChamberPressurePngExporter(ExporterPlugin):
     def config_schema(self) -> dict[str, Any]:
         return {
             "type": "object",
-            "properties": {},
+            "properties": {
+                "reference_pressure_pa": {"type": "number", "default": 101325.0},
+                "show_reference_pressure": {"type": "boolean", "default": True},
+            },
             EXPORTER_UI_SCHEMA_KEY: {
                 "filename": "chamber_pressure_curve.png",
                 "translation_key": "export.chamber_pressure_png",
@@ -78,6 +82,22 @@ class ChamberPressurePngExporter(ExporterPlugin):
             semantic_roles=("chamber_pressure",),
         )
         interval = _active_interval(config)
+        reference_value = None
+        reference_label = None
+        if channels and bool(config.get("show_reference_pressure", True)):
+            target_unit = channels[0].data_unit
+            if Unit_AreConvertible("Pa", target_unit):
+                reference_value = Unit_ConvertValue(
+                    float(config.get("reference_pressure_pa", 101325.0)),
+                    "Pa",
+                    target_unit,
+                )
+                label = (
+                    "参考压力"
+                    if str(config.get("output_locale")) == "zh_CN"
+                    else "Reference Pressure"
+                )
+                reference_label = f"{label}: {reference_value:.6g} {target_unit}"
         result = MeasurementPng_Write(
             destination,
             dataset,
@@ -87,6 +107,8 @@ class ChamberPressurePngExporter(ExporterPlugin):
             quantity_title_zh="燃烧室压力曲线",
             active_interval=interval,
             crop_to_active_interval=True,
+            reference_value=reference_value,
+            reference_label=reference_label,
         )
         if result is MeasurementWriteResult.SKIPPED_NO_CHANNEL:
             Path(destination).unlink(missing_ok=True)
@@ -99,6 +121,12 @@ class ChamberPressurePngExporter(ExporterPlugin):
                 "output_locale": str(config.get("output_locale", "en_US")),
                 "active_interval": list(interval) if interval is not None else None,
                 "cropped_to_active_test": interval is not None,
+                "reference_pressure_pa": (
+                    float(config.get("reference_pressure_pa", 101325.0))
+                    if reference_value is not None
+                    else None
+                ),
+                "reference_pressure_visible": reference_value is not None,
             },
         )
 

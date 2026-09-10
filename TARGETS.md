@@ -16,7 +16,7 @@ Product:
 
 Current application version:
 
-`0.0.3` (`0.0.x` denotes early-development iterations)
+`0.0.4` (`0.0.x` denotes early-development iterations)
 
 Full meaning:
 
@@ -1197,7 +1197,7 @@ and every measurement workspace without requiring another Parse action.
 The stable Windows title is exactly `Underline_RETLDC` and never includes a version. The Header
 uses stable `Underline` followed by the localized `火箭发动机试车数据解算` or
 `Rocket Engine Test Log Decoder and Calculator`; it never displays the current Project filename.
-The same row then shows semi-bold `v0.0.3`, regular-weight credit, and synchronized
+The same row then shows semi-bold `v0.0.4`, regular-weight credit, and synchronized
 Header/Settings language and theme ComboBoxes. The shared-family typography uses a 20 px Header
 title, 13 px version/credit/Header controls, and 14 px navigation items; the full localized title
 remains available as the title tooltip when horizontal space is constrained. Shared analysis
@@ -1222,3 +1222,35 @@ markers because those markers are shared scientific state rather than transient 
 At compact desktop widths, Chamber Pressure gives its control panel enough non-collapsible width
 and wraps interval labels above their fields so the editor remains inside the no-horizontal-scroll
 viewport.
+
+---
+
+# 49. v0.0.4 Adaptive Import and Plot Reference Target
+
+Ordinary CSV, TSV, and XLSX imports use a low-cost, deterministic, local
+`TabularAutoDetector`. It detects the stable data region, header row, time source, conservative
+measurement categories, units, and primary-role suggestions, then parses automatically when no
+blocking ambiguity remains. The normal path minimizes configuration; complete Advanced Mapping
+remains available and expands automatically on failure. Unknown numeric and engineering columns,
+including Kn, Ab, and burned-web values, default to preserved `Other` Channels.
+
+The three analysis workspaces use consistent Primary Channels, Display, and Test Interval group
+ordering. Thrust keeps 0 N in both the interactive plot and formal PNG. Chamber Pressure has a
+Project-persisted, editable reference overlay stored in Pa and defaulting to 101325 Pa; the overlay
+does not change measurement or analysis data.
+
+---
+
+# 49. v0.0.4 Adaptive Import and Plot Reference Target
+
+Ordinary CSV, TSV, and XLSX imports use a low-cost, deterministic, local
+`TabularAutoDetector`. It detects the stable data region, header row, time source, conservative
+measurement categories, units, and primary-role suggestions, then parses automatically when no
+blocking ambiguity remains. The normal path minimizes configuration; complete Advanced Mapping
+remains available and expands automatically on failure. Unknown numeric and engineering columns,
+including Kn, Ab, and burned-web values, default to preserved `Other` Channels.
+
+The three analysis workspaces use consistent Primary Channels, Display, and Test Interval group
+ordering. Thrust keeps 0 N in both the interactive plot and formal PNG. Chamber Pressure has a
+Project-persisted, editable reference overlay stored in Pa and defaulting to 101325 Pa; the overlay
+does not change measurement or analysis data.

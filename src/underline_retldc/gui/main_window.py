@@ -96,6 +96,7 @@ from underline_retldc.core.tabular import (
     TabularPreset_Load,
     TabularPreset_Save,
 )
+from underline_retldc.core.tabular_auto_detector import TabularAutoDetector
 from underline_retldc.core.task import TaskHandle, TaskManager, TaskResult
 from underline_retldc.core.units import Quantity_Dimension
 from underline_retldc.core.workspace_capabilities import WorkspaceCapabilities_Default
@@ -202,7 +203,9 @@ class MainWindow(QMainWindow):
         self.task_manager = TaskManager(max_workers=2)
         self._active_task: TaskHandle[Any] | None = None
         self._active_success: Callable[[Any], None] | None = None
+        self._active_failure: Callable[[BaseException], None] | None = None
         self._active_task_indeterminate = False
+        self._tabular_auto_parse_pending = False
         self._recommendations: list[tuple[Any, ProbeResult]] = []
         self._recommendation_source: Path | None = None
         self._recomputed_project_data = ProjectData()
@@ -995,11 +998,13 @@ class MainWindow(QMainWindow):
         success: Callable[[Any], None],
         *,
         indeterminate: bool = False,
+        failure: Callable[[BaseException], None] | None = None,
     ) -> TaskHandle[Any] | None:
         if self._active_task is not None and not self._active_task.done:
             QMessageBox.information(self, PRODUCT_NAME, self._active_task.name)
             return None
         self._active_success = success
+        self._active_failure = failure
         self._active_task = self.task_manager.submit(name, operation)
         self._active_task_indeterminate = indeterminate
         if indeterminate:
@@ -1032,8 +1037,10 @@ class MainWindow(QMainWindow):
         self.progress_bar.hide()
         self.cancel_button.hide()
         callback = self._active_success
+        failure_callback = self._active_failure
         self._active_task = None
         self._active_success = None
+        self._active_failure = None
         self._active_task_indeterminate = False
         self.progress_bar.setRange(0, 1000)
         if handle.state is TaskResult.SUCCESS:
@@ -1052,6 +1059,18 @@ class MainWindow(QMainWindow):
             handle.name,
             exc_info=(type(exception), exception, exception.__traceback__),
         )
+        if failure_callback is not None:
+            try:
+                failure_callback(exception)
+            except BaseException as callback_error:
+                LOGGER.exception(
+                    "Background task failure callback failed",
+                    exc_info=(
+                        type(callback_error),
+                        callback_error,
+                        callback_error.__traceback__,
+                    ),
+                )
         self._error_show(exception)
 
     def _task_cancel(self) -> None:
@@ -1117,6 +1136,7 @@ class MainWindow(QMainWindow):
         self.import_page.clear_results()
         self.process_page.clear_state()
         self.analyze_page.clear_result()
+        self.chamber_pressure_page.set_pressure_reference(101325.0, True)
         self._measurement_workspaces_update()
         self._segmentation_views_sync()
         self._primary_channels_update()
@@ -1425,17 +1445,95 @@ class MainWindow(QMainWindow):
                 entries.append((preset.name, str(path), builtin))
         editor.set_presets(entries, selected_path=selected_path)
 
+    def _tabular_matching_presets(self) -> tuple[TabularPreset, ...]:
+        editor = self.import_page.tabular_mapping_editor
+        matches: list[TabularPreset] = []
+        roots = (
+            self._tabular_user_preset_directory(),
+            self.project_root / "presets" / "tabular",
+        )
+        visited_roots: set[Path] = set()
+        for root in roots:
+            resolved_root = root.resolve()
+            if resolved_root in visited_roots:
+                continue
+            visited_roots.add(resolved_root)
+            if not root.is_dir():
+                continue
+            for path in sorted(root.glob("*.json"), key=lambda item: item.name.casefold()):
+                try:
+                    preset = TabularPreset_Load(path)
+                except ValueError as exc:
+                    LOGGER.warning("Ignoring invalid Tabular Preset %s: %s", path, exc)
+                    continue
+                if (
+                    preset.parser_id == editor.parser_id
+                    and preset.parser_version == editor.parser_version
+                ):
+                    matches.append(preset)
+        return tuple(matches)
+
     def _tabular_auto_preview(self) -> None:
         if (
             not self.import_page.uses_tabular_mapping()
             or not self.settings.tabular_auto_mapping()
         ):
             return
-        config = self.import_page.tabular_mapping_editor.config()
-        prefill = self.settings.tabular_auto_prefill() and not bool(
-            config.get("columns")
+        editor = self.import_page.tabular_mapping_editor
+        config = editor.config()
+        if config.get("columns") or not self.settings.tabular_auto_prefill():
+            self._tabular_preview_refresh(False)
+            return
+        try:
+            source = self.import_page.source_path()
+            plugin_id = self.import_page.selected_parser_id()
+            if plugin_id is None:
+                raise ValueError("Select a Generic Tabular Parser")
+            plugin = self.registry.get(plugin_id)
+            if not isinstance(plugin, TabularParserPlugin):
+                raise TypeError(f"Parser {plugin_id!r} does not provide table previews")
+            preset_candidates = self._tabular_matching_presets()
+        except (KeyError, OSError, TypeError, ValueError) as exc:
+            self._error_show(exc)
+            return
+        scan_config = {
+            **config,
+            "header_row": None,
+            "data_start_row": 1,
+            "data_end_row": None,
+            "time": {"mode": "none"},
+            "columns": [],
+        }
+
+        def operation(context: TaskContext) -> tuple[Any, Any, dict[str, Any]]:
+            context.raise_if_cancelled()
+            context.report_progress(0.15, "Inspecting table structure")
+            raw_preview = plugin.preview(source, scan_config, maximum_rows=100)
+            context.raise_if_cancelled()
+            detection = TabularAutoDetector().detect(
+                raw_preview,
+                preset_candidates=preset_candidates,
+            )
+            effective_config = detection.mapping_config(config)
+            context.report_progress(0.65, "Building detected mapping")
+            mapped_preview = plugin.preview(source, effective_config, maximum_rows=50)
+            context.report_progress(1.0, "Automatic table detection complete")
+            return detection, mapped_preview, effective_config
+
+        def success(payload: tuple[Any, Any, dict[str, Any]]) -> None:
+            detection, preview, effective_config = payload
+            editor.set_preview(preview, config=effective_config)
+            editor.set_auto_detection_result(detection)
+            editor.set_advanced_expanded(not detection.can_parse)
+            if detection.can_parse:
+                self._tabular_auto_parse_pending = True
+                QTimer.singleShot(0, self._source_parse)
+
+        self._task_start(
+            self.translations.translate("tabular.auto_detecting"),
+            operation,
+            success,
         )
-        self._tabular_preview_refresh(prefill)
 
     def _tabular_preview_refresh(self, force_suggestion: bool = False) -> None:
         if not self.import_page.uses_tabular_mapping():
@@ -1669,6 +1767,8 @@ class MainWindow(QMainWindow):
         self._task_start(self.translations.translate("import.detect"), operation, success)
 
     def _source_parse(self) -> None:
+        automatic_tabular_parse = self._tabular_auto_parse_pending
+        self._tabular_auto_parse_pending = False
         try:
             source_entries = self.import_page.source_entries()
             if not source_entries:
@@ -1676,6 +1776,8 @@ class MainWindow(QMainWindow):
             parser_config = self.import_page.parser_config()
             selected_id = self.import_page.selected_parser_id()
         except (ValueError, OSError) as exc:
+            if automatic_tabular_parse:
+                self.import_page.tabular_mapping_editor.set_auto_parse_failure(str(exc))
             self._error_show(exc)
             return
         parsers = self.registry.plugins(PluginType.PARSER)
@@ -1889,7 +1991,18 @@ class MainWindow(QMainWindow):
                 5000,
             )
 
-        self._task_start(self.translations.translate("status.parsing"), operation, success)
+        def failure(error: BaseException) -> None:
+            if automatic_tabular_parse:
+                self.import_page.tabular_mapping_editor.set_auto_parse_failure(
+                    str(error)
+                )
+
+        self._task_start(
+            self.translations.translate("status.parsing"),
+            operation,
+            success,
+            failure=failure,
+        )
 
     def _calibration_apply(self) -> None:
         active_stream = self._active_stream()
@@ -2607,6 +2720,10 @@ class MainWindow(QMainWindow):
             channels=channel_states,
             primary_channels=self.session.project_data.primary_channels,
             thrust_polarity=self.session.thrust_polarity,
+            reference_pressure_pa=self.chamber_pressure_page.reference_pressure_pa,
+            pressure_reference_visible=(
+                self.chamber_pressure_page.reference_line_visible
+            ),
             processing_metadata=(
                 dict(self.session.processing_result.metadata)
                 if self.session.processing_result is not None
@@ -2945,6 +3062,10 @@ class MainWindow(QMainWindow):
                         False,
                     )
                 )
+            )
+            self.chamber_pressure_page.set_pressure_reference(
+                document.reference_pressure_pa,
+                document.pressure_reference_visible,
             )
             self.temperature_page.set_analysis_complete(
                 bool(
@@ -3657,6 +3778,10 @@ class MainWindow(QMainWindow):
             },
             "annotate_metrics": self.export_dialog.annotate_metrics(),
             "output_locale": output_locale,
+            "reference_pressure_pa": self.chamber_pressure_page.reference_pressure_pa,
+            "show_reference_pressure": (
+                self.chamber_pressure_page.reference_line_visible
+            ),
         }
         try:
             configs: dict[str, dict[str, Any]] = {}

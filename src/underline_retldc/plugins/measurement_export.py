@@ -68,6 +68,8 @@ def MeasurementPng_Write(
     quantity_title_zh: str,
     active_interval: tuple[float, float] | None = None,
     crop_to_active_interval: bool = False,
+    reference_value: float | None = None,
+    reference_label: str | None = None,
 ) -> MeasurementWriteResult:
     selected = tuple(channels)
     if not selected:
@@ -113,8 +115,16 @@ def MeasurementPng_Write(
     painter.setPen(QColor("#172033"))
     painter.setFont(QFont(font_name, 24, QFont.Weight.Bold))
     painter.drawText(QRectF(0, 30, width, 52), Qt.AlignmentFlag.AlignCenter, title)
-    y_min = min(0.0, float(np.min(finite_values)))
-    y_max = max(0.0, float(np.max(finite_values)))
+    y_min = float(np.min(finite_values))
+    y_max = float(np.max(finite_values))
+    data_span = max(y_max - y_min, abs(y_max) * 0.05, 1.0e-12)
+    if (
+        reference_value is not None
+        and np.isfinite(reference_value)
+        and y_min - 2.0 * data_span <= reference_value <= y_max + 2.0 * data_span
+    ):
+        y_min = min(y_min, float(reference_value))
+        y_max = max(y_max, float(reference_value))
     if x_max <= x_min:
         x_max = x_min + 1.0
     if y_max <= y_min:
@@ -155,6 +165,22 @@ def MeasurementPng_Write(
         )
     painter.setPen(QPen(QColor("#172033"), 2))
     painter.drawRect(plot)
+
+    if reference_value is not None and y_min <= reference_value <= y_max:
+        reference_y = plot.bottom() - (reference_value - y_min) / (y_max - y_min) * plot.height()
+        reference_pen = QPen(QColor("#b7791f"), 2, Qt.PenStyle.DashLine)
+        painter.setPen(reference_pen)
+        painter.drawLine(
+            QPointF(plot.left(), reference_y),
+            QPointF(plot.right(), reference_y),
+        )
+        if reference_label:
+            painter.setPen(QColor("#805b10"))
+            painter.drawText(
+                QRectF(plot.right() - 360, reference_y - 28, 350, 24),
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                reference_label,
+            )
 
     colors = ("#2563eb", "#dc2626", "#059669", "#7c3aed", "#ea580c", "#0891b2")
     for channel_index, channel in enumerate(selected):

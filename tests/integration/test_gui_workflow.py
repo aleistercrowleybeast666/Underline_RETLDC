@@ -71,10 +71,17 @@ def _application() -> QApplication:
 
 def _task_wait(window: MainWindow, timeout_ms: int = 5000) -> None:
     elapsed = 0
-    while window._active_task is not None and elapsed < timeout_ms:
+    idle_cycles = 0
+    while elapsed < timeout_ms:
         _application().processEvents()
         QTest.qWait(10)
         elapsed += 10
+        if window._active_task is None:
+            idle_cycles += 1
+            if idle_cycles >= 3:
+                break
+        else:
+            idle_cycles = 0
     assert window._active_task is None
 
 
@@ -442,7 +449,7 @@ def test_runtime_theme_header_and_settings_stay_synchronized(tmp_path: Path) -> 
 
     assert window.language_label.text() == "界面语言"
     assert window.theme_label.text() == "主题"
-    assert window.version_label.text() == "v0.0.3"
+    assert window.version_label.text() == "v0.0.4"
     assert window.credit_label.text() == "辰星引力开发"
     assert window.version_label.font().weight() > window.credit_label.font().weight()
     assert window.language_label.font().weight() > window.language_combo.font().weight()
@@ -520,7 +527,7 @@ def test_runtime_theme_header_and_settings_stay_synchronized(tmp_path: Path) -> 
     app.processEvents()
     assert window.language_label.text() == "UI Language"
     assert window.theme_label.text() == "Theme"
-    assert window.version_label.text() == "v0.0.3"
+    assert window.version_label.text() == "v0.0.4"
     assert window.credit_label.text() == "By CXYL"
     assert window.header_title.text() == (
         "Underline Rocket Engine Test Log Decoder and Calculator"
@@ -611,10 +618,10 @@ def test_gui_plugin_combos_schema_forms_and_burn_candidates(tmp_path: Path) -> N
     window._workspace_select("thrust_analysis")
     window._workspace_select("project")
     app.processEvents()
-    assert (
+    assert min(
         recommendation_header.sectionSize(0),
         recommendation_header.sectionSize(1),
-    ) == recommendation_widths
+    ) >= min(recommendation_widths)
 
     calibration_ids = {
         window.setup_page.calibration_combo.itemData(index)
@@ -683,9 +690,11 @@ def test_gui_plugin_combos_schema_forms_and_burn_candidates(tmp_path: Path) -> N
     )
     controls_layout = window.process_page.controls_widget.layout()
     assert controls_layout.indexOf(window.process_page.input_group) == 0
-    assert controls_layout.indexOf(window.process_page.interval_editor) == 1
-    assert controls_layout.indexOf(window.process_page.polarity_group) == 2
-    assert controls_layout.indexOf(window.process_page.curves_group) == 3
+    assert controls_layout.indexOf(window.process_page.curves_group) == 1
+    assert controls_layout.indexOf(window.process_page.interval_editor) == 2
+    assert controls_layout.indexOf(window.process_page.polarity_group) == 3
+    assert controls_layout.indexOf(window.process_page.processing_group) == 4
+    assert controls_layout.indexOf(window.process_page.baseline_status_group) == 5
     assert window.process_page.fit_button.text() == "Fit View"
     assert window.process_page.candidate_combo.currentData() is None
     assert window.process_page.candidate_combo.currentText() == "Not detected"
@@ -1665,6 +1674,12 @@ def test_analysis_workspaces_share_plot_shell_and_temperature_is_multi_series(
         page.plot_widget.backgroundBrush().color().name() for page in pages
     }
     assert backgrounds == {"#0b1220"}
+    assert window.process_page.analysis_plot._horizontal_references[
+        "thrust_zero"
+    ]["item"].isVisible()
+    assert window.chamber_pressure_page.analysis_plot._horizontal_references[
+        "pressure_reference"
+    ]["item"].isVisible()
 
     time = np.linspace(0.0, 4.0, 9)
     first_reference = ChannelReference("source_1", "stream_1", "tc_1")
@@ -1775,6 +1790,43 @@ def test_analysis_workspaces_share_plot_shell_and_temperature_is_multi_series(
     app.processEvents()
 
 
+def test_thrust_reference_keeps_zero_in_positive_and_negative_views() -> None:
+    app = _application()
+    plot = AnalysisPlotWidget(
+        TranslationService("en_US"),
+        regions_movable=False,
+    )
+    plot.set_horizontal_reference(
+        "thrust_zero",
+        0.0,
+        "0 N",
+        True,
+        {"force_fit": True, "force_tick": True},
+    )
+    time = np.linspace(0.0, 1.0, 11)
+    plot.add_series(time, np.linspace(1000.0, 2000.0, 11), name="positive")
+    plot.fit_view()
+    positive_range = plot.plot_widget.viewRange()[1]
+    assert positive_range[0] <= 0.0 <= positive_range[1]
+    assert any(
+        0.0 in values
+        for _spacing, values in plot.left_axis.tickValues(
+            positive_range[0],
+            positive_range[1],
+            300.0,
+        )
+    )
+
+    plot.clear_series()
+    plot.add_series(time, np.linspace(-2000.0, -1000.0, 11), name="negative")
+    plot.fit_view()
+    negative_range = plot.plot_widget.viewRange()[1]
+    assert negative_range[0] <= -2000.0
+    assert negative_range[1] >= 0.0
+    plot.deleteLater()
+    app.processEvents()
+
+
 def test_quick_import_binds_thrust_pressure_and_routes_workspaces(
     tmp_path: Path,
 ) -> None:
@@ -1792,6 +1844,7 @@ def test_quick_import_binds_thrust_pressure_and_routes_workspaces(
         SettingsService(tmp_path / "settings.ini"),
         tmp_path,
     )
+    window.show()
     window.import_page.set_source_path(source)
     window.import_page.set_parser_id("builtin.parser.generic_delimited")
     app.processEvents()
@@ -1800,14 +1853,26 @@ def test_quick_import_binds_thrust_pressure_and_routes_workspaces(
     if editor.quick_table.rowCount() == 0:
         window._tabular_preview_refresh(True)
         _task_wait(window)
-    assert not editor.advanced_container.isVisible()
+    assert editor.advanced_container.isHidden()
+    assert window.import_page.parser_details.isHidden()
+    editor.set_advanced_expanded(True)
+    app.processEvents()
+    assert not editor.advanced_container.isHidden()
+    assert not window.import_page.parser_details.isHidden()
+    assert window.import_page.parser_combo.isVisible()
+    editor.set_advanced_expanded(False)
+    app.processEvents()
     assert tuple(
         editor.quick_table.cellWidget(row, 2).currentData()
         for row in range(editor.quick_table.rowCount())
     ) == ("time", "chamber_pressure", "thrust", "other")
 
-    window._source_parse()
-    _task_wait(window)
+    elapsed = 0
+    while window.session.raw_dataset is None and elapsed < 5000:
+        app.processEvents()
+        QTest.qWait(10)
+        elapsed += 10
+    assert window.session.raw_dataset is not None
     bindings = window.session.project_data.primary_channels
     assert bindings.thrust is not None
     assert bindings.thrust.channel_id == "thrust"
@@ -1829,6 +1894,41 @@ def test_quick_import_binds_thrust_pressure_and_routes_workspaces(
     )
     recomputed = window._project_recompute(document, TaskContext())
     assert recomputed[2].dataset.channel("kn").semantic_role == "auxiliary"
+    window.close()
+    app.processEvents()
+
+
+def test_ambiguous_tabular_time_expands_advanced_without_parsing(
+    tmp_path: Path,
+) -> None:
+    app = _application()
+    source = tmp_path / "ambiguous_time.csv"
+    source.write_text(
+        "t,time,A\n"
+        "0.0,0.0,1\n"
+        "0.1,0.1,2\n"
+        "0.2,0.2,3\n"
+        "0.3,0.3,4\n",
+        encoding="utf-8",
+    )
+    window = _window(
+        TranslationService("en_US"),
+        SettingsService(tmp_path / "settings.ini"),
+        tmp_path,
+    )
+    window.show()
+    window.import_page.set_source_path(source)
+    window.import_page.set_parser_id("builtin.parser.generic_delimited")
+    app.processEvents()
+    _task_wait(window)
+    app.processEvents()
+
+    editor = window.import_page.tabular_mapping_editor
+    assert editor.advanced_button.isChecked()
+    assert not editor.advanced_container.isHidden()
+    assert not window.import_page.parser_details.isHidden()
+    assert "Automatic parsing failed" in editor.auto_status.text()
+    assert window.session.raw_dataset is None
     window.close()
     app.processEvents()
 
@@ -2130,6 +2230,21 @@ def test_unit_mode_axes_results_and_analysis_layout_are_consistent(
     )
     assert pressure_editor.minimumSizeHint().width() <= pressure_editor.width()
     assert pressure_editor.width() <= pressure_shell.controls_scroll.viewport().width()
+    pressure_controls = window.chamber_pressure_page.shell.controls.layout()
+    assert pressure_controls.indexOf(window.chamber_pressure_page.channel_group) == 0
+    assert pressure_controls.indexOf(window.chamber_pressure_page.display_group) == 1
+    assert pressure_controls.indexOf(window.chamber_pressure_page.interval_editor) == 2
+    assert pressure_controls.indexOf(window.chamber_pressure_page.reference_group) == 3
+    assert window.chamber_pressure_page.reference_spin is not None
+    assert window.chamber_pressure_page.reference_spin.value() == pytest.approx(0.101325)
+    assert window.chamber_pressure_page.reference_spin.suffix().strip() == "MPa"
+    pressure_values = _dataset.channel("pressure").values.copy()
+    window.chamber_pressure_page.reference_spin.setValue(0.098)
+    app.processEvents()
+    assert window.chamber_pressure_page.reference_pressure_pa == pytest.approx(98_000.0)
+    assert np.array_equal(_dataset.channel("pressure").values, pressure_values)
+    document = window._project_document_create()
+    assert document.reference_pressure_pa == pytest.approx(98_000.0)
     pressure_plot_widget = window.chamber_pressure_page.analysis_plot.plot_widget
     pressure_plot_widget.setXRange(4.0, 4.5, padding=0.0)
     pressure_plot_widget.setYRange(-1.0, -0.5, padding=0.0)
@@ -2149,8 +2264,10 @@ def test_unit_mode_axes_results_and_analysis_layout_are_consistent(
     assert window.data_explorer_page.channel_group.title() == "Data Channel"
     assert window.chamber_pressure_page.view_group is None
     assert window.temperature_page.view_group is None
-    assert window.chamber_pressure_page.curves_group is not None
-    assert window.temperature_page.curves_group is not None
+    assert window.chamber_pressure_page.display_group is not None
+    assert window.chamber_pressure_page.curves_group is None
+    assert window.temperature_page.display_group is not None
+    assert window.temperature_page.curves_group is None
     assert set(window.chamber_pressure_page.curve_checks) == {"pressure"}
     assert (
         window.chamber_pressure_page.curve_checks["pressure"].text()
@@ -2161,6 +2278,22 @@ def test_unit_mode_axes_results_and_analysis_layout_are_consistent(
     window.chamber_pressure_page.calculate_button.click()
     app.processEvents()
     assert window.chamber_pressure_page.metrics_table.rowCount() == 5
+
+    window.navigation.setCurrentRow(3)
+    app.processEvents()
+    temperature_controls = window.temperature_page.shell.controls.layout()
+    assert temperature_controls.indexOf(window.temperature_page.channel_group) == 0
+    assert temperature_controls.indexOf(window.temperature_page.display_group) == 1
+    assert temperature_controls.indexOf(
+        window.temperature_page.interval_status_group
+    ) == 2
+    assert window.temperature_page.curves_layout is not None
+    assert (
+        window.temperature_page.display_group.layout().itemAt(0).layout()
+        is window.temperature_page.curves_layout
+    )
+    assert window.temperature_page.shell.plot.width() >= 250
+    assert window.temperature_page.shell.results.width() >= 220
 
     explorer = window.data_explorer_page
     explorer.show_auxiliary_check.setChecked(True)

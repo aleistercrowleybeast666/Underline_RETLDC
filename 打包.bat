@@ -60,6 +60,7 @@ echo [3/6] Building the one-folder application...
     --hidden-import underline_retldc.core.parser_selection ^
     --hidden-import underline_retldc.core.primary_channels ^
     --hidden-import underline_retldc.core.tabular ^
+    --hidden-import underline_retldc.core.tabular_auto_detector ^
     --hidden-import underline_retldc.core.workspace_capabilities ^
     --hidden-import underline_retldc.plugin_api.export_curve ^
     --hidden-import underline_retldc.plugin_api.two_column ^
@@ -72,6 +73,16 @@ if errorlevel 1 (
 )
 
 echo [4/6] Copying bundled plugins and user documentation...
+rem Qt6Core uses the Windows system ICU.  Some development shells put an unrelated
+rem Poppler ICU on PATH, which PyInstaller may collect under the same DLL name.
+if exist "%DIST_DIR%\_internal\icuuc.dll" del /Q "%DIST_DIR%\_internal\icuuc.dll"
+if exist "%DIST_DIR%\_internal\icudt78.dll" del /Q "%DIST_DIR%\_internal\icudt78.dll"
+if exist "%DIST_DIR%\_internal\icuuc.dll" (
+    echo ERROR: Failed to remove an incompatible bundled ICU runtime.
+    if not defined CI pause
+    exit /b 1
+)
+
 robocopy "%CD%\plugins" "%DIST_DIR%\plugins" /E /XD __pycache__ .pytest_cache /XF *.pyc *.pyo /NFL /NDL /NJH /NJS /NP >nul
 if errorlevel 8 (
     echo ERROR: Failed to copy bundled plugins.

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
     QLabel,
+    QListWidget,
     QPushButton,
     QScrollArea,
     QSplitter,
@@ -24,6 +25,7 @@ from PySide6.QtWidgets import (
 )
 
 from underline_retldc.app.settings import THEME_DARK, Theme_Normalize
+from underline_retldc.core.diagnostics import Diagnostic
 from underline_retldc.core.units import (
     UnitDisplayMode,
     UnitDisplayMode_Normalize,
@@ -43,12 +45,34 @@ class DisplayAxisItem(pg.AxisItem):
     def __init__(self, orientation: str) -> None:
         super().__init__(orientation=orientation)
         self._display_mode = UnitDisplayMode.ENGINEERING
+        self._forced_tick: float | None = None
         self.enableAutoSIPrefix(False)
 
     def set_display_mode(self, mode: UnitDisplayMode | str) -> None:
         self._display_mode = UnitDisplayMode_Normalize(mode)
         self.picture = None
         self.update()
+
+    def set_forced_tick(self, value: float | None) -> None:
+        self._forced_tick = None if value is None else float(value)
+        self.picture = None
+        self.update()
+
+    def tickValues(
+        self,
+        minVal: float,
+        maxVal: float,
+        size: float,
+    ) -> list[tuple[float, list[float]]]:
+        levels = super().tickValues(minVal, maxVal, size)
+        forced = self._forced_tick
+        if forced is None or forced < minVal or forced > maxVal or not levels:
+            return levels
+        spacing, values = levels[0]
+        tolerance = max(abs(float(spacing)) * 1.0e-6, 1.0e-12)
+        if not any(abs(float(value) - forced) <= tolerance for value in values):
+            levels[0] = (spacing, sorted([*values, forced]))
+        return levels
 
     def tickStrings(
         self,
@@ -87,6 +111,8 @@ class AnalysisPlotWidget(QWidget):
         self._theme = "light"
         self._display_mode = UnitDisplayMode.ENGINEERING
         self._series: list[Any] = []
+        self._series_data: list[tuple[np.ndarray, np.ndarray]] = []
+        self._horizontal_references: dict[str, dict[str, Any]] = {}
         self.bottom_axis = DisplayAxisItem("bottom")
         self.left_axis = DisplayAxisItem("left")
         self.plot_widget = pg.PlotWidget(
@@ -186,6 +212,7 @@ class AnalysisPlotWidget(QWidget):
         for item in self._series:
             self.plot_widget.removeItem(item)
         self._series.clear()
+        self._series_data.clear()
 
     def add_series(
         self,
@@ -204,6 +231,57 @@ class AnalysisPlotWidget(QWidget):
             name=name,
         )
         self._series.append(item)
+        self._series_data.append((np.asarray(time[finite]), np.asarray(values[finite])))
+        return item
+
+    def set_horizontal_reference(
+        self,
+        key: str,
+        value: float,
+        label: str,
+        visible: bool = True,
+        style: Mapping[str, Any] | None = None,
+    ) -> Any:
+        """Create or update a display-only horizontal reference overlay."""
+        reference_style = dict(style or {})
+        color = str(reference_style.get("color", "#cbd5e1"))
+        width = float(reference_style.get("width", 1.2))
+        pen_style = reference_style.get("pen_style", Qt.PenStyle.DashLine)
+        entry = self._horizontal_references.get(str(key))
+        if entry is None:
+            item = pg.InfiniteLine(
+                pos=float(value),
+                angle=0,
+                movable=False,
+                pen=pg.mkPen(color, width=width, style=pen_style),
+                label=label,
+                labelOpts={"position": 0.96, "anchors": [(1, 1), (1, 1)]},
+            )
+            item.setZValue(20)
+            self.plot_widget.addItem(item)
+            entry = {"item": item}
+            self._horizontal_references[str(key)] = entry
+        item = entry["item"]
+        item.setValue(float(value))
+        item.setPen(pg.mkPen(color, width=width, style=pen_style))
+        if getattr(item, "label", None) is not None:
+            item.label.setText(label)
+            item.label.setColor(color)
+        item.setVisible(bool(visible))
+        entry.update(
+            {
+                "value": float(value),
+                "visible": bool(visible),
+                "force_fit": bool(reference_style.get("force_fit", False)),
+                "force_tick": bool(reference_style.get("force_tick", False)),
+            }
+        )
+        forced_ticks = [
+            float(candidate["value"])
+            for candidate in self._horizontal_references.values()
+            if candidate["visible"] and candidate["force_tick"]
+        ]
+        self.left_axis.set_forced_tick(forced_ticks[0] if forced_ticks else None)
         return item
 
     def set_regions(
@@ -230,6 +308,10 @@ class AnalysisPlotWidget(QWidget):
         regions: Mapping[str, list[float] | tuple[float, float] | None] | None = None,
     ) -> None:
         selected_regions = dict(regions or {})
+        if time is None and self._series_data:
+            time = np.concatenate([item[0] for item in self._series_data])
+        if not values and self._series_data:
+            values = tuple(item[1] for item in self._series_data)
         active = selected_regions.get("active_test", selected_regions.get("burn"))
         pre = selected_regions.get("pre")
         post = selected_regions.get("post")
@@ -250,6 +332,19 @@ class AnalysisPlotWidget(QWidget):
         if finite_values:
             minimum = min(float(np.min(array)) for array in finite_values)
             maximum = max(float(np.max(array)) for array in finite_values)
+            data_span = max(maximum - minimum, abs(maximum) * 0.05, 1.0e-12)
+            for reference in self._horizontal_references.values():
+                if not reference["visible"]:
+                    continue
+                reference_value = float(reference["value"])
+                reasonably_near = (
+                    minimum - 2.0 * data_span
+                    <= reference_value
+                    <= maximum + 2.0 * data_span
+                )
+                if reference["force_fit"] or reasonably_near:
+                    minimum = min(minimum, reference_value)
+                    maximum = max(maximum, reference_value)
             if minimum == maximum:
                 padding = max(abs(minimum) * 0.1, 1.0)
                 minimum -= padding
@@ -258,16 +353,11 @@ class AnalysisPlotWidget(QWidget):
 
     def reset_view(self) -> None:
         """Restore the chart's data-driven automatic X/Y range."""
-
-        # PlotDataItem clipping is useful while panning large logs, but its
-        # current viewport bounds would otherwise make autoRange fit only the
-        # already zoomed fragment. Temporarily expose the full curve bounds.
-        self.plot_widget.setClipToView(False)
-        try:
-            self.plot_widget.enableAutoRange(x=True, y=True)
-            self.plot_widget.autoRange(padding=0.05)
-        finally:
-            self.plot_widget.setClipToView(True)
+        if self._series_data:
+            self.fit_view()
+            return
+        self.plot_widget.enableAutoRange(x=True, y=True)
+        self.plot_widget.autoRange(padding=0.05)
 
     def set_empty_state(
         self,
@@ -312,6 +402,39 @@ class AnalysisResultsPanel(QGroupBox):
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.table.updateGeometry()
         self.table.viewport().update()
+
+
+class AnalysisDiagnosticsPanel(QGroupBox):
+    """Shared diagnostic presentation for measurement analysis results."""
+
+    def __init__(self, translations: TranslationService) -> None:
+        super().__init__()
+        self._translations = translations
+        self.list = QListWidget()
+        self.list.setWordWrap(True)
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.list)
+
+    def set_diagnostics(
+        self,
+        diagnostics: Iterable[Diagnostic],
+        *,
+        notice: str = "",
+    ) -> None:
+        translate = self._translations.translate
+        self.setTitle(translate("import.diagnostics"))
+        self.list.clear()
+        for diagnostic in diagnostics:
+            message = translate(
+                f"diagnostic.{diagnostic.code}",
+                diagnostic.message,
+                message=diagnostic.message,
+            )
+            self.list.addItem(
+                f"[{diagnostic.severity.value}] {diagnostic.code}: {message}"
+            )
+        if notice:
+            self.list.addItem(notice)
 
 
 class AnalysisWorkspaceShell(QWidget):

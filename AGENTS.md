@@ -142,6 +142,14 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   `Chamber Pressure`, `Temperature`, and `Other`; it must not require ordinary users to edit raw
   Quantity, Semantic Role, or Channel ID values. Those fields remain available only in the
   collapsed Advanced Mapping editor.
+- Automatic table import remains deterministic, local, and independent of an LLM or network.
+  Unknown numeric columns default to `Other` instead of being aggressively classified as
+  Temperature or another scientific quantity. Advanced Mapping remains the source of manual
+  override after both successful and failed detection.
+- Automatic table import remains deterministic, local, and independent of an LLM or network.
+  Unknown numeric columns default to `Other` instead of being aggressively classified as
+  Temperature or another scientific quantity. Advanced Mapping remains the source of manual
+  override after both successful and failed detection.
 - Workspace input is resolved through explicit Project `PrimaryChannelBindings` containing full
   Source/Stream/Channel references. A Channel `semantic_role` is an auto-binding hint, never the
   final workflow input, and downstream code must not assume concrete names such as
@@ -182,6 +190,12 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   uses configured engineering Display Units and `si_scientific` converts display values to
   canonical SI with scientific notation. Neither mode changes raw values, Data Units, Calibration,
   or formal export units.
+- Thrust plots and formal thrust PNG exports preserve a visible 0 N reference and tick even when
+  all thrust samples have one sign. Chamber-pressure references are display-only overlays stored
+  in SI and must never modify Channel arrays, Calibration, analysis, or CSV values.
+- Thrust plots and formal thrust PNG exports preserve a visible 0 N reference and tick even when
+  all thrust samples have one sign. Chamber-pressure references are display-only overlays stored
+  in SI and must never modify Channel arrays, Calibration, analysis, or CSV values.
 - The Export dialog is always inspectable. Each export option declares stable data capability IDs
   and optional analysis IDs that must be complete before it becomes selectable. Options are
   grouped and sorted by generic metadata, with unknown third-party groups placed last.
@@ -208,6 +222,10 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   presentation concepts and must not be derived from one another.
 - Critical left, plot, and right panels in `AnalysisWorkspaceShell` must not be collapsible to
   zero width; constrained side-panel content scrolls instead.
+- Similar controls across Thrust, Chamber Pressure, and Temperature follow the same Primary
+  Channels, Display, Test Interval order, with consistent naming, spacing, and alignment.
+- Similar controls across Thrust, Chamber Pressure, and Temperature follow the same Primary
+  Channels, Display, Test Interval order, with consistent naming, spacing, and alignment.
 - Applicable PySide6 presentation work follows `docs/CXYL_Python_GUI_STYLE_GUIDE.md`; explicit
   product/workflow rules in this file take precedence where the generic guide differs.
 - The Project workspace is responsive: constrained widths stack Import and Project Setup

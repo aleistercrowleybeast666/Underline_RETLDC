@@ -77,9 +77,16 @@ Missing/non-numeric measurement cells become NaN in `preserve` mode so all Chann
 alignment, or block in `error` mode. Mapped columns missing from a new file are errors. Extra
 populated unmapped columns and expected-header differences generate warnings.
 
-Auto Mapping may propose the following mappings, but only to pre-fill the editable GUI. Parsing
-uses the saved column-index mapping, so unknown headers such as `T0,CH_A,CH_B` remain importable
-through manual configuration:
+On first import, the local deterministic `TabularAutoDetector` examines a bounded preview. It
+scores stable numeric regions, nearby header candidates, monotonic/continuous time candidates,
+units, conservative measurement tokens, and matching pure-JSON Presets. A high-confidence result
+becomes an explicit mapping and parses automatically. A missing or ambiguous time source blocks
+automatic parsing and expands Advanced. Saved Source mappings are never guessed again.
+
+Unknown numeric columns default to `Other` and remain in the Project. In particular Kn, Ab,
+burned-web, geometry, design, and coefficient columns are not inferred as Temperature from their
+numeric shape. Automatic mapping may propose the following scientific mappings, but parsing uses
+the final saved column-index mapping:
 
 ```text
 Pc (MPa) → quantity=pressure, semantic_role=chamber_pressure, data_unit=MPa
@@ -122,6 +129,10 @@ Writers use schema ID `underline-retldc-project/2`; readers migrate
 primary `source`, `sources`, `streams`, `parser`, `calibration`, `channels`, `processors`,
 `regions`, `processing_metadata`, `analyzer`, `motor_metadata`, `export_settings`,
 `workflow_state`, top-level `thrust_polarity`, `locale`, and `diagnostics`.
+
+Schema v2 also stores `reference_pressure_pa` and `pressure_reference_visible`. Older v2 files
+default to 101325 Pa and a visible line. These are Project view/reference fields and never modify
+Channel values or analysis formulas.
 
 `source`, `parser`, `calibration`, and `analyzer` may be `null`; `processors` and `regions` may be
 empty. This represents a valid incomplete Project, not corrupt data. `workflow_state` explicitly

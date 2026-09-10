@@ -4,8 +4,6 @@ from collections.abc import Mapping
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QGroupBox,
-    QListWidget,
     QPushButton,
     QTableWidgetItem,
     QVBoxLayout,
@@ -20,7 +18,10 @@ from underline_retldc.core.units import (
     UnitDisplayMode,
     UnitDisplayMode_Normalize,
 )
-from underline_retldc.gui.analysis_widgets import AnalysisResultsPanel
+from underline_retldc.gui.analysis_widgets import (
+    AnalysisDiagnosticsPanel,
+    AnalysisResultsPanel,
+)
 from underline_retldc.i18n.service import TranslationService
 from underline_retldc.plugin_api.common import AnalysisResult
 
@@ -55,10 +56,8 @@ class AnalyzePage(QWidget):
         self.metrics_table = self.metrics_group.table
         self.metrics_table.setMinimumWidth(0)
 
-        self.diagnostics_group = QGroupBox()
-        self.diagnostics_list = QListWidget()
-        diagnostics_layout = QVBoxLayout(self.diagnostics_group)
-        diagnostics_layout.addWidget(self.diagnostics_list)
+        self.diagnostics_group = AnalysisDiagnosticsPanel(translations)
+        self.diagnostics_list = self.diagnostics_group.list
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.calculate_button)
@@ -95,16 +94,8 @@ class AnalyzePage(QWidget):
             )
             self.metrics_table.setItem(row, 0, QTableWidgetItem(label))
             self.metrics_table.setItem(row, 1, QTableWidgetItem(value_text))
-        self.diagnostics_list.clear()
-        for diagnostic in result.diagnostics:
-            message = self._translations.translate(
-                f"diagnostic.{diagnostic.code}",
-                diagnostic.message,
-                message=diagnostic.message,
-            )
-            self.diagnostics_list.addItem(
-                f"[{diagnostic.severity.value}] {diagnostic.code}: {message}"
-            )
+        self.diagnostics_group.set_diagnostics(result.diagnostics)
+
     def set_display_configuration(
         self,
         preferences: Mapping[str, str],

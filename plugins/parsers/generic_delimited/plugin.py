@@ -105,28 +105,53 @@ class GenericDelimitedParser(TabularParserPlugin):
             return configured
         with path.open("r", encoding=encoding, newline="") as handle:
             sample = handle.read(65_536)
-        try:
-            return csv.Sniffer().sniff(sample, delimiters=_DELIMITER_CANDIDATES).delimiter
-        except csv.Error:
-            lines = [line for line in sample.splitlines() if line.strip()]
-            scored: list[tuple[int, float, str]] = []
-            for candidate in _DELIMITER_CANDIDATES:
-                widths = [
-                    len(row)
-                    for row in csv.reader(lines, delimiter=candidate)
-                    if len(row) > 1
-                ]
-                if len(widths) < 2:
+        lines = [line for line in sample.splitlines()[:100] if line.strip()]
+        scored: list[tuple[float, int, str]] = []
+        extension = path.suffix.casefold()
+        for candidate in _DELIMITER_CANDIDATES:
+            parsed = [row for row in csv.reader(lines, delimiter=candidate) if len(row) > 1]
+            if len(parsed) < 2:
+                continue
+            widths = [len(row) for row in parsed]
+            common_width = max(set(widths), key=widths.count)
+            stable = [row for row in parsed if len(row) == common_width]
+            if common_width < 2 or len(stable) < 2:
+                continue
+            consistency = len(stable) / max(len(lines), 1)
+            numeric_rows = 0
+            for row in stable:
+                populated = [cell.strip() for cell in row if cell.strip()]
+                if not populated:
                     continue
-                common_width = max(set(widths), key=widths.count)
-                consistency = widths.count(common_width) / len(widths)
-                scored.append((widths.count(common_width), consistency, candidate))
-            if scored:
-                return max(scored)[2]
-            raise ValueError(
-                "Unable to auto-detect delimiter; select comma, semicolon, Tab, space, "
-                "pipe, or a custom delimiter"
-            ) from None
+                numeric = 0
+                for cell in populated:
+                    try:
+                        float(cell)
+                        numeric += 1
+                    except ValueError:
+                        pass
+                numeric_rows += int(numeric / len(populated) >= 0.60)
+            numeric_stability = numeric_rows / len(stable)
+            extension_bonus = 0.0
+            if (extension == ".csv" and candidate == ",") or (
+                extension == ".tsv" and candidate == "\t"
+            ):
+                extension_bonus = 0.12
+            space_penalty = 0.12 if candidate == " " else 0.0
+            score = (
+                0.55 * consistency
+                + 0.30 * numeric_stability
+                + min(common_width, 12) / 120.0
+                + extension_bonus
+                - space_penalty
+            )
+            scored.append((score, len(stable), candidate))
+        if scored:
+            return max(scored)[2]
+        raise ValueError(
+            "Unable to auto-detect delimiter; select comma, semicolon, Tab, space, "
+            "pipe, or a custom delimiter"
+        )
 
     def _table_read(
         self,

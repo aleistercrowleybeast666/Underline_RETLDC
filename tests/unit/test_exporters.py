@@ -409,6 +409,8 @@ def test_pressure_and_temperature_exports_use_channel_semantics_and_skip_absent(
         assert destination.is_file()
     assert results["pressure_png"].metadata["active_interval"] == [0.0, 1.0]
     assert results["pressure_png"].metadata["cropped_to_active_test"] is True
+    assert results["pressure_png"].metadata["reference_pressure_pa"] == 101325.0
+    assert results["pressure_png"].metadata["reference_pressure_visible"] is True
     assert "Pc [MPa]" in pressure_csv.read_text(encoding="utf-8")
     assert "Wall temperature [K]" in temperature_csv.read_text(encoding="utf-8")
     assert pressure_png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")

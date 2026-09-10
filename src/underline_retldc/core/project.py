@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 from collections.abc import Mapping
 from dataclasses import dataclass, field
@@ -200,6 +201,8 @@ class ProjectDocument:
     )
     primary_channels_explicit: bool = True
     thrust_polarity: int = 1
+    reference_pressure_pa: float = 101325.0
+    pressure_reference_visible: bool = True
     processing_metadata: Mapping[str, Any] = field(default_factory=dict)
     analyzer: PluginReference | None = None
     motor_metadata: Mapping[str, Any] = field(default_factory=dict)
@@ -217,6 +220,15 @@ class ProjectDocument:
         object.__setattr__(self, "regions", regions)
         polarity = ThrustPolarity_Normalize(self.thrust_polarity)
         object.__setattr__(self, "thrust_polarity", polarity)
+        reference_pressure = float(self.reference_pressure_pa)
+        if not math.isfinite(reference_pressure):
+            raise ValueError("Project reference_pressure_pa must be finite")
+        object.__setattr__(self, "reference_pressure_pa", reference_pressure)
+        object.__setattr__(
+            self,
+            "pressure_reference_visible",
+            bool(self.pressure_reference_visible),
+        )
 
     def to_dict(self) -> dict[str, Any]:
         source = None
@@ -242,6 +254,8 @@ class ProjectDocument:
             },
             "primary_channels": self.primary_channels.to_dict(),
             "thrust_polarity": self.thrust_polarity,
+            "reference_pressure_pa": self.reference_pressure_pa,
+            "pressure_reference_visible": self.pressure_reference_visible,
             "processing_metadata": dict(self.processing_metadata),
             "analyzer": self.analyzer.to_dict() if self.analyzer is not None else None,
             "motor_metadata": dict(self.motor_metadata),
@@ -420,6 +434,10 @@ class ProjectDocument:
             primary_channels=primary_channels,
             primary_channels_explicit=primary_channels_explicit,
             thrust_polarity=thrust_polarity,
+            reference_pressure_pa=float(payload.get("reference_pressure_pa", 101325.0)),
+            pressure_reference_visible=bool(
+                payload.get("pressure_reference_visible", True)
+            ),
             processing_metadata=dict(processing_metadata_payload),
             analyzer=(
                 PluginReference.from_dict(analyzer_payload)
