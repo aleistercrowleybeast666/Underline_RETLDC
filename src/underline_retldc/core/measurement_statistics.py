@@ -34,7 +34,7 @@ def MeasurementStatistics_Calculate(
     if finite_signal.size:
         full_max_index = int(np.argmax(finite_signal))
         full_minimum = float(np.min(finite_signal))
-        full_mean = float(np.mean(finite_signal))
+        full_mean = Measurement_TimeAverage(finite_time, finite_signal)
         full_maximum = float(finite_signal[full_max_index])
         full_maximum_time = float(finite_time[full_max_index])
     else:
@@ -61,7 +61,7 @@ def MeasurementStatistics_Calculate(
         if active_signal.size:
             active_max_index = int(np.argmax(active_signal))
             active_minimum = float(np.min(active_signal))
-            active_mean = float(np.mean(active_signal))
+            active_mean = Measurement_TimeAverage(active_time, active_signal, duration=end - start)
             active_maximum = float(active_signal[active_max_index])
             active_time_to_maximum = float(active_time[active_max_index] - start)
 
@@ -76,3 +76,18 @@ def MeasurementStatistics_Calculate(
         full_maximum=full_maximum,
         full_maximum_time_s=full_maximum_time,
     )
+
+
+def Measurement_TimeAverage(
+    time: np.ndarray,
+    values: np.ndarray,
+    *,
+    duration: float | None = None,
+) -> float | None:
+    """Integrate retained samples without sorting or inventing interval endpoints."""
+    if time.size < 2 or np.any(np.diff(time) <= 0):
+        return None
+    span = float(time[-1] - time[0]) if duration is None else float(duration)
+    if not np.isfinite(span) or span <= 0:
+        return None
+    return float(np.trapezoid(values, time) / span)

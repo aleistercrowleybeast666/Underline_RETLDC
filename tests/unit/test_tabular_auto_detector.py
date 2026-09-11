@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from underline_retldc.core.tabular import TabularPreview
+from copy import deepcopy
+
+import pytest
+
+from underline_retldc.core.tabular import TabularPreset, TabularPreview
 from underline_retldc.core.tabular_auto_detector import TabularAutoDetector
 
 
@@ -124,3 +128,132 @@ def test_auto_detector_mapping_preserves_other_channels() -> None:
         "auxiliary",
         "auxiliary",
     ]
+
+
+PARSER_CONTEXT = {
+    "parser_id": "builtin.parser.generic_delimited",
+    "parser_version": "1.0.0",
+}
+
+
+def _preset_case() -> tuple[TabularPreview, TabularPreset]:
+    rows = [["t (s)", "A (N)", "B (MPa)"]]
+    rows.extend([[i * 0.1, 10 + i, 20 + i] for i in range(8)])
+    preview = _preview(rows)
+    config = TabularAutoDetector().detect(preview).mapping_config()
+    config["columns"][1].update(
+        channel_id="load_cell", display_name="Load cell", quantity="force", role="thrust"
+    )
+    config["columns"][2].update(
+        channel_id="sensor_pc", display_name="Pc", quantity="pressure", role="chamber_pressure"
+    )
+    return preview, TabularPreset("Bench", **PARSER_CONTEXT, config=config)
+
+
+def test_high_match_applies_config_and_copies_template() -> None:
+    preview, preset = _preset_case()
+    result = TabularAutoDetector().detect(
+        preview, parser_context=PARSER_CONTEXT, preset_candidates=(preset,)
+    )
+    assert result.preset_name == "Bench"
+    config = result.mapping_config()
+    assert config == dict(preset.config)
+    assert config["columns"][1]["channel_id"] == "load_cell"
+    assert [item.suggested_user_category for item in result.column_suggestions] == [
+        "time", "thrust", "chamber_pressure"
+    ]
+    config["columns"][1]["channel_id"] = "manual_override"
+    assert result.mapping_config()["columns"][1]["channel_id"] == "load_cell"
+    assert preset.config["columns"][1]["channel_id"] == "load_cell"
+
+
+def test_near_tied_presets_do_not_apply() -> None:
+    preview, preset = _preset_case()
+    second = TabularPreset("Second bench", **PARSER_CONTEXT, config=dict(preset.config))
+    result = TabularAutoDetector().detect(
+        preview, parser_context=PARSER_CONTEXT, preset_candidates=(preset, second)
+    )
+    assert result.can_parse
+    assert result.preset_name is None
+    assert result.mapping_config()["columns"][1]["channel_id"] != "load_cell"
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("unit", "kN"),
+        ("expected_header", "Unrelated Sensor"),
+        ("column", 5),
+    ],
+)
+def test_incompatible_preset_falls_back(field: str, value: object) -> None:
+    preview, preset = _preset_case()
+    config = deepcopy(dict(preset.config))
+    config["columns"][1][field] = value
+    preset = TabularPreset("Incompatible", **PARSER_CONTEXT, config=config)
+    result = TabularAutoDetector().detect(
+        preview, parser_context=PARSER_CONTEXT, preset_candidates=(preset,)
+    )
+    assert result.can_parse
+    assert result.preset_name is None
+
+
+@pytest.mark.parametrize(
+    "override",
+    [
+        {"sheet_name": "Different Sheet"},
+        {"header_row": 2},
+        {"data_start_row": 3},
+        {"data_end_row": 5},
+        {"time": {"mode": "column", "column": 0, "unit": "ms"}},
+    ],
+)
+def test_preset_cannot_override_structure_or_time(override: dict) -> None:
+    preview, preset = _preset_case()
+    preset = TabularPreset(
+        "Unsafe structure", **PARSER_CONTEXT, config={**preset.config, **override}
+    )
+    result = TabularAutoDetector().detect(
+        preview, parser_context=PARSER_CONTEXT, preset_candidates=(preset,)
+    )
+    assert result.can_parse
+    assert result.preset_name is None
+
+
+def test_preset_requires_matching_parser_version() -> None:
+    preview, preset = _preset_case()
+    result = TabularAutoDetector().detect(
+        preview,
+        parser_context={**PARSER_CONTEXT, "parser_version": "2.0.0"},
+        preset_candidates=(preset,),
+    )
+    assert result.preset_name is None
+
+
+def test_invalid_nested_preset_cannot_block_auto_mapping() -> None:
+    preview, preset = _preset_case()
+    preset.config["columns"][1]["column"] = -1
+    result = TabularAutoDetector().detect(
+        preview, parser_context=PARSER_CONTEXT, preset_candidates=(preset,)
+    )
+    assert result.can_parse
+    assert result.preset_name is None
+
+
+def test_close_runner_up_below_threshold_still_prevents_auto_apply() -> None:
+    preview, preset = _preset_case()
+    config = deepcopy(dict(preset.config))
+    # A long sensor label differing in one letter scores just below 0.95.
+    exact_header = "Measured thrust A (N)"
+    rows = [list(row) for row in preview.rows]
+    rows[0][1] = exact_header
+    preview = _preview(rows)
+    config["columns"][1]["expected_header"] = exact_header
+    winner = TabularPreset("Winner", **PARSER_CONTEXT, config=config)
+    config["columns"][1]["expected_header"] = "Measured thrust B (N)"
+    runner = TabularPreset("Runner", **PARSER_CONTEXT, config=config)
+    result = TabularAutoDetector().detect(
+        preview, parser_context=PARSER_CONTEXT, preset_candidates=(winner, runner)
+    )
+    assert result.preset_name is None
+    assert result.can_parse

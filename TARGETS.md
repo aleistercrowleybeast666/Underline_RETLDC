@@ -12,7 +12,7 @@ Project name:
 
 Product:
 
-`Underline_RETLDC`
+`Underline RETLDC`
 
 Current application version:
 
@@ -1194,10 +1194,10 @@ and every measurement workspace without requiring another Parse action.
 
 # 48. Responsive Header and Analysis Layout Target
 
-The stable Windows title is exactly `Underline_RETLDC` and never includes a version. The Header
+The Windows title is `Underline RETLDC — 0.0.4`; internal paths and identifiers stay unchanged. The Header
 uses stable `Underline` followed by the localized `火箭发动机试车数据解算` or
 `Rocket Engine Test Log Decoder and Calculator`; it never displays the current Project filename.
-The same row then shows semi-bold `v0.0.4`, regular-weight credit, and synchronized
+The same row then shows semi-bold localized `版本 0.0.4` / `Version 0.0.4`, regular-weight credit, and synchronized
 Header/Settings language and theme ComboBoxes. The shared-family typography uses a 20 px Header
 title, 13 px version/credit/Header controls, and 14 px navigation items; the full localized title
 remains available as the title tooltip when horizontal space is constrained. Shared analysis
@@ -1214,7 +1214,7 @@ The File menu command order is Import, Export, Save Project, Save Project As, Op
 no separator between Import/Export and Save Project or between Save Project As and Open Project.
 The toolbar order is Import, Export, Save Project, Open Project with no separator. Menu, toolbar,
 Header, and navigation blue surfaces touch without light seams. Simplified Chinese uses `工程`
-for this application-document concept and `界面语言` for the Header language selector.
+for this application-document concept and `语言` for the Header language selector.
 
 Every interactive 2D workspace exposes a localized Reset Chart action that restores the complete
 data-driven X/Y range after zoom or pan. It preserves the Project's user-selected segmentation
@@ -1254,3 +1254,15 @@ The three analysis workspaces use consistent Primary Channels, Display, and Test
 ordering. Thrust keeps 0 N in both the interactive plot and formal PNG. Chamber Pressure has a
 Project-persisted, editable reference overlay stored in Pa and defaulting to 101325 Pa; the overlay
 does not change measurement or analysis data.
+
+## v0.0.4 release finalization
+
+New Project/Session Thrust Correction is None, including omitted legacy processor selections.
+Saved explicit Processor IDs/configs must restore without replacing them with factory defaults.
+High-confidence presets apply only to new imports after all compatibility and safety gates pass;
+Projects retain an independent effective mapping and never reapply presets on reopen.
+Temperature's equivalent curve-display controls remain inside Display, preserving the common
+Primary Channels / Display / Test Interval order without a redundant group.
+The release candidate must pass pytest, Ruff, Light/Dark and zh_CN/en_US GUI checks at 980x640 and
+1280x820, and an extracted portable executable check away from the source checkout. Keep version
+0.0.4 and existing tags/Releases unchanged; prepare the candidate without publishing it.

@@ -321,6 +321,7 @@ class TabularMappingEditor(QWidget):
         self.advanced_button.setChecked(bool(expanded))
 
     def set_auto_detection_result(self, result: Any | None) -> None:
+        self._auto_detection_result = result
         if result is None:
             self.auto_status.clear()
             self.auto_status.hide()
@@ -333,6 +334,13 @@ class TabularMappingEditor(QWidget):
                     confidence=f"{float(result.confidence):.0%}",
                 )
             ]
+            if result.preset_name is not None:
+                lines.insert(
+                    0,
+                    self._translations.translate(
+                        "tabular.preset_auto_applied", name=result.preset_name
+                    ),
+                )
             for suggestion in result.column_suggestions:
                 category = str(suggestion.suggested_user_category)
                 counts[category] = counts.get(category, 0) + 1
@@ -433,6 +441,7 @@ class TabularMappingEditor(QWidget):
 
     def _changed(self, _value: Any = None) -> None:
         if not self._syncing:
+            self.set_auto_detection_result(None)
             self.mapping_changed.emit()
 
     def _reader_controls_refresh(self) -> None:
@@ -520,6 +529,7 @@ class TabularMappingEditor(QWidget):
             ]
         )
         self._advanced_button_text_update()
+        self.set_auto_detection_result(getattr(self, "_auto_detection_result", None))
         if self._preview is not None:
             self._quick_mapping_rebuild()
 

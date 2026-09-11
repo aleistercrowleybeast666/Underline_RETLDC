@@ -395,8 +395,12 @@ class AnalysisResultsPanel(QGroupBox):
     def set_rows(self, rows: tuple[tuple[str, str], ...]) -> None:
         self.table.setRowCount(len(rows))
         for row, (label, value) in enumerate(rows):
-            self.table.setItem(row, 0, QTableWidgetItem(label))
-            self.table.setItem(row, 1, QTableWidgetItem(value))
+            label_item = QTableWidgetItem(label)
+            label_item.setToolTip(label)
+            value_item = QTableWidgetItem(value)
+            value_item.setToolTip(value)
+            self.table.setItem(row, 0, label_item)
+            self.table.setItem(row, 1, value_item)
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)

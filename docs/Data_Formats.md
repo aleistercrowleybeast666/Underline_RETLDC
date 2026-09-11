@@ -233,3 +233,21 @@ per-temperature-channel metrics
 when those measurements exist. TXT, thrust PNG, and ENG shift
 ignition to `t = 0`; export-only endpoint interpolation may add ignition/burnout points and is
 disclosed in ExportResult metadata and TXT.
+
+## v0.0.4 confident preset application
+
+Automatic preset application is limited to new Generic Tabular imports with an empty mapping.
+The detector first requires an unambiguous real time column and a detected header/data region.
+Candidates must match Parser ID/version, selected sheet, header/data-start rows, all column
+indices, and normalized unit hints. A fixed data-end crop is not auto-applied because a bounded
+preview cannot verify the new record's end. Every normalized header name must have similarity
+at least 0.95; the weakest header is the score and must lead the runner-up by at least 0.08.
+Sub-threshold candidates still participate in this margin check.
+These defaults live in TabularAutoDetector alongside the time thresholds. Preview mapping is
+validated through the shared Tabular engine, including finite strictly increasing timestamps.
+Invalid, conflicting, weak, or tied candidates fall back to ordinary conservative classification.
+
+A successful match copies the preset's config into the effective source mapping, retaining the
+current file's detected reader settings. The GUI displays the applied preset name and final
+mapping. Manual edits take precedence. Project reopen uses only its saved effective mapping,
+never auto-detection or a live link to a global preset.

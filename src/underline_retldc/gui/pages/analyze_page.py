@@ -92,8 +92,12 @@ class AnalyzePage(QWidget):
                     display_mode=self._display_mode,
                 )
             )
-            self.metrics_table.setItem(row, 0, QTableWidgetItem(label))
-            self.metrics_table.setItem(row, 1, QTableWidgetItem(value_text))
+            label_item = QTableWidgetItem(label)
+            label_item.setToolTip(label)
+            value_item = QTableWidgetItem(value_text)
+            value_item.setToolTip(value_text)
+            self.metrics_table.setItem(row, 0, label_item)
+            self.metrics_table.setItem(row, 1, value_item)
         self.diagnostics_group.set_diagnostics(result.diagnostics)
 
     def set_display_configuration(

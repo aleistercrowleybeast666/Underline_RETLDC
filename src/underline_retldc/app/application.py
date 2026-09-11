@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import shutil
 import sys
 import traceback
 from contextlib import suppress
@@ -25,6 +26,7 @@ def _arguments_parse(arguments: list[str]) -> tuple[argparse.Namespace, list[str
         action="store_true",
         help="Initialize and briefly show the GUI, then exit successfully",
     )
+    parser.add_argument("--release-smoke", type=Path, help="Write isolated release-check artifacts")
     parser.add_argument("--locale", choices=("zh_CN", "en_US"))
     parser.add_argument("--theme", choices=("light", "dark"))
     return parser.parse_known_args(arguments)
@@ -60,7 +62,12 @@ def main(argv: list[str] | None = None) -> int:
     app.setOrganizationName(NAME)
     app.setApplicationName(PRODUCT_NAME)
     app.setApplicationVersion(__version__)
-    settings = SettingsService()
+    if options.release_smoke is not None:
+        options.release_smoke = options.release_smoke.resolve()
+        options.release_smoke.mkdir(parents=True, exist_ok=True)
+    settings = SettingsService(
+        options.release_smoke / "settings.ini" if options.release_smoke is not None else None
+    )
     Theme_Apply(app, options.theme or settings.theme())
     locale = options.locale or settings.locale()
     translations = TranslationService(locale)
@@ -69,11 +76,23 @@ def main(argv: list[str] | None = None) -> int:
             (Application_ProjectRoot() / "smoke-test-error.txt").unlink(
                 missing_ok=True
             )
+    plugin_root = None
+    user_plugin_root = None
+    if options.release_smoke is not None:
+        plugin_root = options.release_smoke / "application_plugins"
+        user_plugin_root = options.release_smoke / "user_plugins"
+        if not plugin_root.exists():
+            shutil.copytree(
+                Application_ProjectRoot() / "plugins", plugin_root,
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+            )
     try:
         window = MainWindow(
             translations,
             settings,
             project_root=Application_ProjectRoot(),
+            application_plugin_directory=plugin_root,
+            user_plugin_directory=user_plugin_root,
             initial_theme=options.theme,
         )
     except BaseException:
@@ -82,7 +101,11 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         raise
     window.show()
-    if options.smoke_test:
+    if options.release_smoke is not None:
+        from underline_retldc.app.release_smoke import ReleaseSmoke_Run
+
+        QTimer.singleShot(0, lambda: app.exit(ReleaseSmoke_Run(window, options.release_smoke)))
+    elif options.smoke_test:
         bundled_records = tuple(
             record
             for record in window.registry.records
@@ -94,6 +117,14 @@ def main(argv: list[str] | None = None) -> int:
             if record.result is not PluginLoadResult.LOADED
         )
         smoke_exit_code = 0
+        if (
+            __version__ != "0.0.4"
+            or PRODUCT_NAME != "Underline RETLDC"
+            or window.windowTitle() != f"{PRODUCT_NAME} — {__version__}"
+            or window.process_page.processor_id() is not None
+        ):
+            logging.getLogger(__name__).error("Smoke test found incorrect release defaults")
+            smoke_exit_code = 1
         if not bundled_records:
             logging.getLogger(__name__).error(
                 "Smoke test found no bundled plugins below %s",
@@ -111,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
             smoke_exit_code = 1
         if smoke_exit_code:
             lines = [
-                "Underline_RETLDC packaged smoke test failed.",
+                "Underline RETLDC packaged smoke test failed.",
                 f"Plugin root: {window.application_plugin_directory}",
                 f"Bundled records: {len(bundled_records)}",
             ]

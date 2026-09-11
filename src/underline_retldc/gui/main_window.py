@@ -151,7 +151,6 @@ FILE_DIALOG_OPTIONS = QFileDialog.Option.DontUseNativeDialog
 THRUST_ANALYZER_ID = "builtin.analyzer.thrust"
 DEFAULT_PARSER_ID = "builtin.parser.tr_f"
 DEFAULT_CALIBRATION_ID = "builtin.calibration.identity"
-DEFAULT_WEIGHT_PROCESSOR_ID = "builtin.processor.vertical_linear_baseline"
 
 
 class MainWindow(QMainWindow):
@@ -521,7 +520,7 @@ class MainWindow(QMainWindow):
 
     def _retranslate(self) -> None:
         t = self.translations.translate
-        self.setWindowTitle(PRODUCT_NAME)
+        self.setWindowTitle(f"{PRODUCT_NAME} — {__version__}")
         header_title = f"{NAME} {t('app.workspace_title')}"
         self.header_title.setText(header_title)
         self.header_title.setToolTip(header_title)
@@ -1155,10 +1154,7 @@ class MainWindow(QMainWindow):
         )
         if identity_index >= 0:
             self.setup_page.calibration_combo.setCurrentIndex(identity_index)
-        processor_index = self.process_page.processor_combo.findData(
-            DEFAULT_WEIGHT_PROCESSOR_ID
-        )
-        self.process_page.processor_combo.setCurrentIndex(max(0, processor_index))
+        self.process_page.set_processing_config(None, {})
         self.navigation.setCurrentRow(0)
         self._retranslate()
 
@@ -1474,6 +1470,9 @@ class MainWindow(QMainWindow):
         return tuple(matches)
 
     def _tabular_auto_preview(self) -> None:
+        # Parser/source restoration can queue the same read-only preview more than once.
+        if self._active_task is not None:
+            return
         if (
             not self.import_page.uses_tabular_mapping()
             or not self.settings.tabular_auto_mapping()
@@ -1512,6 +1511,10 @@ class MainWindow(QMainWindow):
             context.raise_if_cancelled()
             detection = TabularAutoDetector().detect(
                 raw_preview,
+                parser_context={
+                    "parser_id": plugin.descriptor.plugin_id,
+                    "parser_version": plugin.descriptor.version,
+                },
                 preset_candidates=preset_candidates,
             )
             effective_config = detection.mapping_config(config)
@@ -1536,6 +1539,8 @@ class MainWindow(QMainWindow):
         )
 
     def _tabular_preview_refresh(self, force_suggestion: bool = False) -> None:
+        if not force_suggestion and self._active_task is not None:
+            return
         if not self.import_page.uses_tabular_mapping():
             return
         try:
@@ -3935,13 +3940,7 @@ class MainWindow(QMainWindow):
         processor_ids = {
             item.descriptor.plugin_id for item in compatible_processors
         }
-        if not self._plugins_initialized:
-            selected_processor = (
-                DEFAULT_WEIGHT_PROCESSOR_ID
-                if DEFAULT_WEIGHT_PROCESSOR_ID in processor_ids
-                else None
-            )
-        elif selected_processor not in processor_ids:
+        if selected_processor not in processor_ids:
             selected_processor = None
         self.process_page.set_processors(
             tuple(compatible_processors), preferred_id=selected_processor

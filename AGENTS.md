@@ -246,3 +246,14 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 - Smoke-start the GUI with the project venv before completing a release task.
 - Review every changed file for data loss, API compatibility, unsafe plugin behavior, unit errors,
   stale persistence fields, and GUI-main-thread blocking.
+
+## v0.0.4 release refinements
+
+- Product display name is `Underline RETLDC`; the window title is `Underline RETLDC — 0.0.4`.
+  Keep repository/package/EXE names and persistent settings/plugin locations unchanged.
+- New Session/Project correction defaults to None; only explicit saved/user Processor selections
+  enable correction. Missing legacy selection fields also mean None. Polarity stays independent.
+- Preset auto-application is only for new empty mappings after parser, structure, header, unit,
+  time, score/margin and mapping validation. Copy effective config; never dynamically link a
+  Project to presets or run auto-detection during reopen.
+- Release packaging runs pytest and Ruff before PyInstaller and stops on either failure.

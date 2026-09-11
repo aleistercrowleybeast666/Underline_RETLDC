@@ -215,8 +215,9 @@ preference and never Project science state or an input to formal exporters.
 The Header and Settings expose synchronized ComboBoxes with stable `light`/`dark` item data. The
 Header fields and their detached `headerComboPopup` views explicitly use deep-blue backgrounds,
 white text, and accent-blue selection in both themes rather than inheriting native popup colors.
-The window title is always `Underline_RETLDC` with no version. One continuous Header row renders
-stable `Underline` plus only the localized workspace suffix, then `v<version>`, regular-weight
+The window title is `Underline RETLDC — 0.0.4`; the product display name is separate from
+stable repository, package, executable, settings, and plugin-root identifiers. One continuous Header row renders
+stable `Underline` plus only the localized workspace suffix, then the localized version label, regular-weight
 credit, and bold language/theme labels with regular-weight ComboBox contents. It intentionally
 omits the Project filename. Menu, toolbar, Header, and navigation use contiguous blue surfaces
 without central-layout margins or separator gaps. The Header title uses the shared-family 20 px
@@ -361,8 +362,37 @@ is collected at its package-relative path. README, plugin-authoring prompts, doc
 copied into the distribution.
 
 The entire distribution directory is the release unit: moving only the EXE is unsupported. The
-build script installs PyInstaller into the project `.venv` only when missing, replaces the same
+build script first runs pytest and Ruff with fail-fast errors, then installs PyInstaller into the project `.venv` only when missing, replaces the same
 stable-name build output, and smoke-starts the packaged executable once per theme before reporting
 success. A smoke run also fails when no bundled plugins are found or any bundled plugin cannot be
 loaded. The script never packages source test data, rewrites raw logs, or modifies the user plugin
 root.
+
+## v0.0.4 confident preset application
+
+Automatic preset application is limited to new Generic Tabular imports with an empty mapping.
+The detector first requires an unambiguous real time column and a detected header/data region.
+Candidates must match Parser ID/version, selected sheet, header/data-start rows, all column
+indices, and normalized unit hints. A fixed data-end crop is not auto-applied because a bounded
+preview cannot verify the new record's end. Every normalized header name must have similarity
+at least 0.95; the weakest header is the score and must lead the runner-up by at least 0.08.
+Sub-threshold candidates still participate in this margin check.
+These defaults live in TabularAutoDetector alongside the time thresholds. Preview mapping is
+validated through the shared Tabular engine, including finite strictly increasing timestamps.
+Invalid, conflicting, weak, or tied candidates fall back to ordinary conservative classification.
+
+A successful match copies the preset's config into the effective source mapping, retaining the
+current file's detected reader settings. The GUI displays the applied preset name and final
+mapping. Manual edits take precedence. Project reopen uses only its saved effective mapping,
+never auto-detection or a live link to a global preset.
+
+New Project/Session Thrust Correction defaults to None. Explicit saved processors continue to
+restore, and polarity remains independent. Duplicate queued read-only table previews are skipped
+while a task is active, including during Project restoration.
+
+The opt-in `--release-smoke OUTPUT_DIRECTORY` validation mode runs the real import, calculation,
+export, save/reopen, and plugin ZIP installation paths using generated data. It copies bundled
+plugins to an isolated application-plugin root and uses private settings and user-plugin paths
+inside OUTPUT_DIRECTORY. It writes a JSON report and screenshots for both languages, themes, and
+980x640 / 1280x820 layouts. Repeating the command in a fresh process with the same output directory
+also verifies the installed test plugin is discovered at startup. Normal startup is unchanged.

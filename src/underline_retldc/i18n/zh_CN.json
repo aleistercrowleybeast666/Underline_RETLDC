@@ -1,8 +1,8 @@
 {
-  "app.title": "Underline_RETLDC",
+  "app.title": "Underline RETLDC",
   "app.workspace_title": "火箭发动机试车数据解算",
   "app.subtitle": "火箭发动机试车记录解析与计算软件",
-  "app.version": "v{version}",
+  "app.version": "版本 {version}",
   "app.credit": "辰星引力开发",
   "page.import": "导入",
   "page.setup": "配置",
@@ -318,7 +318,7 @@
   "plugin.status.initialization_error": "初始化错误",
   "plugin.status.descriptor_mismatch": "描述符不匹配",
   "plugin.status.duplicate_id": "ID 重复",
-  "settings.language": "界面语言",
+  "settings.language": "语言",
   "settings.theme": "主题",
   "settings.units": "单位",
   "settings.missing_unit": "未声明单位时",
@@ -443,5 +443,7 @@
   "diagnostic.tabular.auto_detected": "已在本机自动识别表格结构和列映射。",
   "diagnostic.tabular.auto_structure_failed": "未找到稳定的二维数值数据区域。",
   "diagnostic.tabular.auto_time_missing": "无法确定时间列，请在高级设置中选择时间来源。",
-  "diagnostic.tabular.auto_time_ambiguous": "检测到多个可能的时间列，请在高级设置中确认。"
+  "diagnostic.tabular.auto_time_ambiguous": "检测到多个可能的时间列，请在高级设置中确认。",
+  "process.thrust_correction": "推力修正",
+  "tabular.preset_auto_applied": "已自动应用预设：{name}"
 }

@@ -1,8 +1,8 @@
 {
-  "app.title": "Underline_RETLDC",
+  "app.title": "Underline RETLDC",
   "app.workspace_title": "Rocket Engine Test Log Decoder and Calculator",
   "app.subtitle": "Underline Rocket Engine Test Log Decode and Compute",
-  "app.version": "v{version}",
+  "app.version": "Version {version}",
   "app.credit": "By CXYL",
   "page.import": "Import",
   "page.setup": "Setup",
@@ -318,7 +318,7 @@
   "plugin.status.initialization_error": "Initialization error",
   "plugin.status.descriptor_mismatch": "Descriptor mismatch",
   "plugin.status.duplicate_id": "Duplicate ID",
-  "settings.language": "UI Language",
+  "settings.language": "Language",
   "settings.theme": "Theme",
   "settings.units": "Units",
   "settings.missing_unit": "When a unit is not declared",
@@ -443,5 +443,7 @@
   "diagnostic.tabular.auto_detected": "Table structure and column mapping were detected locally.",
   "diagnostic.tabular.auto_structure_failed": "No stable two-dimensional numeric data region was found.",
   "diagnostic.tabular.auto_time_missing": "Unable to determine a time column; select a time source in Advanced.",
-  "diagnostic.tabular.auto_time_ambiguous": "Multiple possible time columns were detected; confirm one in Advanced."
+  "diagnostic.tabular.auto_time_ambiguous": "Multiple possible time columns were detected; confirm one in Advanced.",
+  "process.thrust_correction": "Thrust Correction",
+  "tabular.preset_auto_applied": "Preset applied automatically: {name}"
 }

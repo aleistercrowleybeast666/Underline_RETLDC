@@ -61,3 +61,14 @@ def test_folder_packaging_batch_has_stable_output_contract() -> None:
     assert "%APP_NAME%.exe" in script
     assert "--smoke-test --theme light" in script
     assert "--smoke-test --theme dark" in script
+
+
+def test_packaging_preflight_runs_before_pyinstaller_and_fails_fast() -> None:
+    script = (PROJECT_ROOT / "打包.bat").read_text(encoding="utf-8")
+    pytest_index = script.index('"%VENV_PYTHON%" -m pytest')
+    ruff_index = script.index('"%VENV_PYTHON%" -m ruff check .')
+    build_index = script.index('"%VENV_PYTHON%" -m PyInstaller')
+    assert pytest_index < ruff_index < build_index
+    for start, end in ((pytest_index, ruff_index), (ruff_index, build_index)):
+        assert "if errorlevel 1 (" in script[start:end]
+        assert "exit /b 1" in script[start:end]

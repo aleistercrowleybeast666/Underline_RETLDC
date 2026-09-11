@@ -1,17 +1,28 @@
 from __future__ import annotations
 
+import json
 import math
 import re
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from difflib import SequenceMatcher
 from types import MappingProxyType
 from typing import Any
 
 import numpy as np
 
 from underline_retldc.core.diagnostics import Diagnostic, DiagnosticSeverity
-from underline_retldc.core.tabular import Tabular_ColumnLabel, TabularPreset, TabularPreview
+from underline_retldc.core.tabular import (
+    Tabular_ColumnLabel,
+    Tabular_ConfigNormalize,
+    Tabular_MappingApply,
+    TabularColumnUsage,
+    TabularPreset,
+    TabularPreview,
+    TabularTable,
+    TabularTimeMode,
+)
 from underline_retldc.core.units import Unit_Normalize
 
 _TIME_HEADERS = {"t", "time", "timestamp", "times", "second", "seconds", "时间", "时刻"}
@@ -80,6 +91,7 @@ class TabularAutoDetectionResult:
     blocking_reason: str | None = None
     resolved_reader_config: Mapping[str, Any] = field(default_factory=dict)
     preset_name: str | None = None
+    preset_config: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "time_config", MappingProxyType(dict(self.time_config)))
@@ -94,6 +106,10 @@ class TabularAutoDetectionResult:
         return self.blocking_reason is None and self.data_start_row is not None
 
     def mapping_config(self, base_config: Mapping[str, Any] | None = None) -> dict[str, Any]:
+        if self.preset_config is not None:
+            config = json.loads(json.dumps(dict(self.preset_config)))
+            config.update(dict(self.resolved_reader_config))
+            return config
         config = dict(base_config or {})
         config.update(dict(self.resolved_reader_config))
         config.update(
@@ -158,9 +174,17 @@ class TabularAutoDetector:
         *,
         time_threshold: float = 0.68,
         time_ambiguity_margin: float = 0.08,
+        preset_threshold: float = 0.95,
+        preset_ambiguity_margin: float | None = None,
     ) -> None:
         self._time_threshold = float(time_threshold)
         self._time_ambiguity_margin = float(time_ambiguity_margin)
+        self._preset_threshold = float(preset_threshold)
+        self._preset_ambiguity_margin = (
+            self._time_ambiguity_margin
+            if preset_ambiguity_margin is None
+            else float(preset_ambiguity_margin)
+        )
 
     def detect(
         self,
@@ -169,7 +193,6 @@ class TabularAutoDetector:
         parser_context: Mapping[str, Any] | None = None,
         preset_candidates: Sequence[TabularPreset] = (),
     ) -> TabularAutoDetectionResult:
-        del parser_context  # Reserved for future reader-specific, non-GUI hints.
         rows = {
             number: tuple(values)
             for number, values in zip(preview.row_numbers, preview.rows, strict=True)
@@ -236,11 +259,43 @@ class TabularAutoDetector:
             best_time_reasons,
             {"time": best_time_score},
         )
-        preset_name, preset_score = _preset_best_match(
+        preset, preset_score = _preset_best_match(
             preset_candidates,
             headers,
             preview,
+            parser_context=parser_context or {},
+            header_row=header_row,
+            data_start_row=data_start,
+            time_column=best_column,
+            time_unit=best_time_unit or "s",
+            threshold=self._preset_threshold,
+            margin=self._preset_ambiguity_margin,
         )
+        if preset is not None:
+            mapping = Tabular_ConfigNormalize(preset.config)
+            suggestions = [
+                TabularColumnSuggestion(
+                    column_index=item.column,
+                    header=headers[item.column],
+                    suggested_user_category=(
+                        "time"
+                        if item.usage is TabularColumnUsage.TIME
+                        else (
+                            {
+                                "thrust": "thrust",
+                                "chamber_pressure": "chamber_pressure",
+                                "temperature": "temperature",
+                            }.get(item.semantic_role or "", "other")
+                            if item.usage is TabularColumnUsage.DATA
+                            else "other"
+                        )
+                    ),
+                    unit=item.unit,
+                    confidence=preset_score,
+                    reasons=("validated preset mapping",),
+                )
+                for item in sorted(mapping.columns, key=lambda item: item.column)
+            ]
         classified_scores = [
             item.confidence
             for item in suggestions
@@ -275,7 +330,8 @@ class TabularAutoDetector:
             confidence=confidence,
             diagnostics=(diagnostic,),
             resolved_reader_config=preview.resolved_reader_config,
-            preset_name=preset_name,
+            preset_name=preset.name if preset is not None else None,
+            preset_config=preset.to_dict()["config"] if preset is not None else None,
         )
 
     @staticmethod
@@ -559,31 +615,89 @@ def _preset_best_match(
     presets: Sequence[TabularPreset],
     headers: tuple[str, ...],
     preview: TabularPreview,
-) -> tuple[str | None, float]:
-    best_name: str | None = None
-    best_score = 0.0
-    for preset in presets:
-        columns = preset.config.get("columns", [])
-        if not isinstance(columns, Sequence) or isinstance(columns, (str, bytes)):
-            continue
-        expected = {
-            int(item["column"]): _text(item.get("expected_header"))
-            for item in columns
-            if isinstance(item, Mapping) and "column" in item
+    *,
+    parser_context: Mapping[str, Any],
+    header_row: int | None,
+    data_start_row: int,
+    time_column: int,
+    time_unit: str,
+    threshold: float,
+    margin: float,
+) -> tuple[TabularPreset | None, float]:
+    """Apply only a uniquely matching, validated template; otherwise ordinary mapping wins."""
+    ranked: list[tuple[float, TabularPreset]] = []
+    table = TabularTable(
+        {
+            number: dict(enumerate(row))
+            for number, row in zip(preview.row_numbers, preview.rows, strict=True)
         }
-        width_score = 1.0 if len(columns) == preview.column_count else 0.0
-        hinted = [(column, value) for column, value in expected.items() if value]
-        header_score = (
-            sum(column < len(headers) and headers[column] == value for column, value in hinted)
-            / len(hinted)
-            if hinted
-            else 0.0
-        )
-        sheet_score = 0.0
-        preset_sheet = _text(preset.config.get("sheet_name"))
-        if preset_sheet and preset_sheet == _text(preview.selected_sheet):
-            sheet_score = 1.0
-        score = 0.35 * width_score + 0.55 * header_score + 0.10 * sheet_score
-        if score > best_score:
-            best_name, best_score = preset.name, score
-    return best_name, best_score
+    )
+    for preset in presets:
+        if (
+            preset.parser_id != parser_context.get("parser_id")
+            or preset.parser_version != parser_context.get("parser_version")
+        ):
+            continue
+        try:
+            config = Tabular_ConfigNormalize(preset.config)
+            if (
+                header_row is None
+                or config.header_row != header_row
+                or config.data_start_row != data_start_row
+                # A bounded preview cannot verify a template's end-of-record crop.
+                or config.data_end_row is not None
+                or {item.column for item in config.columns} != set(range(preview.column_count))
+                or config.time.mode is not TabularTimeMode.COLUMN
+                or config.time.column != time_column
+                or Unit_Normalize(config.time.unit) != Unit_Normalize(time_unit)
+                or _text(preset.config.get("sheet_name")) != _text(preview.selected_sheet)
+            ):
+                continue
+            similarities: list[float] = []
+            compatible = True
+            for item in config.columns:
+                expected_name, expected_unit = _header_parts(item.expected_header or "")
+                actual_name, actual_unit = _header_parts(headers[item.column])
+                if not expected_name or not actual_name:
+                    compatible = False
+                    break
+                similarity = SequenceMatcher(
+                    None, _compact(expected_name), _compact(actual_name), autojunk=False
+                ).ratio()
+                declared_unit = (
+                    config.time.unit if item.column == time_column else item.unit
+                )
+                unit_hints = {
+                    Unit_Normalize(value)
+                    for value in (expected_unit, actual_unit, declared_unit)
+                    if value
+                }
+                if len(unit_hints) > 1 or (actual_unit and not declared_unit):
+                    compatible = False
+                    break
+                similarities.append(similarity)
+            if not compatible or not similarities:
+                continue
+            effective = preset.to_dict()["config"]
+            # Reader auto-detection is evidence about this file, not template state.
+            effective.update(dict(preview.resolved_reader_config))
+            dataset = Tabular_MappingApply(table, effective)
+            if (
+                not dataset.channels
+                or len(dataset.time) < 2
+                or not np.all(np.isfinite(dataset.time))
+                or np.any(np.diff(dataset.time) <= 0)
+            ):
+                continue
+        except (KeyError, TypeError, ValueError, OverflowError):
+            # A malformed or inapplicable optional preset cannot block ordinary detection.
+            continue
+        # The weakest required header controls confidence. Keep sub-threshold candidates
+        # in the runner-up comparison so a close match cannot disappear at the cutoff.
+        ranked.append((min(similarities), preset))
+    ranked.sort(key=lambda item: item[0], reverse=True)
+    if not ranked or ranked[0][0] < threshold:
+        return None, 0.0
+    if len(ranked) > 1 and ranked[0][0] - ranked[1][0] < margin:
+        return None, 0.0
+    return ranked[0][1], ranked[0][0]

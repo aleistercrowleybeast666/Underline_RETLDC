@@ -396,3 +396,26 @@ def test_generic_delimited_supports_auto_delimiter_late_header_and_missing_value
     )
     np.testing.assert_allclose(dataset.channel("force").values, [10.0, 20.0, 30.0])
     assert source.read_bytes() == original
+
+
+def test_xlsx_confident_preset_applies_effective_mapping(tmp_path: Path, bundled_registry) -> None:
+    from underline_retldc.core.tabular import TabularPreset
+    from underline_retldc.core.tabular_auto_detector import TabularAutoDetector
+
+    source = tmp_path / "preset.xlsx"
+    _xlsx_fixture_write(source)
+    parser = bundled_registry.get("builtin.parser.generic_xlsx")
+    preview = parser.preview(source, {"data_start_row": 1}, maximum_rows=100)
+    detector = TabularAutoDetector()
+    config = detector.detect(preview).mapping_config()
+    config["sheet_name"] = "Result"
+    config["columns"][2]["channel_id"] = "preset_load_cell"
+    preset = TabularPreset("XLSX bench", parser.descriptor.plugin_id, "1.0.0", config)
+    detection = detector.detect(
+        preview,
+        parser_context={"parser_id": parser.descriptor.plugin_id, "parser_version": "1.0.0"},
+        preset_candidates=(preset,),
+    )
+    assert detection.preset_name == "XLSX bench"
+    dataset = parser.parse(source, detection.mapping_config(), TaskContext()).dataset
+    np.testing.assert_allclose(dataset.channel("preset_load_cell").values, [0.0, 20.0, 0.0])

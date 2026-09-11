@@ -105,7 +105,10 @@ does not yet contain optional baseline/weight correction. With no correction Pro
 
 ## Motor weight-change compensation
 
-The GUI name is `Motor Weight-Change Compensation`; the stable processor ID and vertical linear
+The `Thrust Correction` selector defaults to `None` in every new Project/Session and when
+legacy Project fields omit a selection. Saved explicit Processor references are restored without
+substitution. Polarity stays enabled with None. The optional plugin GUI name is
+`Motor Weight-Change Compensation`; the stable processor ID and vertical linear
 baseline algorithm remain unchanged for reproducibility and Plugin API compatibility.
 
 The selector is populated from all registered Processor plugins whose `requirements()` mapping
@@ -193,3 +196,19 @@ unavailable marker.
 OpenRocket ENG becomes selectable immediately after successful thrust processing/analysis when
 its physical-force, segmentation, and motor-metadata requirements are satisfied. There is no
 separate curve-confirmation checkbox or confirmation field in current Project output.
+
+## Measurement time averages
+
+Pressure ACTIVE_TEST mean now uses the trapezoidal integral of finite retained samples divided by
+the selected interval duration, matching the thrust analyzer's existing convention. Full-record
+means use the first-to-last finite sample duration. No sorting, resampling, or boundary
+interpolation is performed for these metrics. Nonuniform timestamps therefore carry their actual
+time weight; the result is not np.mean. A mean is unavailable with fewer than two finite,
+strictly ordered samples. Peaks and their recorded times are unchanged. Boundaries between
+samples can leave uncovered endpoint spans: the integral covers retained samples while the
+ACTIVE_TEST denominator remains the selected duration, exactly as for thrust. Export-only
+endpoint interpolation remains separately documented.
+
+Result tables keep a common row-height policy and expose complete labels/values in tooltips at
+compact widths. Temperature puts the metric first, appending channel identity only when multiple
+channels need disambiguation; a single temperature no longer repeats its filename in every row.

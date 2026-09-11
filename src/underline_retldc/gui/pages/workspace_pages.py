@@ -985,7 +985,7 @@ class MeasurementWorkspacePage(QWidget):
                 else None
             )
             statistics, unit = self._statistics_for(item, target_unit)
-            prefix = f"{item.label} · " if self._selection_mode == "multiple" else ""
+            channel_suffix = f" · {item.label}" if len(selected) > 1 else ""
             if self._metric_mode == "pressure":
                 values = (
                     ("test_start_value", statistics.test_start_value, unit),
@@ -1014,7 +1014,7 @@ class MeasurementWorkspacePage(QWidget):
                 )
             rows.extend(
                 (
-                    prefix + translate(f"workspace.statistic.{key}"),
+                    translate(f"workspace.statistic.{key}") + channel_suffix,
                     self._value_format(value, value_unit),
                 )
                 for key, value, value_unit in values

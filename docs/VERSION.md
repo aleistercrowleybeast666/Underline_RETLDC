@@ -3,7 +3,7 @@
 ```text
 Project: Underline_RETLDC
 Name: Underline
-Product: Underline_RETLDC
+Product: Underline RETLDC
 Full Name: Underline Rocket Engine Test Log Decode and Compute
 Current Version: 0.0.4
 Plugin API: 1
@@ -34,6 +34,18 @@ unchanged. The desktop theme IDs are `light` and `dark` and are persisted as UI 
 QSettings `ui/theme` without changing any science or Project schema version.
 
 ## 0.0.4 changes
+
+- High-confidence compatible presets now apply their validated config automatically to new
+  tabular imports; saved Projects keep independent effective mappings.
+- New Projects default to Thrust Correction=None; existing explicit choices remain reproducible.
+- User-visible product name is Underline RETLDC and the window title includes version 0.0.4.
+  README now follows workspace navigation and documents the optional correction.
+- All three analysis result panes use matching calculation buttons, spacing, and diagnostics;
+  temperature curve toggles stay in Display and pressure has no redundant unit-only label.
+- Pressure averages now weight actual sample times, consistent with the existing thrust average;
+  nonuniform sampling no longer uses an arithmetic mean. Peak values are unchanged.
+- Release builds stop before PyInstaller if pytest or Ruff fails. Packaged smoke checks also
+  verify product name, version, and the default no-correction selection.
 
 - Ordinary CSV, TSV, and XLSX files now use a deterministic local detector for structure, header,
   data start, time, units, and conservative measurement-category suggestions, then parse

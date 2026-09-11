@@ -1,4 +1,4 @@
-Underline_RETLDC 使用说明
+Underline RETLDC 0.0.4 使用说明
 =========================
 
 英文全称：Underline Rocket Engine Test Log Decode and Compute
@@ -55,15 +55,16 @@ Underline_RETLDC 使用说明
 7. 每个新通道默认显示“已经校准”。这只表示软件不额外变换数字，不代表软件证明了
    传感器标定准确。
 8. 如果数据仍是 ADC/raw/count，为该通道选择正确校准器并填写参数，或加载校准 JSON。
-9. 点击“进入分析”进入推力分析；燃烧室压力和温度也可在各自工作区查看。
-10. 软件使用已确认的主通道检测试车区间：存在主要燃烧室压力时优先使用室压，否则使用
-    主要推力。自动结果只是建议，用户保留最终决定权。
+9. 完成导入和自动解析后，直接在左侧选择“推力”“燃烧室压力”或“温度”工作区查看和分析。
+10. 推力页使用主要推力通道检测试车区间；燃烧室压力页使用主要室压通道。
+    自动结果只是建议，用户保留最终决定权。
     自动识别后，可在推力或燃烧室压力页面拖动、输入同一套试车前/试车/试车后区间；
     两个页面和工程状态会立即同步。
 11. 设置“推力极性”。如果传感器方向与软件定义相反，选择“反向 (-1)”。极性会先
     应用于已校准推力，与下一步的可选推力修正是两件事。
-12. 根据试车方式选择是否启用发动机自重变化补偿，并检查假设基线提示。即使选择
-    “不启用”，推力极性仍然有效，最终处理通道会保留正确方向。
+12. 新工程“推力修正”默认“不启用”，推力极性仍然有效，最终处理通道会保留正确方向。
+    只有确认安装方式和基线物理含义适用时，才主动启用可选的发动机自重变化补偿。
+    已保存工程的显式修正选择会原样恢复。
 13. 检查修正后的曲线和计算结果；需要时导出 TXT、PNG、CSV、JSON 或 OpenRocket ENG。
 
 单位只需要这样理解：
@@ -138,7 +139,7 @@ Underline_RETLDC 使用说明
 ----------------------
 
 解析器负责回答：
-“这个原始记录文件怎样读成 Underline_RETLDC 的统一数据？”
+“这个原始记录文件怎样读成 Underline RETLDC 的统一数据？”
 
 解析器不负责校准、滤波、总冲、比冲或导出。
 
@@ -279,7 +280,7 @@ automatically be installed to the current user's plugin folder instead.
 九、高级：给了解编程的用户
 ----------------------
 
-Underline_RETLDC 的核心数据链：
+Underline RETLDC 的核心数据链：
 
 Source（只读原始文件）
   → Parser
@@ -406,7 +407,8 @@ python .\main.py
 
    打包.bat
 
-脚本只使用当前工程的 .venv；如果其中没有 PyInstaller，会先自动安装。随后使用文件夹
+脚本只使用当前工程的 .venv，先运行 pytest 和 Ruff；任一步失败都会停止，不生成正式包。
+如果其中没有 PyInstaller，会自动安装。随后使用文件夹
 模式构建并自动执行浅色、深色两次启动检查，同时确认所有随包插件均可载入。成功后的
 发布位置是：
 
@@ -416,7 +418,7 @@ python .\main.py
 
    dist\Underline_RETLDC\Underline_RETLDC.exe
 
-界面中显示的软件版本为 `v0.0.4`；发布文件夹和 EXE 使用稳定名称 `Underline_RETLDC`。
+窗口标题为 `Underline RETLDC — 0.0.4`，顶部显示本地化版本标签；发布文件夹和 EXE 使用稳定名称 `Underline_RETLDC`。
 
 发布时必须复制或压缩整个 Underline_RETLDC 文件夹，不能只拿走 EXE。
 `_internal` 中是运行依赖，`plugins` 中是随软件发布的标准插件，二者都不能删除。
@@ -512,3 +514,28 @@ TR_F、TR_P 和 TR_T 都是“时间 + 一个原始数值”的两列文本，�
    <format_name>_tabular_preset.json
 
 然后由用户在表格映射区域点击“导入预设”，而不是生成可执行插件 ZIP。
+
+
+v0.0.4 预设自动应用与英文快速说明
+--------------------------------
+新导入 Generic CSV / TSV / XLSX 时先识别结构和可靠时间列。只有解析器 ID/版本、工作表、
+表头/数据起始行、全部列索引和单位提示都兼容，且表头匹配分数达到 0.95、领先第二候选
+至少 0.08 时，才自动应用校验通过的预设。带固定结束行的预设不自动套用，避免裁掉新记录。
+界面显示“已自动应用预设：名称”和最终映射；高级设置仍可修改，手动配置不会被再次覆盖。
+工程保存最终 effective mapping 的独立副本。后来修改全局预设，不会改变旧工程；
+打开工程时不会重新自动识别或应用预设。
+
+After importing and automatically parsing a file, select Thrust, Chamber Pressure, or Temperature
+in the left navigation to inspect and analyze the bound channels. New projects default to
+Thrust Correction: None; polarity remains active. Enable optional motor weight-change compensation
+only when the installation and baseline interpretation are appropriate. Explicit saved choices
+are restored unchanged.
+
+New Generic CSV / TSV / XLSX imports may apply a compatible preset automatically only after
+structure, headers, units, real time, and mapping validation pass (score >= 0.95; margin >= 0.08).
+Advanced Mapping remains editable. Each Project stores its effective mapping independently;
+reopening never reapplies or dynamically links a changed global preset.
+
+Pressure means now use trapezoidal integration over actual timestamps divided by the selected
+interval duration, as thrust means already did. Peaks are unchanged. Analysis retains recorded
+samples and does not invent boundary samples; formal export endpoint interpolation is separate.

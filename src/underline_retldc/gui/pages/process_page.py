@@ -218,7 +218,7 @@ class ProcessPage(QWidget):
         self.reset_chart_button.setText(t("workspace.reset_chart"))
         self.display_fit_button.setText(t("workspace.fit_view"))
         self.interval_editor.retranslate()
-        self.processing_group.setTitle(t("page.process"))
+        self.processing_group.setTitle(t("process.thrust_correction"))
         self.compensation_label.setText(t("process.enable_baseline"))
         self.plugins_button.setText(t("process.plugins"))
         self.apply_button.setText(t("process.apply"))
@@ -428,6 +428,7 @@ class ProcessPage(QWidget):
 
     def _processor_schema_update(self, _index: int | None = None) -> None:
         processor = self._selected_processor()
+        self.processor_form.setVisible(processor is not None)
         if processor is None:
             self.processor_form.set_schema({"type": "object", "properties": {}})
             return

@@ -211,7 +211,7 @@ def test_gui_initializes_measurement_workspaces_and_switches_locale(
     settings = SettingsService(tmp_path / "settings.ini")
     translations = TranslationService("zh_CN")
     window = _window(translations, settings, tmp_path)
-    assert window.windowTitle() == "Underline_RETLDC"
+    assert window.windowTitle() == "Underline RETLDC — 0.0.4"
     assert window.header_title.text() == "Underline 火箭发动机试车数据解算"
     assert not hasattr(window, "header_project_title")
     assert window.stack.count() == 5
@@ -296,7 +296,7 @@ def test_gui_initializes_measurement_workspaces_and_switches_locale(
         == "Open Application Plugin Folder"
     )
     assert window.plugins_page.user_button.text() == "Open User Plugin Folder"
-    assert window.settings_page.language_group.title() == "UI Language"
+    assert window.settings_page.language_group.title() == "Language"
     assert window.export_dialog.windowTitle() == "Export…"
     assert settings.locale() == "en_US"
     combo_palette = window.language_combo.palette()
@@ -447,9 +447,9 @@ def test_runtime_theme_header_and_settings_stay_synchronized(tmp_path: Path) -> 
     window.show()
     app.processEvents()
 
-    assert window.language_label.text() == "界面语言"
+    assert window.language_label.text() == "语言"
     assert window.theme_label.text() == "主题"
-    assert window.version_label.text() == "v0.0.4"
+    assert window.version_label.text() == "版本 0.0.4"
     assert window.credit_label.text() == "辰星引力开发"
     assert window.version_label.font().weight() > window.credit_label.font().weight()
     assert window.language_label.font().weight() > window.language_combo.font().weight()
@@ -525,9 +525,9 @@ def test_runtime_theme_header_and_settings_stay_synchronized(tmp_path: Path) -> 
 
     window._locale_select("en_US")
     app.processEvents()
-    assert window.language_label.text() == "UI Language"
+    assert window.language_label.text() == "Language"
     assert window.theme_label.text() == "Theme"
-    assert window.version_label.text() == "v0.0.4"
+    assert window.version_label.text() == "Version 0.0.4"
     assert window.credit_label.text() == "By CXYL"
     assert window.header_title.text() == (
         "Underline Rocket Engine Test Log Decoder and Calculator"
@@ -1092,6 +1092,9 @@ def test_gui_pipeline_parses_calibrates_processes_analyzes_and_exports(
     _task_wait(window)
     assert window.session.calibrated_dataset is not None
 
+    window.process_page.set_processing_config(
+        "builtin.processor.vertical_linear_baseline", {}
+    )
     window._regions_store(
         {
             "pre": [0.0, 2.5],
@@ -2661,3 +2664,129 @@ def test_removing_pending_source_preserves_parsed_project_data(
     assert window.import_page.source_paths() == (parsed,)
     window.close()
     app.processEvents()
+
+
+def test_auto_preset_manual_override_and_project_reopen_are_independent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from underline_retldc.core.tabular import TabularPreset, TabularPreset_Save
+    from underline_retldc.core.tabular_auto_detector import TabularAutoDetector
+
+    app = _application()
+    window = _window(TranslationService("en_US"), SettingsService(tmp_path / "s.ini"), tmp_path)
+    source = tmp_path / "measurements.csv"
+    source.write_text(
+        "t (s),A (N),B (MPa)\n"
+        + "".join(f"{i * 0.1},{10 + i},{20 + i}\n" for i in range(8)),
+        encoding="utf-8",
+    )
+    parser = window.registry.get("builtin.parser.generic_delimited")
+    preview = parser.preview(source, {"data_start_row": 1}, maximum_rows=100)
+    config = TabularAutoDetector().detect(preview).mapping_config()
+    config["columns"][1].update(
+        channel_id="preset_thrust", quantity="force", role="thrust", display_name="Bench thrust"
+    )
+    config["columns"][2].update(
+        channel_id="preset_pressure", quantity="pressure", role="chamber_pressure"
+    )
+    errors: list[str] = []
+    monkeypatch.setattr(window, "_error_show", lambda error: errors.append(str(error)))
+    preset = TabularPreset("Bench", parser.descriptor.plugin_id, "1.0.0", config)
+    preset_path = window._tabular_user_preset_directory() / "bench.json"
+    TabularPreset_Save(preset, preset_path)
+    window.import_page.set_source_entries([(source, 0.0)])
+    window.import_page.set_parser_id(parser.descriptor.plugin_id)
+    _task_wait(window)
+    editor = window.import_page.tabular_mapping_editor
+    assert not errors, errors
+    assert "Preset applied automatically: Bench" in editor.auto_status.text()
+    assert "preset_thrust" in window.session.raw_dataset.channels
+    assert not editor.advanced_button.isChecked()
+
+    window._locale_select("zh_CN")
+    assert "已自动应用预设：Bench" in editor.auto_status.text()
+    manual = editor.config()
+    manual["columns"][1]["channel_id"] = "manual_thrust"
+    editor.set_config(manual)
+    window._tabular_auto_preview()
+    _task_wait(window)
+    assert editor.config()["columns"][1]["channel_id"] == "manual_thrust"
+    window._source_parse()
+    _task_wait(window)
+    project_path = tmp_path / "mapped.json"
+    window._project_save_path(project_path)
+    _task_wait(window)
+    saved = Project_Load(project_path)
+    saved_config = dict(saved.sources[0].parser.config)
+    assert saved_config["columns"][1]["channel_id"] == "manual_thrust"
+
+    config["columns"][1]["channel_id"] = "changed_global_preset"
+    TabularPreset_Save(
+        TabularPreset("Changed", parser.descriptor.plugin_id, "1.0.0", config), preset_path
+    )
+    monkeypatch.setattr(
+        TabularAutoDetector,
+        "detect",
+        lambda *_args, **_kwargs: pytest.fail("Project reopen must not auto-detect"),
+    )
+    monkeypatch.setattr(
+        QFileDialog, "getOpenFileName", lambda *_args, **_kwargs: (str(project_path), "")
+    )
+    window._project_new()
+    window._project_open_dialog()
+    _task_wait(window)
+    reopened = window._project_document_create()
+    assert dict(reopened.sources[0].parser.config) == saved_config
+    assert "manual_thrust" in window.session.raw_dataset.channels
+    window.close()
+    app.processEvents()
+
+
+def test_new_project_defaults_none_and_restores_explicit_processor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    app = _application()
+    window = _window(TranslationService("en_US"), SettingsService(tmp_path / "s.ini"), tmp_path)
+    processor_id = "builtin.processor.vertical_linear_baseline"
+    assert window.session.processor_id is None
+    assert window.process_page.processor_id() is None
+    assert window.process_page.processor_combo.currentText() == "None"
+    assert window.process_page.polarity_combo.isEnabled()
+    source = tmp_path / "raw.txt"
+    source.write_text("0,0\n1,5\n2,0\n", encoding="utf-8")
+    window.import_page.set_source_path(source)
+    window.import_page.set_parser_id("builtin.parser.tr_f")
+    window._source_parse()
+    _task_wait(window)
+    window.process_page.set_processing_config(processor_id, {})
+    project_path = tmp_path / "explicit.json"
+    Project_Save(window._project_document_create(), project_path)
+    assert Project_Load(project_path).processors[0].id == processor_id
+    window._project_new()
+    assert window.process_page.processor_id() is None
+    monkeypatch.setattr(
+        QFileDialog, "getOpenFileName", lambda *_args, **_kwargs: (str(project_path), "")
+    )
+    window._project_open_dialog()
+    _task_wait(window)
+    assert window.process_page.processor_id() == processor_id
+    assert window.process_page.polarity_combo.isEnabled()
+    window._project_new()
+    assert window.process_page.processor_id() is None
+    window.close()
+    app.processEvents()
+
+
+def test_single_temperature_results_prioritize_metric_labels(tmp_path: Path) -> None:
+    app = _application()
+    window, _dataset = _window_with_bound_measurements(tmp_path)
+    window._regions_store({"pre": None, "active_test": [3.0, 7.0], "post": None})
+    page = window.temperature_page
+    page.calculate_button.click()
+    app.processEvents()
+    item = page.metrics_table.item(0, 0)
+    assert item.text() == window.translations.translate("workspace.statistic.test_start_value")
+    assert item.toolTip() == item.text()
+    value = page.metrics_table.item(0, 1)
+    assert value.toolTip() == value.text()
+    window.close()

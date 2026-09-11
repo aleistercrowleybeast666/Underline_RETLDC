@@ -9,7 +9,7 @@ set "DIST_ROOT=%CD%\dist"
 set "DIST_DIR=%DIST_ROOT%\%APP_NAME%"
 set "WORK_DIR=%CD%\build\%APP_NAME%"
 
-echo [1/6] Checking project environment...
+echo [1/8] Checking project environment...
 if not exist "%VENV_PYTHON%" (
     echo ERROR: .venv was not found.
     echo Create it and install the project first:
@@ -25,7 +25,23 @@ if not exist "%CD%\plugins" (
     exit /b 1
 )
 
-echo [2/6] Checking PyInstaller...
+echo [2/8] Running release preflight: pytest...
+"%VENV_PYTHON%" -m pytest
+if errorlevel 1 (
+    echo ERROR: pytest failed. Portable build was not started.
+    if not defined CI pause
+    exit /b 1
+)
+
+echo [3/8] Running release preflight: Ruff...
+"%VENV_PYTHON%" -m ruff check .
+if errorlevel 1 (
+    echo ERROR: Ruff failed. Portable build was not started.
+    if not defined CI pause
+    exit /b 1
+)
+
+echo [4/8] Checking PyInstaller...
 "%VENV_PYTHON%" -c "import PyInstaller" >nul 2>nul
 if errorlevel 1 (
     echo PyInstaller is not installed. Installing it into .venv...
@@ -37,7 +53,7 @@ if errorlevel 1 (
     )
 )
 
-echo [3/6] Building the one-folder application...
+echo [5/8] Building the one-folder application...
 "%VENV_PYTHON%" -m PyInstaller ^
     --noconfirm ^
     --clean ^
@@ -72,7 +88,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [4/6] Copying bundled plugins and user documentation...
+echo [6/8] Copying bundled plugins and user documentation...
 rem Qt6Core uses the Windows system ICU.  Some development shells put an unrelated
 rem Poppler ICU on PATH, which PyInstaller may collect under the same DLL name.
 if exist "%DIST_DIR%\_internal\icuuc.dll" del /Q "%DIST_DIR%\_internal\icuuc.dll"
@@ -123,7 +139,7 @@ if not exist "%DIST_DIR%\%APP_NAME%.exe" (
     exit /b 1
 )
 
-echo [5/6] Smoke-testing the packaged executable in light mode...
+echo [7/8] Smoke-testing the packaged executable in light mode...
 start "" /wait "%DIST_DIR%\%APP_NAME%.exe" --smoke-test --theme light
 if errorlevel 1 (
     echo ERROR: Packaged light-mode smoke test failed.
@@ -131,7 +147,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [6/6] Smoke-testing the packaged executable in dark mode...
+echo [8/8] Smoke-testing the packaged executable in dark mode...
 start "" /wait "%DIST_DIR%\%APP_NAME%.exe" --smoke-test --theme dark
 if errorlevel 1 (
     echo ERROR: Packaged dark-mode smoke test failed.

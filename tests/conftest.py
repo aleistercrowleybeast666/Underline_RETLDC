@@ -1,4 +1,5 @@
 import os
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -19,3 +20,22 @@ def bundled_registry() -> PluginRegistry:
     assert records
     assert all(record.result is PluginLoadResult.LOADED for record in records)
     return registry
+
+
+@pytest.fixture(autouse=True)
+def _gui_windows_release() -> Iterator[None]:
+    """Dispose test-owned windows so global theme changes do not revisit old pages."""
+    yield
+    from PySide6.QtCore import QEvent
+    from PySide6.QtWidgets import QApplication
+
+    from underline_retldc.gui.main_window import MainWindow
+
+    application = QApplication.instance()
+    if application is not None:
+        for widget in application.topLevelWidgets():
+            if isinstance(widget, MainWindow):
+                widget.close()
+                widget.deleteLater()
+        application.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        application.processEvents()
