@@ -12,9 +12,7 @@ Plugin API: 1
 The directory name is never versioned. Application versions, Git tags, and schema versions are
 independent identifiers.
 
-Version `0.0.4` is an early-development iteration. The `0.0.x` line is used while the platform and
-workflow are still being established; the first formal release may advance to `0.1.0` according
-to the release policy. Application version numbers never alter Project, Calibration, Analysis,
+Version `0.0.4` is an early-development iteration. 0.0.x 为早期开发阶段的正式发布版本，未来达到稳定里程碑后升级至 0.1.0 Application version numbers never alter Project, Calibration, Analysis,
 or Plugin API schema generations.
 
 Version `0.0.4` uses the five-workspace Project/Thrust/Chamber Pressure/Temperature/Data
