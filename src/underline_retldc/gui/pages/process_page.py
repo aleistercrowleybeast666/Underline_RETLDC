@@ -17,13 +17,15 @@ from PySide6.QtWidgets import (
 )
 
 from underline_retldc.app.settings import THEME_LIGHT, Theme_Normalize
+from underline_retldc.core.curve_display import DisplayCurve
 from underline_retldc.core.dataset import Dataset
-from underline_retldc.core.project_data import ChannelReference
+from underline_retldc.core.project_data import ChannelReference, ProjectData
 from underline_retldc.core.regions import BurnCandidate
 from underline_retldc.core.units import UnitDisplayMode, UnitDisplayMode_Normalize
 from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
 from underline_retldc.gui.schema_form import SchemaForm
 from underline_retldc.gui.test_interval_widget import TestIntervalEditor
+from underline_retldc.gui.theory_overlay_widget import TheoryOverlayWidget
 from underline_retldc.gui.widgets import StandardComboBox
 from underline_retldc.i18n.service import TranslationService
 
@@ -148,6 +150,9 @@ class ProcessPage(QWidget):
         self.reset_chart_button = QPushButton()
         self.reset_chart_button.clicked.connect(self.analysis_plot.reset_view)
         curves_layout.addWidget(self.reset_chart_button)
+        self.theory_overlay = TheoryOverlayWidget(translations, "force")
+        self.theory_overlay.view_changed.connect(self._plot_refresh)
+        curves_layout.addWidget(self.theory_overlay)
         controls_layout.addWidget(self.curves_group)
 
         self.baseline_status_group = QGroupBox()
@@ -216,6 +221,7 @@ class ProcessPage(QWidget):
         for key, checkbox in self.curve_checks.items():
             checkbox.setText(t(f"process.{key}"))
         self.reset_chart_button.setText(t("workspace.reset_chart"))
+        self.theory_overlay.retranslate()
         self.display_fit_button.setText(t("workspace.fit_view"))
         self.interval_editor.retranslate()
         self.processing_group.setTitle(t("process.thrust_correction"))
@@ -552,6 +558,15 @@ class ProcessPage(QWidget):
             ("uncorrected", uncorrected_dataset, uncorrected_channel, 0),
             ("corrected", self._processed_dataset, corrected_channel, 1),
         ]
+        target = None
+        display_unit = ""
+        for _key, dataset, channel_id, _style_index in reversed(curves):
+            if dataset is not None and channel_id in dataset.channels:
+                target = dataset.channel(channel_id)
+                display_unit = target.effective_display_unit(
+                    self._display_preferences, display_mode=self._display_mode
+                )
+                break
         for key, dataset, channel_id, style_index in curves:
             if (
                 not self.curve_checks[key].isChecked()
@@ -562,6 +577,7 @@ class ProcessPage(QWidget):
             item = self.analysis_plot.add_series(
                 dataset.project_time,
                 dataset.channel(channel_id).display_values(
+                    display_unit,
                     preferences=self._display_preferences,
                     display_mode=self._display_mode,
                 ),
@@ -569,25 +585,29 @@ class ProcessPage(QWidget):
                 style_index=style_index,
             )
             self._curve_items.append(item)
-            display_unit = dataset.channel(channel_id).effective_display_unit(
-                self._display_preferences,
-                display_mode=self._display_mode,
-            )
-            self.analysis_plot.set_axis(
-                x_label=self._translations.translate("common.time"),
-                y_label=self._translations.translate("primary_channels.thrust"),
-                y_unit=display_unit,
-            )
+        display_unit, theory_visible = self.theory_overlay.plot_onto(
+            self.analysis_plot, target, display_unit,
+            self._display_preferences, self._display_mode,
+        )
+        self.analysis_plot.set_axis(
+            x_label=self._translations.translate("common.time"),
+            y_label=self._translations.translate("primary_channels.thrust"),
+            y_unit=display_unit,
+        )
         missing_input = self._input_channel_id is None or uncorrected_dataset is None
         self.analysis_plot.set_empty_state(
             (
                 self._translations.translate("workspace.no_primary_thrust")
-                if missing_input
+                if missing_input and not theory_visible
                 else None
             ),
             button_text=self._translations.translate("workspace.select_thrust"),
             button_visible=True,
         )
+
+    def set_theory_curves(self, project: ProjectData, curves: tuple[DisplayCurve, ...]) -> None:
+        self.theory_overlay.set_curves(project, curves)
+        self._plot_refresh()
 
     def _regions_view_fit(self) -> None:
         if not self.burn_region.isVisible():

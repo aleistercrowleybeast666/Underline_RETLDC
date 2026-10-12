@@ -1,4 +1,4 @@
-Underline RETLDC 0.0.4 使用说明
+Underline RETLDC 0.1.0 使用说明
 =========================
 
 英文全称：Underline Rocket Engine Test Log Decode and Compute
@@ -418,7 +418,7 @@ python .\main.py
 
    dist\Underline_RETLDC\Underline_RETLDC.exe
 
-窗口标题为 `Underline RETLDC — 0.0.4`，顶部显示本地化版本标签；发布文件夹和 EXE 使用稳定名称 `Underline_RETLDC`。
+窗口标题为 `Underline RETLDC — 0.1.0`，顶部显示本地化版本标签；发布文件夹和 EXE 使用稳定名称 `Underline_RETLDC`。
 
 发布时必须复制或压缩整个 Underline_RETLDC 文件夹，不能只拿走 EXE。
 `_internal` 中是运行依赖，`plugins` 中是随软件发布的标准插件，二者都不能删除。
@@ -539,3 +539,27 @@ reopening never reapplies or dynamically links a changed global preset.
 Pressure means now use trapezoidal integration over actual timestamps divided by the selected
 interval duration, as thrust means already did. Peaks are unchanged. Analysis retains recorded
 samples and does not invent boundary samples; formal export endpoint interpolation is separate.
+
+0.1.0 理论曲线叠加（目标 2026 年 10 月 15 日发布，当前未发布）
+---------------------------------------------------------
+
+理论数据与实验数据使用相同解析器，不限制仿真软件；CSV、TSV、XLSX 仍使用现有映射。
+旧工程默认全部为实验数据。来源类型独立于 raw/calibrated/processed 通道阶段。
+
+1. 在工程页把“新增数据来源”选为“理论数据”，再点“添加来源”。列表清楚标记类型；
+   待解析文件可修改来源类型，已解析文件需移除后重新导入才能更改类型。
+2. 在现有推力、燃烧室压力、温度页面的“显示”组直接选择理论曲线可见性。
+   数据浏览器也可叠加相同物理量的理论时间曲线。理论图例带“理论”前缀并使用虚线。
+3. 选择要平移的曲线所属来源，输入正负“显示时间平移（秒）”。“首个有效时刻 → t = 0”
+   仅将该来源首个有效采样时刻归零并清零手动偏移，不自动寻找点火。
+4. “恢复原时序”恢复原本时间显示；“重置图表”可显示叠加后的完整时间范围。
+   来源的全部曲线共享对齐，其他来源不受影响。保存/重开工程保留类型、对齐和可见性。
+
+只有物理量和物理单位兼容的曲线能共用坐标轴；换算使用现有单位系统，包括 K/°C。
+单位冲突、未知物理量、raw/count/ADC 或无有效点的曲线显示不可用原因。
+保留原采样点、时间间距和 NaN 缺口，不插值、不重采样、不改原文件或原时间数组。
+添加/删除理论来源、隐藏/对齐曲线或校准理论来源不改变实验主通道、分段、自重补偿、
+极性、计算结果及导出选择。正式导出继续使用实验数据。无实验来源时可先查看理论曲线，
+但不能据此启用实验计算。没有残差、MAE/RMSE、自动拟合、大模型分析或发动机优化功能。
+
+详细说明：docs/Theoretical_Curves.md

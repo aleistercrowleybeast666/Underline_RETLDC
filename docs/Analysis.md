@@ -212,3 +212,12 @@ endpoint interpolation remains separately documented.
 Result tables keep a common row-height policy and expose complete labels/values in tooltips at
 compact widths. Temperature puts the metric first, appending channel identity only when multiple
 channels need disambiguation; a single temperature no longer repeats its filename in every row.
+
+## Theoretical display overlays
+
+0.1.0 adds theoretical visibility controls to the existing Display groups, alongside experimental
+curve controls. Theory is excluded from Primary bindings and test-interval reference selection.
+Source display alignment never moves experimental markers or affects motor-weight compensation,
+thrust polarity, statistics, impulse, Isp, or formal exports. Existing completed experiment results
+survive theoretical import/removal/calibration and display edits. Overlay sample gaps remain gaps.
+See Theoretical_Curves.md; no residual, fitting, optimization, or LLM calculation is introduced.

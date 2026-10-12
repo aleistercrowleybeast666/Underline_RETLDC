@@ -6,6 +6,7 @@ from underline_retldc.core.project_data import (
     ChannelReference,
     PrimaryChannelBindings,
     ProjectData,
+    SourceKind,
 )
 from underline_retldc.core.units import Quantity_Dimension
 
@@ -18,7 +19,8 @@ def PrimaryChannels_Candidates(
     return tuple(
         reference
         for reference in project_data.channel_references()
-        if project_data.channel(reference).role == "raw"
+        if project_data.sources[reference.source_id].source_kind == SourceKind.EXPERIMENTAL
+        and project_data.channel(reference).role == "raw"
         and project_data.channel(reference).semantic_role != "auxiliary"
         and Quantity_Dimension(project_data.channel(reference).quantity) == dimension
     )
@@ -73,7 +75,8 @@ def PrimaryChannels_ReferenceIsValid(
     except KeyError:
         return False
     return (
-        channel.role == "raw"
+        project_data.sources[reference.source_id].source_kind == SourceKind.EXPERIMENTAL
+        and channel.role == "raw"
         and channel.semantic_role != "auxiliary"
         and Quantity_Dimension(channel.quantity) == dimension
     )

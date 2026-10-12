@@ -247,9 +247,9 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 - Review every changed file for data loss, API compatibility, unsafe plugin behavior, unit errors,
   stale persistence fields, and GUI-main-thread blocking.
 
-## v0.0.4 release refinements
+## Current release refinements
 
-- Product display name is `Underline RETLDC`; the window title is `Underline RETLDC — 0.0.4`.
+- Product display name is `Underline RETLDC`; the window title is `Underline RETLDC — 0.1.0`.
   Keep repository/package/EXE names and persistent settings/plugin locations unchanged.
 - New Session/Project correction defaults to None; only explicit saved/user Processor selections
   enable correction. Missing legacy selection fields also mean None. Polarity stays independent.
@@ -257,3 +257,29 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   time, score/margin and mapping validation. Copy effective config; never dynamically link a
   Project to presets or run auto-detection during reopen.
 - Release packaging runs pytest and Ruff before PyInstaller and stops on either failure.
+
+## v0.1.0 theoretical display boundaries
+
+- Source origin is explicit `experimental` / `theoretical`; legacy Projects default to experimental.
+  Channel processing roles must not be reused as origin markers.
+- Both origins use existing Parsers and Mapping Presets without software-specific restrictions.
+- Theory overlays belong in existing time-curve workspaces. Validate Quantity and physical Unit;
+  preserve original samples and gaps. Do not add residual metrics, fitting, LLM analysis, or
+  motor optimization for this release.
+- Source display alignment and visibility are persisted view state, separate from Stream
+  scientific time offsets. Zeroing uses the Source's first valid measurement, not detected ignition.
+- Theory source import/removal/calibration and view edits must not invalidate experimental
+  primary bindings, segmentation, compensation, analysis, or export readiness.
+
+## Process-file lifecycle and storage
+
+- Reuse the repository environment. Do not create duplicate virtual environments or extra
+  worktrees merely for verification, and do not package before the release task requires it.
+- Keep task-owned scratch scripts, generated samples, temporary logs/caches and screenshots in
+  one small, explicitly identified temporary directory; reuse files instead of making generations.
+- Retain the minimum reproducible evidence: checked-in tests and a compact validation report;
+  keep only needed screenshots. Do not leave large backups, copied repositories, build outputs,
+  or intermediate archives after their purpose ends.
+- Before cleaning task-owned files, verify their resolved paths and ownership. Preserve user data,
+  existing deliverables, and unrelated tasks. This lifecycle rule grants no permission for permanent
+  deletion, filesystem access outside the authorized scope, or bypassing formal approvals.

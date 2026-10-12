@@ -155,6 +155,7 @@ class PrimaryChannelsWidget(QWidget):
         )
 
     def _selection_changed(self, _value: object = None) -> None:
+        if self._syncing:
+            return
         self._temperature_summary_update()
-        if not self._syncing:
-            self.bindings_changed.emit(self.bindings())
+        self.bindings_changed.emit(self.bindings())

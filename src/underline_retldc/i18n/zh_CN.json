@@ -445,5 +445,21 @@
   "diagnostic.tabular.auto_time_missing": "无法确定时间列，请在高级设置中选择时间来源。",
   "diagnostic.tabular.auto_time_ambiguous": "检测到多个可能的时间列，请在高级设置中确认。",
   "process.thrust_correction": "推力修正",
-  "tabular.preset_auto_applied": "已自动应用预设：{name}"
+  "tabular.preset_auto_applied": "已自动应用预设：{name}",
+  "source.new_kind": "新增数据来源",
+  "source.kind": "选中数据来源",
+  "source.experimental": "实验数据",
+  "source.theoretical": "理论数据",
+  "source.kind_hint": "解析前选择。已解析来源需移除后重新导入才能更改类型。",
+  "theory.curves": "理论曲线（虚线）",
+  "theory.alignment_hint": "显示时间对齐作用于该来源的全部曲线。",
+  "theory.align_source": "平移曲线所属来源",
+  "theory.shift": "显示时间平移（秒）",
+  "theory.zero_start": "首个有效时刻 → t = 0",
+  "theory.zero_hint": "仅按来源首个有效时刻归零，不检测点火；同时清零手动平移。",
+  "theory.reset_time": "恢复原时序",
+  "theory.legend": "理论：{curve}",
+  "theory.incompatible": "物理量或单位不兼容",
+  "theory.empty": "无有效采样点",
+  "theory.blocked": "{count} 条曲线不可用。时间对齐作用于该来源的全部曲线。"
 }

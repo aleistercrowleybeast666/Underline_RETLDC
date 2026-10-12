@@ -118,7 +118,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         smoke_exit_code = 0
         if (
-            __version__ != "0.0.4"
+            __version__ != "0.1.0"
             or PRODUCT_NAME != "Underline RETLDC"
             or window.windowTitle() != f"{PRODUCT_NAME} — {__version__}"
             or window.process_page.processor_id() is not None

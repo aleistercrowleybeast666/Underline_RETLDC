@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
 
 from underline_retldc.core.data_quality import DataQualityReport
 from underline_retldc.core.diagnostics import Diagnostic
+from underline_retldc.core.project_data import SourceKind
 from underline_retldc.core.workspace_capabilities import (
     WorkspaceChannelCapabilityRegistry,
 )
@@ -68,6 +69,16 @@ class ImportPage(QWidget):
         self.time_offset_edit.setRange(-1.0e12, 1.0e12)
         self.time_offset_edit.valueChanged.connect(self._time_offset_store)
         self._source_offsets: dict[str, float] = {}
+        self._source_kinds: dict[str, SourceKind] = {}
+        self._parsed_paths: set[str] = set()
+        self.new_kind_label = QLabel()
+        self.new_kind_combo = StandardComboBox()
+        self.source_kind_label = QLabel()
+        self.source_kind_combo = StandardComboBox()
+        for combo in (self.new_kind_combo, self.source_kind_combo):
+            for kind in SourceKind:
+                combo.addItem("", kind.value)
+        self.source_kind_combo.currentIndexChanged.connect(self._source_kind_store)
 
         self.parser_label = QLabel()
         self.parser_combo = StandardComboBox()
@@ -153,8 +164,10 @@ class ImportPage(QWidget):
         diagnostics_layout.addWidget(self.diagnostics_list)
 
         form = QFormLayout()
+        form.addRow(self.new_kind_label, self.new_kind_combo)
         form.addRow(self.source_label, source_row)
         form.addRow("", self.source_list)
+        form.addRow(self.source_kind_label, self.source_kind_combo)
         form.addRow(self.time_offset_label, offset_row)
         parser_form = QFormLayout()
         parser_form.addRow(self.parser_label, parser_row_widget)
@@ -179,6 +192,17 @@ class ImportPage(QWidget):
 
     def retranslate(self) -> None:
         t = self._translations.translate
+        self.new_kind_label.setText(t("source.new_kind"))
+        self.source_kind_label.setText(t("source.kind"))
+        for combo in (self.new_kind_combo, self.source_kind_combo):
+            for index, kind in enumerate(SourceKind):
+                combo.setItemText(index, t(f"source.{kind.value}"))
+        for index in range(self.source_list.count()):
+            item = self.source_list.item(index)
+            path_text = str(item.data(Qt.ItemDataRole.UserRole))
+            kind = self.source_kind(Path(path_text))
+            details = item.text().split("] ", 1)[-1]
+            item.setText(f"[{t(f'source.{kind.value}')}] {details}")
         self.source_label.setText(t("import.source_file"))
         self.browse_button.setText(t("import.add_sources"))
         self.remove_source_button.setText(t("import.remove_source"))
@@ -314,13 +338,24 @@ class ImportPage(QWidget):
         self.source_list.blockSignals(True)
         self.source_list.clear()
         self._source_offsets.clear()
+        previous_kinds = self._source_kinds
+        self._source_kinds = {}
+        retained_paths: set[str] = set()
         for path, offset in entries:
             resolved_text = str(Path(path))
-            item = QListWidgetItem(Path(path).name)
+            kind = previous_kinds.get(
+                resolved_text, SourceKind(self.new_kind_combo.currentData())
+            )
+            self._source_kinds[resolved_text] = kind
+            retained_paths.add(resolved_text)
+            item = QListWidgetItem(
+                f"[{self._translations.translate(f'source.{kind.value}')}] {Path(path).name}"
+            )
             item.setToolTip(resolved_text)
             item.setData(Qt.ItemDataRole.UserRole, resolved_text)
             self.source_list.addItem(item)
             self._source_offsets[resolved_text] = float(offset)
+        self._parsed_paths.intersection_update(retained_paths)
         self.source_list.blockSignals(False)
         if self.source_list.count():
             self.source_list.setCurrentRow(0)
@@ -361,7 +396,10 @@ class ImportPage(QWidget):
                 matches = item_path == Path(source)
             if not matches:
                 continue
+            self._parsed_paths.add(str(item_path))
+            kind = self.source_kind(item_path)
             item.setText(
+                f"[{self._translations.translate(f'source.{kind.value}')}] " +
                 self._translations.translate(
                     "import.source_details",
                     file=item_path.name,
@@ -371,7 +409,44 @@ class ImportPage(QWidget):
                     status=status,
                 )
             )
+            if index == self.source_list.currentRow():
+                self.source_kind_combo.setEnabled(False)
+                self.time_offset_edit.setEnabled(kind != SourceKind.THEORETICAL)
             return
+
+    def source_kind(self, source: Path) -> SourceKind:
+        return self._source_kinds.get(str(source), SourceKind.EXPERIMENTAL)
+
+    def set_source_kind(self, source: Path, kind: SourceKind | str) -> None:
+        path_text = str(source)
+        self._source_kinds[path_text] = SourceKind(kind)
+        for index in range(self.source_list.count()):
+            item = self.source_list.item(index)
+            if str(item.data(Qt.ItemDataRole.UserRole)) == path_text:
+                item.setText(
+                    f"[{self._translations.translate(f'source.{SourceKind(kind).value}')}] "
+                    f"{Path(source).name}"
+                )
+                if index == self.source_list.currentRow():
+                    self._source_kind_controls_refresh(path_text)
+                break
+
+    def _source_kind_store(self) -> None:
+        row = self.source_list.currentRow()
+        if row < 0:
+            return
+        path_text = str(self.source_list.item(row).data(Qt.ItemDataRole.UserRole))
+        if path_text not in self._parsed_paths:
+            self.set_source_kind(Path(path_text), self.source_kind_combo.currentData())
+
+    def _source_kind_controls_refresh(self, path_text: str) -> None:
+        kind = self.source_kind(Path(path_text))
+        self.source_kind_combo.blockSignals(True)
+        self.source_kind_combo.setCurrentIndex(self.source_kind_combo.findData(kind.value))
+        self.source_kind_combo.blockSignals(False)
+        self.source_kind_combo.setEnabled(path_text not in self._parsed_paths)
+        self.time_offset_edit.setEnabled(kind != SourceKind.THEORETICAL)
+        self.source_kind_combo.setToolTip(self._translations.translate("source.kind_hint"))
 
     def _source_selected(self, row: int) -> None:
         if row < 0 or row >= self.source_list.count():
@@ -381,6 +456,7 @@ class ImportPage(QWidget):
         self.time_offset_edit.blockSignals(True)
         self.time_offset_edit.setValue(self._source_offsets.get(path_text, 0.0))
         self.time_offset_edit.blockSignals(False)
+        self._source_kind_controls_refresh(path_text)
         self.source_selected.emit(path_text)
 
     def _time_offset_store(self, value: float) -> None:
@@ -397,6 +473,8 @@ class ImportPage(QWidget):
         item = self.source_list.takeItem(row)
         path_text = str(item.data(Qt.ItemDataRole.UserRole))
         self._source_offsets.pop(path_text, None)
+        self._source_kinds.pop(path_text, None)
+        self._parsed_paths.discard(path_text)
         self.source_removed.emit(path_text)
         if self.source_list.count() == 0:
             self.source_edit.clear()

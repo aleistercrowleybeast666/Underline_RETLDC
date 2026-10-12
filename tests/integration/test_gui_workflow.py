@@ -211,7 +211,7 @@ def test_gui_initializes_measurement_workspaces_and_switches_locale(
     settings = SettingsService(tmp_path / "settings.ini")
     translations = TranslationService("zh_CN")
     window = _window(translations, settings, tmp_path)
-    assert window.windowTitle() == "Underline RETLDC — 0.0.4"
+    assert window.windowTitle() == "Underline RETLDC — 0.1.0"
     assert window.header_title.text() == "Underline 火箭发动机试车数据解算"
     assert not hasattr(window, "header_project_title")
     assert window.stack.count() == 5
@@ -449,7 +449,7 @@ def test_runtime_theme_header_and_settings_stay_synchronized(tmp_path: Path) -> 
 
     assert window.language_label.text() == "语言"
     assert window.theme_label.text() == "主题"
-    assert window.version_label.text() == "版本 0.0.4"
+    assert window.version_label.text() == "版本 0.1.0"
     assert window.credit_label.text() == "辰星引力开发"
     assert window.version_label.font().weight() > window.credit_label.font().weight()
     assert window.language_label.font().weight() > window.language_combo.font().weight()
@@ -527,7 +527,7 @@ def test_runtime_theme_header_and_settings_stay_synchronized(tmp_path: Path) -> 
     app.processEvents()
     assert window.language_label.text() == "Language"
     assert window.theme_label.text() == "Theme"
-    assert window.version_label.text() == "Version 0.0.4"
+    assert window.version_label.text() == "Version 0.1.0"
     assert window.credit_label.text() == "By CXYL"
     assert window.header_title.text() == (
         "Underline Rocket Engine Test Log Decoder and Calculator"

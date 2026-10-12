@@ -5,17 +5,18 @@ Project: Underline_RETLDC
 Name: Underline
 Product: Underline RETLDC
 Full Name: Underline Rocket Engine Test Log Decode and Compute
-Current Version: 0.0.4
+Current Version: 0.1.0
 Plugin API: 1
 ```
 
 The directory name is never versioned. Application versions, Git tags, and schema versions are
 independent identifiers.
 
-Version `0.0.4` is an early-development iteration. 0.0.x 为早期开发阶段的正式发布版本，未来达到稳定里程碑后升级至 0.1.0 Application version numbers never alter Project, Calibration, Analysis,
+Version `0.1.0` is being prepared for the 2026-10-15 target release; it has not been published.
+Application version numbers never alter Project, Calibration, Analysis,
 or Plugin API schema generations.
 
-Version `0.0.4` uses the five-workspace Project/Thrust/Chamber Pressure/Temperature/Data
+Version `0.1.0` uses the five-workspace Project/Thrust/Chamber Pressure/Temperature/Data
 Explorer desktop workflow with stable workspace and export-analysis dependency IDs, centralized
 Quantity/Data Unit/Display Unit handling, multi-Source Stream offsets, Plugin API v1, Project schema
 `underline-retldc-project/2` (with `/1` migration) and backward-compatible nullable stages,
@@ -30,6 +31,15 @@ All official concrete plugins are recursively discovered from repository-root `p
 the same manifest/Loader/Registry path as user plugins; their existing `builtin.*` IDs remain
 unchanged. The desktop theme IDs are `light` and `dark` and are persisted as UI preference under
 QSettings `ui/theme` without changing any science or Project schema version.
+
+## 0.1.0 changes
+
+- Explicit experimental/theoretical Source origin; old Projects default to experimental.
+- Shared Parsers, same-page theory overlays, visibility, distinct colors and dashed legends.
+- Compatible Quantity/Unit conversions and source-only signed shifts, start zeroing and reset.
+- Persistent origin, alignment and visibility; experimental results survive theory operations.
+- Original sampling and NaN gaps preserved. No residuals, fitting or motor optimization.
+- Current visible window title is Underline RETLDC — 0.1.0. Plugin API and schemas stay unchanged.
 
 ## 0.0.4 changes
 
@@ -81,11 +91,11 @@ QSettings `ui/theme` without changing any science or Project schema version.
 - ZIP traversal, absolute/drive paths, links, encrypted entries, duplicate paths, special entries,
   the 4096-entry limit, and the 512 MiB expanded-size limit remain enforced.
 
-Application version `0.0.4` does not change Plugin API `1`, Project schema
+Application version `0.1.0` does not change Plugin API `1`, Project schema
 `underline-retldc-project/2`, Calibration schema `underline-retldc-calibration/1`, or Analysis JSON
 schema `underline-retldc-analysis/1`.
 
 When the Windows portable release is produced, the release archive name is
-`Underline_RETLDC_0_0_4_Windows_Portable.zip`; it contains the stable `Underline_RETLDC/` folder
+`Underline_RETLDC_0_1_0_Windows_Portable.zip`; it contains the stable `Underline_RETLDC/` folder
 and `Underline_RETLDC.exe`. The archive/version naming does not rename the repository directory or
 the executable inside the portable folder.

@@ -22,12 +22,13 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from underline_retldc.core.curve_display import DisplayCurve
 from underline_retldc.core.dataset import Dataset
 from underline_retldc.core.measurement_statistics import (
     MeasurementStatistics,
     MeasurementStatistics_Calculate,
 )
-from underline_retldc.core.project_data import ChannelReference
+from underline_retldc.core.project_data import ChannelReference, ProjectData
 from underline_retldc.core.regions import ActivityCandidate
 from underline_retldc.core.units import (
     Quantity_Dimension,
@@ -49,6 +50,7 @@ from underline_retldc.gui.pages.process_page import ProcessPage
 from underline_retldc.gui.pages.setup_page import SetupPage
 from underline_retldc.gui.primary_channels_widget import PrimaryChannelsWidget
 from underline_retldc.gui.test_interval_widget import TestIntervalEditor
+from underline_retldc.gui.theory_overlay_widget import TheoryOverlayWidget
 from underline_retldc.gui.widgets import StandardComboBox
 from underline_retldc.i18n.service import TranslationService
 
@@ -346,6 +348,12 @@ class MeasurementWorkspacePage(QWidget):
             view_layout.addWidget(self.fit_button)
             view_layout.addWidget(self.reset_chart_button)
             controls_layout.addWidget(self.view_group)
+        self.theory_overlay = TheoryOverlayWidget(translations, dimension)
+        self.theory_overlay.view_changed.connect(self._plot_refresh)
+        if self.display_group is not None:
+            self.display_group.layout().addWidget(self.theory_overlay)
+        else:
+            self.view_group.layout().addWidget(self.theory_overlay)
         controls_layout.addStretch(1)
 
         self.analysis_plot = AnalysisPlotWidget(
@@ -407,6 +415,7 @@ class MeasurementWorkspacePage(QWidget):
 
     def retranslate(self) -> None:
         translate = self._translations.translate
+        self.theory_overlay.retranslate()
         self.channel_group.setTitle(
             translate(
                 "workspace.measurement_channel"
@@ -868,7 +877,13 @@ class MeasurementWorkspacePage(QWidget):
                 name=item.label,
                 style_index=style_index,
             )
-        unit = next(iter(display_units)) if len(display_units) == 1 else ""
+        target = selected[0].dataset.channel(selected[0].channel_id) if selected else None
+        unit, theory_visible = self.theory_overlay.plot_onto(
+            self.analysis_plot, target, common_unit,
+            self._display_preferences, self._display_mode,
+        )
+        if selected:
+            unit = next(iter(display_units)) if len(display_units) == 1 else ""
         self.analysis_plot.set_axis(
             x_label=self._translations.translate("common.time"),
             y_label=self._axis_label(selected),
@@ -877,7 +892,7 @@ class MeasurementWorkspacePage(QWidget):
         self.analysis_plot.set_regions(self._regions)
         self._reference_plot_refresh()
         self.analysis_plot.set_empty_state(
-            None if selected else self._translations.translate(self._empty_key),
+            None if selected or theory_visible else self._translations.translate(self._empty_key),
             button_text=self._translations.translate("workspace.select_channel"),
             button_visible=self._selection_mode != "explorer",
         )
@@ -906,6 +921,10 @@ class MeasurementWorkspacePage(QWidget):
         self._segmentation_status_refresh()
         if self.calculate_button is not None:
             self.calculate_button.setEnabled(bool(selected))
+
+    def set_theory_curves(self, project: ProjectData, curves: tuple[DisplayCurve, ...]) -> None:
+        self.theory_overlay.set_curves(project, curves)
+        self._plot_refresh()
 
     def _active_interval(self) -> tuple[float, float] | None:
         active = self._regions.get("active_test", self._regions.get("burn"))

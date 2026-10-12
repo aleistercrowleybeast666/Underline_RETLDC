@@ -1,13 +1,64 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
+from enum import StrEnum
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 
+import numpy as np
+from numpy.typing import NDArray
+
 from underline_retldc.core.channel import Channel
 from underline_retldc.core.dataset import Dataset
+
+
+class SourceKind(StrEnum):
+    EXPERIMENTAL = "experimental"
+    THEORETICAL = "theoretical"
+
+
+@dataclass(frozen=True, slots=True)
+class SourceDisplayTransform:
+    """View-only source alignment; never enters Project Time or a scientific pipeline."""
+
+    shift_s: float = 0.0
+    zero_start: bool = False
+    hidden_curve_ids: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        try:
+            shift = float(self.shift_s)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError("Source display shift must be a finite number") from exc
+        if not math.isfinite(shift):
+            raise ValueError("Source display shift must be finite")
+        if not isinstance(self.zero_start, bool):
+            raise ValueError("Source display zero_start must be a boolean")
+        object.__setattr__(self, "shift_s", shift)
+        object.__setattr__(self, "hidden_curve_ids", tuple(self.hidden_curve_ids))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "shift_s": self.shift_s,
+            "zero_start": self.zero_start,
+            "hidden_curve_ids": list(self.hidden_curve_ids),
+        }
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> SourceDisplayTransform:
+        hidden = payload.get("hidden_curve_ids", [])
+        if not isinstance(hidden, (list, tuple)) or any(
+            not isinstance(item, str) for item in hidden
+        ):
+            raise ValueError("Source hidden_curve_ids must be an array of strings")
+        return cls(
+            shift_s=payload.get("shift_s", 0.0),
+            zero_start=payload.get("zero_start", False),
+            hidden_curve_ids=tuple(hidden),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,12 +69,15 @@ class Source:
     parser_id: str | None = None
     parser_version: str | None = None
     parser_config: Mapping[str, Any] = field(default_factory=dict)
+    source_kind: SourceKind = SourceKind.EXPERIMENTAL
+    display_transform: SourceDisplayTransform = field(default_factory=SourceDisplayTransform)
 
     def __post_init__(self) -> None:
         if not self.id.strip():
             raise ValueError("Source id must not be empty")
         object.__setattr__(self, "path", Path(self.path))
         object.__setattr__(self, "parser_config", MappingProxyType(dict(self.parser_config)))
+        object.__setattr__(self, "source_kind", SourceKind(self.source_kind))
 
 
 @dataclass(frozen=True, slots=True)
@@ -182,3 +236,40 @@ class ProjectData:
         self, primary_channels: PrimaryChannelBindings
     ) -> ProjectData:
         return ProjectData(self.sources, self.streams, primary_channels)
+
+    def with_source_display(
+        self, source_id: str, transform: SourceDisplayTransform
+    ) -> ProjectData:
+        source = self.sources[source_id]
+        if source.source_kind != SourceKind.THEORETICAL:
+            raise ValueError("Display alignment is available for theoretical Sources only")
+        sources = dict(self.sources)
+        sources[source_id] = replace(source, display_transform=transform)
+        return ProjectData(sources, self.streams, self.primary_channels)
+
+    def source_display_anchor(self, source_id: str) -> float | None:
+        """Earliest first finite measurement in each source Stream, in Project Time."""
+        starts: list[float] = []
+        for stream in self.streams.values():
+            if stream.source_id != source_id:
+                continue
+            time = stream.dataset.project_time
+            valid = np.zeros(time.shape, dtype=bool)
+            for channel in stream.dataset.channels.values():
+                valid |= np.isfinite(channel.values)
+            indices = np.flatnonzero(valid & np.isfinite(time))
+            if indices.size:
+                starts.append(float(time[indices[0]]))
+        return min(starts) if starts else None
+
+    def display_time(self, reference: ChannelReference) -> NDArray[np.float64]:
+        self.channel(reference)  # Validate the full Source/Stream/Channel identity.
+        time = self.streams[reference.stream_id].dataset.project_time
+        source = self.sources[reference.source_id]
+        if source.source_kind == SourceKind.THEORETICAL:
+            transform = source.display_transform
+            anchor = self.source_display_anchor(source.id) if transform.zero_start else 0.0
+            time = time - (anchor or 0.0) + transform.shift_s
+        result = np.array(time, dtype=np.float64, copy=True)
+        result.setflags(write=False)
+        return result

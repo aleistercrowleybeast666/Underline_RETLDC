@@ -13,7 +13,11 @@ from typing import Any
 from underline_retldc.app.version import __version__
 from underline_retldc.core.diagnostics import Diagnostic
 from underline_retldc.core.pipeline import ThrustPolarity_Normalize
-from underline_retldc.core.project_data import PrimaryChannelBindings
+from underline_retldc.core.project_data import (
+    PrimaryChannelBindings,
+    SourceDisplayTransform,
+    SourceKind,
+)
 
 PROJECT_SCHEMA = "underline-retldc-project/2"
 PROJECT_LEGACY_SCHEMAS = ("underline-retldc-project/1",)
@@ -50,6 +54,11 @@ class ProjectSourceState:
     path: str
     sha256: str | None = None
     parser: PluginReference | None = None
+    source_kind: SourceKind = SourceKind.EXPERIMENTAL
+    display_transform: SourceDisplayTransform = field(default_factory=SourceDisplayTransform)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "source_kind", SourceKind(self.source_kind))
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -57,6 +66,8 @@ class ProjectSourceState:
             "path": self.path,
             "sha256": self.sha256,
             "parser": self.parser.to_dict() if self.parser is not None else None,
+            "source_kind": self.source_kind.value,
+            "display_transform": self.display_transform.to_dict(),
         }
 
     @classmethod
@@ -64,9 +75,14 @@ class ProjectSourceState:
         parser_payload = payload.get("parser")
         if parser_payload is not None and not isinstance(parser_payload, Mapping):
             raise ValueError("Project Source parser must be an object or null")
+        display_payload = payload.get("display_transform", {})
+        if not isinstance(display_payload, Mapping):
+            raise ValueError("Project Source display_transform must be an object")
         return cls(
             source_id=str(payload["source_id"]),
             path=str(payload["path"]),
+            source_kind=SourceKind(payload.get("source_kind", "experimental")),
+            display_transform=SourceDisplayTransform.from_dict(display_payload),
             sha256=(
                 str(payload["sha256"])
                 if payload.get("sha256") not in (None, "")

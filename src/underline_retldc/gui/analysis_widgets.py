@@ -7,6 +7,7 @@ from typing import Any
 import numpy as np
 import pyqtgraph as pg
 from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QGroupBox,
@@ -221,17 +222,37 @@ class AnalysisPlotWidget(QWidget):
         *,
         name: str,
         style_index: int = 0,
+        theoretical: bool = False,
     ) -> Any:
-        finite = np.isfinite(time) & np.isfinite(values)
         style = self.SERIES_STYLES[style_index % len(self.SERIES_STYLES)]
+        used_colors = {series.opts["pen"].color().name() for series in self._series}
+        color = QColor(style.color)
+        if color.name() in used_colors:
+            available = next(
+                (candidate.color for candidate in self.SERIES_STYLES
+                 if candidate.color not in used_colors),
+                None,
+            )
+            if available is not None:
+                color = QColor(available)
+            else:
+                index = len(self._series)
+                while color.name() in used_colors:
+                    color = QColor.fromHsvF((index * 0.61803398875) % 1.0, 0.65, 0.95)
+                    index += 1
         item = self.plot_widget.plot(
-            time[finite],
-            values[finite],
-            pen=pg.mkPen(style.color, width=style.width),
+            time,
+            values,
+            connect="finite",
+            pen=pg.mkPen(
+                color,
+                width=style.width,
+                style=Qt.PenStyle.DashLine if theoretical else Qt.PenStyle.SolidLine,
+            ),
             name=name,
         )
         self._series.append(item)
-        self._series_data.append((np.asarray(time[finite]), np.asarray(values[finite])))
+        self._series_data.append((np.asarray(time), np.asarray(values)))
         return item
 
     def set_horizontal_reference(

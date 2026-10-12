@@ -215,7 +215,7 @@ preference and never Project science state or an input to formal exporters.
 The Header and Settings expose synchronized ComboBoxes with stable `light`/`dark` item data. The
 Header fields and their detached `headerComboPopup` views explicitly use deep-blue backgrounds,
 white text, and accent-blue selection in both themes rather than inheriting native popup colors.
-The window title is `Underline RETLDC — 0.0.4`; the product display name is separate from
+The window title is `Underline RETLDC — 0.1.0`; the product display name is separate from
 stable repository, package, executable, settings, and plugin-root identifiers. One continuous Header row renders
 stable `Underline` plus only the localized workspace suffix, then the localized version label, regular-weight
 credit, and bold language/theme labels with regular-weight ComboBox contents. It intentionally
@@ -396,3 +396,16 @@ plugins to an isolated application-plugin root and uses private settings and use
 inside OUTPUT_DIRECTORY. It writes a JSON report and screenshots for both languages, themes, and
 980x640 / 1280x820 layouts. Repeating the command in a fresh process with the same output directory
 also verifies the installed test plugin is discovered at startup. Normal startup is unchanged.
+
+## v0.1.0 source origin and view alignment
+
+Source owns experimental/theoretical origin and a separate immutable SourceDisplayTransform.
+Theoretical Sources use ordinary Parser/Calibration infrastructure but are excluded from Primary
+Channel candidates and segmentation references. Incremental theory import and theory removal
+preserve experimental derived state. A shared TheoryOverlayWidget inside existing Display panels
+consumes Core DisplayCurve records, Unit Registry conversions, and ProjectData display clocks.
+It emits view-state edits only; no theoretical arrays enter experiment formulas or formal exports.
+AnalysisPlotWidget retains NaN positions with finite adjacency and allocates distinct trace colors.
+The additive schema `/2` fields and exact behavior are documented in Theoretical_Curves.md.
+Primary binding controls suppress intermediate Qt selection signals during a rebuild so stale
+temperature references cannot escape when Sources change or a Project is reset/reopened.

@@ -150,7 +150,7 @@ def ReleaseSmoke_Run(window: MainWindow, output: Path) -> ReleaseSmokeResult:
             ),
         ):
             _wait(window, errors)
-            check("product_title", window.windowTitle() == "Underline RETLDC — 0.0.4")
+            check("product_title", window.windowTitle() == "Underline RETLDC — 0.1.0")
             check("default_correction_none", window.process_page.processor_id() is None)
             report["plugin_loaded_at_start"] = any(
                 record.plugin_id == "release.smoke.parser"

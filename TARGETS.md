@@ -16,7 +16,7 @@ Product:
 
 Current application version:
 
-`0.0.4` (`0.0.x` denotes early-development iterations)
+`0.1.0` (target release: 2026-10-15)
 
 Full meaning:
 
@@ -1194,10 +1194,10 @@ and every measurement workspace without requiring another Parse action.
 
 # 48. Responsive Header and Analysis Layout Target
 
-The Windows title is `Underline RETLDC — 0.0.4`; internal paths and identifiers stay unchanged. The Header
+The Windows title is `Underline RETLDC — 0.1.0`; internal paths and identifiers stay unchanged. The Header
 uses stable `Underline` followed by the localized `火箭发动机试车数据解算` or
 `Rocket Engine Test Log Decoder and Calculator`; it never displays the current Project filename.
-The same row then shows semi-bold localized `版本 0.0.4` / `Version 0.0.4`, regular-weight credit, and synchronized
+The same row then shows semi-bold localized `版本 0.1.0` / `Version 0.1.0`, regular-weight credit, and synchronized
 Header/Settings language and theme ComboBoxes. The shared-family typography uses a 20 px Header
 title, 13 px version/credit/Header controls, and 14 px navigation items; the full localized title
 remains available as the title tooltip when horizontal space is constrained. Shared analysis
@@ -1264,5 +1264,19 @@ Projects retain an independent effective mapping and never reapply presets on re
 Temperature's equivalent curve-display controls remain inside Display, preserving the common
 Primary Channels / Display / Test Interval order without a redundant group.
 The release candidate must pass pytest, Ruff, Light/Dark and zh_CN/en_US GUI checks at 980x640 and
-1280x820, and an extracted portable executable check away from the source checkout. Keep version
-0.0.4 and existing tags/Releases unchanged; prepare the candidate without publishing it.
+1280x820, and an extracted portable executable check away from the source checkout. The 0.0.4
+candidate is the historical baseline. For 0.1.0, preserve existing tags/Releases;
+prepare and validate source changes without publishing or early packaging.
+
+## 50. v0.1.0 Theoretical Curve Target
+
+Experimental and theoretical Sources share existing Parsers and mappings, with explicit origin
+and an experimental legacy default. Existing Thrust, Chamber Pressure, Temperature, and suitable
+Data Explorer time curves overlay compatible theory, expose visibility, use distinct colors and
+dashed theoretical legends, and validate Quantity plus Unit before converting display values.
+Source view transforms support signed shifts, first-valid-source-start zeroing, original-timing
+reset, and Project save/reopen. Preserve sampling and NaN gaps without interpolation or resampling.
+Theory never supplies experimental Primary Channels, segmentation, compensation, analysis, or
+formal export values. Theory source additions/removals and display changes preserve completed
+experiment results. Residuals, fitting, LLM analysis, and motor optimization are excluded.
+See docs/Theoretical_Curves.md for persistence and operator semantics.

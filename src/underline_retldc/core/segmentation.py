@@ -7,7 +7,7 @@ import numpy as np
 
 from underline_retldc.core.dataset import Dataset
 from underline_retldc.core.primary_channels import PrimaryChannels_AutoBind
-from underline_retldc.core.project_data import ChannelReference, ProjectData
+from underline_retldc.core.project_data import ChannelReference, ProjectData, SourceKind
 from underline_retldc.core.regions import ActivityCandidate, RegionSelection, TimeRegion
 from underline_retldc.core.units import Quantity_Dimension, Unit_IsPhysicalForQuantity
 
@@ -63,7 +63,8 @@ def Segmentation_SelectReferenceForRole(
     except KeyError:
         return None
     if (
-        Quantity_Dimension(channel.quantity) != dimension
+        project_data.sources[reference.source_id].source_kind != SourceKind.EXPERIMENTAL
+        or Quantity_Dimension(channel.quantity) != dimension
         or not _signal_is_valid(stream.dataset, channel.id)
     ):
         return None

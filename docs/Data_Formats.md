@@ -251,3 +251,14 @@ A successful match copies the preset's config into the effective source mapping,
 current file's detected reader settings. The GUI displays the applied preset name and final
 mapping. Manual edits take precedence. Project reopen uses only its saved effective mapping,
 never auto-detection or a live link to a global preset.
+
+## v0.1.0 Source origin and display state
+
+Each `sources` entry adds `source_kind` (`experimental` / `theoretical`) and `display_transform`
+with finite `shift_s`, boolean `zero_start`, and full-reference `hidden_curve_ids`. Missing fields
+default to Experimental, zero shift, ordinary timing, and visible curves. These additive fields
+keep Project schema `/2` and Plugin API v1 unchanged. Alignment never rewrites source files,
+Channel arrays, or Stream time offsets. Both origins use the same Parser references/mappings.
+Theoretical Source removal preserves experiment segmentation, derived state and export choices;
+ordinary parsed experimental Source removal retains its conservative invalidation rules.
+See Theoretical_Curves.md for the anchor algorithm, validation and operator workflow.
