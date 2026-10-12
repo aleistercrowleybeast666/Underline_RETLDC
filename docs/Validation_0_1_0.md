@@ -18,8 +18,11 @@ development validation, not a published release or portable package validation.
 - Initial full `.venv\Scripts\python.exe -m pytest -q`: **209 passed**, 131.25 seconds.
 - Delivery review full run (`pytest -vv`): **217 passed**, 194.40 seconds. After the last
   theory-only pressure-reference unit fix, its new test and two affected shared plot/segmentation
-  tests passed separately. The final collected suite now has 218 tests; it was not redundantly
-  rerun in full after that small display-only fix. See Delivery_Review_0_1_0.md for scope.
+  tests passed separately.
+- Final frozen-code verification on `282a2cbca8540f85c8cc24145d399d270f44bd29`:
+  **218 passed**, 203.40 seconds; **0 failures**. The complete suite includes the last pressure
+  display fix. Ruff also passed. Code remained unchanged throughout this run; the following
+  commit updates validation documents only. See Delivery_Review_0_1_0.md for scope.
 - `.venv\Scripts\python.exe -m ruff check .`: **All checks passed**.
 - `git diff --check`: passed.
 - GUI startup with the project venv: `-m underline_retldc --smoke-test`, English/Light and
