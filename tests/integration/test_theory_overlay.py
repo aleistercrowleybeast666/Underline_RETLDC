@@ -97,6 +97,17 @@ def _configure_mapping(window: MainWindow, path: Path, units: list[str]) -> None
     )
 
 
+def _configure_theory_mapping(window: MainWindow, path: Path) -> None:
+    config = _mapping(["kN", "Pa", "K", "m"])
+    # Distinct saved mappings for the same bytes must not reuse another Source's Dataset.
+    config["columns"][1]["column"] = 4
+    config["columns"][4]["column"] = 1
+    parser = window.registry.get("builtin.parser.generic_delimited")
+    window.import_page.tabular_mapping_editor.set_preview(
+        parser.preview(path, config), config=config,
+    )
+
+
 def test_theory_import_overlay_alignment_reopen_and_removal(
     window: MainWindow, tmp_path: Path, monkeypatch,
 ) -> None:
@@ -326,4 +337,267 @@ def test_theory_only_import_and_legacy_reopen(
     assert window.session.raw_dataset is None
     assert all(window.import_page.source_kind(path) == SourceKind.EXPERIMENTAL
                for path in window.import_page.source_paths())
+    assert "Traceback" not in capsys.readouterr().err
+
+
+def _metric_cells(window: MainWindow) -> tuple[tuple[str, ...], ...]:
+    return tuple(
+        tuple(table.item(row, column).text()
+              for row in range(table.rowCount()) for column in range(table.columnCount()))
+        for table in (
+            window.chamber_pressure_page.metrics_table, window.temperature_page.metrics_table,
+            window.data_explorer_page.metrics_table,
+        )
+    )
+
+
+def test_finished_worker_callback_is_delivered_before_another_task(window: MainWindow) -> None:
+    delivered: list[str] = []
+    first = window._task_start("first", lambda _context: "first", delivered.append)
+    assert first is not None
+    assert first.wait(2) == "first"
+    assert first.done
+    assert window._task_start("second", lambda _context: "second", delivered.append) is None
+    assert delivered == []
+    window._task_poll()
+    assert delivered == ["first"]
+    second = window._task_start("second", lambda _context: "second", delivered.append)
+    assert second is not None
+    _wait(window)
+    assert delivered == ["first", "second"]
+
+
+def test_theory_only_pressure_reference_uses_the_plot_unit(window: MainWindow) -> None:
+    source = Source("theory", Path("reference.csv"), source_kind=SourceKind.THEORETICAL)
+    dataset = Dataset([0, 1], {
+        "p": Channel("p", "pressure", "Pa", [100000, 200000], "raw", display_unit="kPa")
+    })
+    stream = Stream("theory_stream", source.id, dataset)
+    window.session.project_data = ProjectData({source.id: source}, {stream.id: stream})
+    window._measurement_workspaces_update()
+    page = window.chamber_pressure_page
+    assert page._pressure_display_unit() == "kPa"
+    assert page.reference_spin.value() == pytest.approx(101.325)
+    assert page.analysis_plot._horizontal_references["pressure_reference"]["value"] == (
+        pytest.approx(101.325)
+    )
+    second = Source("second", Path("second.csv"), source_kind=SourceKind.THEORETICAL)
+    second_stream = Stream("second_stream", second.id, Dataset([0, 1], {
+        "p": Channel("p", "pressure", "Pa", [100000, 200000], "raw", display_unit="MPa")
+    }))
+    window.session.project_data = ProjectData(
+        {source.id: source, second.id: second},
+        {stream.id: stream, second_stream.id: second_stream},
+    )
+    window._measurement_workspaces_update()
+    page.theory_overlay.curve_combo.setCurrentIndex(1)
+    assert page._pressure_display_unit() == "MPa"
+    assert page.reference_spin.value() == pytest.approx(.101325)
+    page.set_display_mode(UnitDisplayMode.SI_SCIENTIFIC)
+    assert page._pressure_display_unit() == "Pa"
+    assert page.reference_spin.value() == pytest.approx(101325)
+    np.testing.assert_array_equal(stream.dataset.channel("p").values, [100000, 200000])
+
+
+def test_real_parser_unit_conflict_is_blocked_without_changing_experiment(
+    window: MainWindow, tmp_path: Path,
+) -> None:
+    source = tmp_path / "conflict.csv"
+    _experimental_import(window, source)
+    bindings = window.session.project_data.primary_channels
+    raw_values = window.session.project_data.channel(bindings.thrust).values.copy()
+    page = window.import_page
+    page.new_kind_combo.setCurrentIndex(1)
+    page.add_source_paths([source])
+    _configure_mapping(window, source, ["Pa", "Pa", "K", "m"])
+    page.parse_button.click()
+    _wait(window)
+    assert not window._test_errors
+    assert window.session.project_data.primary_channels == bindings
+    overlay = window.process_page.theory_overlay
+    assert overlay.curve_list.count() == 1
+    assert not overlay.curve_list.item(0).flags() & Qt.ItemFlag.ItemIsEnabled
+    assert overlay.curve_list.item(0).checkState() == Qt.CheckState.Unchecked
+    assert len(window.process_page.analysis_plot._series_data) == 1
+    np.testing.assert_array_equal(window.session.project_data.channel(bindings.thrust).values,
+                                  raw_values)
+
+
+def test_secondary_experiment_selection_does_not_relabel_the_primary_dataset_on_reopen(
+    window: MainWindow, tmp_path: Path, monkeypatch,
+) -> None:
+    source_a = tmp_path / "primary.csv"
+    _experimental_import(window, source_a)
+    bindings = window.session.project_data.primary_channels
+    source_b = tmp_path / "secondary.csv"
+    source_b.write_text("time,f,p,t,web\n0,0,0,293.15,0\n1,1,1,294.15,1\n"
+                        "2,2,2,295.15,2\n3,1,1,296.15,3\n4,0,0,297.15,4\n",
+                        encoding="utf-8")
+    window.import_page.add_source_paths([source_b])
+    _configure_mapping(window, source_b, ["kN", "MPa", "K", "m"])
+    window.import_page.parse_button.click()
+    _wait(window)
+    window._primary_bindings_changed(bindings)
+    window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+    window.process_page.apply_button.click()
+    _wait(window)
+    window.analyze_page.calculate_button.click()
+    _wait(window)
+    expected = dict(window.session.analysis_result.metrics)
+    window.import_page.source_list.setCurrentRow(1)
+    assert window.session.source_path == source_b
+    project_path = tmp_path / "secondary.retldc.json"
+    window._project_save_path(project_path)
+    _wait(window)
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project_path), ""))
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    assert not window._test_errors
+    assert window.session.project_data.primary_channels == bindings
+    assert dict(window.session.analysis_result.metrics) == expected
+    np.testing.assert_array_equal(window.session.project_data.channel(bindings.thrust).values,
+                                  [0, 1000, 2000, 1000, 0])
+
+
+@pytest.mark.parametrize("theory_first", [False, True])
+@pytest.mark.parametrize("remove_kind", [SourceKind.THEORETICAL, SourceKind.EXPERIMENTAL])
+def test_one_physical_file_two_origins_with_real_compensation_and_reopen(
+    window: MainWindow, tmp_path: Path, monkeypatch, capsys,
+    theory_first: bool, remove_kind: SourceKind,
+) -> None:
+    source = tmp_path / "shared.csv"
+    source.write_text("time,f,p,t,web\n" + "".join(
+        f"{time},{5 + thrust},{thrust * 1000},{20 + time},{time}\n"
+        for time, thrust in enumerate([0, 0, 0, 0, 1000, 2000, 1000, 0, 0, 0, 0])
+    ), encoding="utf-8")
+    original_bytes = source.read_bytes()
+    page = window.import_page
+    if theory_first:
+        page.new_kind_combo.setCurrentIndex(1)
+        page.add_source_paths([source])
+        page.set_parser_id("builtin.parser.generic_delimited")
+        _configure_theory_mapping(window, source)
+        page.parse_button.click()
+        _wait(window)
+    page.new_kind_combo.setCurrentIndex(0)
+    page.add_source_paths([source])
+    page.set_parser_id("builtin.parser.generic_delimited")
+    _configure_mapping(window, source, ["N", "Pa", "°C", "mm"])
+    page.parse_button.click()
+    _wait(window)
+    assert not window._test_errors
+    window._burn_detect("chamber_pressure")
+    _wait(window)
+    window._regions_store({"pre": [0, 2], "active_test": [3, 7], "post": [8, 10]})
+    processor_id = "builtin.processor.vertical_linear_baseline"
+    window.process_page.processor_combo.setCurrentIndex(
+        window.process_page.processor_combo.findData(processor_id)
+    )
+    window.process_page.apply_button.click()
+    _wait(window)
+    window.analyze_page.calculate_button.click()
+    _wait(window)
+    window.chamber_pressure_page.calculate_button.click()
+    window.temperature_page.calculate_button.click()
+    assert not window._test_errors
+    bindings = window.session.project_data.primary_channels
+    processing = window.session.processing_result
+    assert processing is not None
+    assert window.session.processor_id == processor_id
+    assert processing.metadata["baseline_pre_source"] == "measured_fit"
+    analysis = window.session.analysis_result
+    cells = _metric_cells(window)
+    candidates = tuple(window.session.candidates)
+    regions = dict(window.session.regions)
+    processor_config = dict(window.session.processor_config)
+    expected_metrics = dict(analysis.metrics)
+    if not theory_first:
+        page.new_kind_combo.setCurrentIndex(1)
+        page.add_source_paths([source])
+        # Removing an unparsed same-file theory entry must retain the parsed experiment.
+        page.source_kind_combo.setCurrentIndex(0)
+        assert page.source_import_entries()[1][2] == SourceKind.THEORETICAL
+        page.remove_source_button.click()
+        assert window.session.analysis_result is analysis
+        page.add_source_paths([source])
+        _configure_theory_mapping(window, source)
+        page.parse_button.click()
+        page.parse_button.click()  # A pending task/undelivered callback cannot be replaced.
+        _wait(window)
+    assert page.source_list.count() == 2
+    page.add_source_paths([source])  # Same origin still deduplicates.
+    assert page.source_list.count() == 2
+    assert len(window.session.project_data.sources) == 2
+    theory = next(item for item in window.session.project_data.sources.values()
+                  if item.source_kind == SourceKind.THEORETICAL)
+    experimental = next(item for item in window.session.project_data.sources.values()
+                         if item.source_kind == SourceKind.EXPERIMENTAL)
+    assert theory.path == experimental.path
+    assert theory.id != experimental.id
+    assert window.session.project_data.primary_channels == bindings
+    overlay = window.process_page.theory_overlay
+    for index in range(12):
+        window.navigation.setCurrentRow(index % len(window.workspaces))
+        overlay.zero_button.click()
+        overlay.shift_spin.setValue(-.25 if index % 2 else .5)
+        overlay.curve_list.item(0).setCheckState(Qt.CheckState.Unchecked)
+        overlay.curve_list.item(0).setCheckState(Qt.CheckState.Checked)
+    assert window.session.processing_result is processing
+    assert window.session.analysis_result is analysis
+    assert window.session.processor_config == processor_config
+    assert window.session.regions == regions
+    assert tuple(window.session.candidates) == candidates
+    assert _metric_cells(window) == cells
+    assert window.process_page.input_combo.count() == 2
+    for index in range(page.source_list.count()):
+        page.source_list.setCurrentRow(index)
+        selected_id = page.selected_source_id()
+        assert window.session.project_data.streams[window.session.active_stream_id].source_id == (
+            selected_id
+        )
+    project_path = tmp_path / "shared.retldc.json"
+    window._project_save_path(project_path)
+    _wait(window)
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project_path), ""))
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    assert not window._test_errors
+    assert page.source_list.count() == 2
+    assert window.session.project_data.primary_channels == bindings
+    assert dict(window.session.analysis_result.metrics) == expected_metrics
+    assert window.session.processor_id == processor_id
+    source_states = window.session.project_data.sources
+    for source_id, expected_unit in [(theory.id, "kN"), (experimental.id, "N")]:
+        mapping = next(item for item in source_states[source_id].parser_config["columns"]
+                       if item.get("channel_id") == "f")
+        assert mapping["unit"] == expected_unit
+    theory_stream = next(stream for stream in window.session.project_data.streams.values()
+                         if stream.source_id == theory.id)
+    np.testing.assert_array_equal(theory_stream.dataset.channel("f").values, np.arange(11))
+    assert window.session.project_data.sources[theory.id].display_transform.shift_s == -.25
+    row = next(index for index in range(page.source_list.count())
+               if page.source_list.item(index).data(page.KIND_ROLE) == remove_kind.value)
+    page.source_list.setCurrentRow(row)
+    page.remove_source_button.click()
+    remaining = experimental if remove_kind == SourceKind.THEORETICAL else theory
+    assert tuple(window.session.project_data.sources) == (remaining.id,)
+    window._project_save_path(project_path)
+    _wait(window)
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    assert not window._test_errors
+    assert tuple(window.session.project_data.sources) == (remaining.id,)
+    assert page.source_list.count() == 1
+    if remove_kind == SourceKind.THEORETICAL:
+        assert dict(window.session.analysis_result.metrics) == expected_metrics
+        assert window.session.processor_id == processor_id
+        assert not window.process_page.theory_overlay._curves
+    else:
+        assert window.session.analysis_result is None
+        assert window.session.project_data.primary_channels.thrust is None
+        assert len(window.process_page.analysis_plot._series_data) == 1
+    assert source.read_bytes() == original_bytes
     assert "Traceback" not in capsys.readouterr().err

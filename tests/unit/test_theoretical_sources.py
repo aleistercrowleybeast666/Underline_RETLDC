@@ -90,6 +90,15 @@ def test_zero_start_uses_source_anchor_across_streams() -> None:
     )
 
 
+def test_zero_start_ignores_nan_first_time_without_removing_the_sample() -> None:
+    project = _project([np.nan, 8, 9, 15], [1, 2, np.nan, 3])
+    reference = ChannelReference("theory", "theory", "f")
+    aligned = project.with_source_display("theory", SourceDisplayTransform(0, True))
+    assert project.source_display_anchor("theory") == 8
+    np.testing.assert_array_equal(aligned.display_time(reference), [np.nan, 0, 1, 7])
+    np.testing.assert_array_equal(project.streams["theory"].dataset.time, [np.nan, 8, 9, 15])
+
+
 @pytest.mark.parametrize("time,values", [([], []), ([1, 2], [np.nan, np.nan])])
 def test_empty_source_has_no_alignment_anchor(time: list[float], values: list[float]) -> None:
     project = _project(time, values)

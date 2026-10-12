@@ -15,7 +15,11 @@ development validation, not a published release or portable package validation.
 
 ## Passed
 
-- Full `.venv\Scripts\python.exe -m pytest -q`: **209 passed**, 131.25 seconds.
+- Initial full `.venv\Scripts\python.exe -m pytest -q`: **209 passed**, 131.25 seconds.
+- Delivery review full run (`pytest -vv`): **217 passed**, 194.40 seconds. After the last
+  theory-only pressure-reference unit fix, its new test and two affected shared plot/segmentation
+  tests passed separately. The final collected suite now has 218 tests; it was not redundantly
+  rerun in full after that small display-only fix. See Delivery_Review_0_1_0.md for scope.
 - `.venv\Scripts\python.exe -m ruff check .`: **All checks passed**.
 - `git diff --check`: passed.
 - GUI startup with the project venv: `-m underline_retldc --smoke-test`, English/Light and
@@ -60,7 +64,7 @@ $env:TMP = $env:TEMP
 ```
 
 Checked-in regression tests and this report are the durable evidence. The small task scratch root
-retains only the final test summary, reproducible GUI inspection script, and two representative
+retains only compact test/GUI summaries, a real-pipeline GUI inspection script, and two representative
 PNG screenshots (Project source markers and Chamber Pressure overlay). Generated fixture trees,
 test caches and editing scripts are cleaned after validation. Existing user files and unrelated
 task directories are outside cleanup scope.
@@ -74,3 +78,9 @@ task directories are outside cleanup scope.
 
 No remaining blocker for the implemented source feature. Portable packaging and its separate
 verification remain necessary before an actual release.
+
+The post-review GUI script leaves automatic table preview enabled and runs real parser,
+compensation and analysis plugins. Only file-picker paths and error-dialog collection are
+scripted. It covers real import through theory removal/save/reopen and is distinct from startup
+smoke or the earlier generated-model layout screenshots. Detailed review and a short morning
+acceptance path are in Delivery_Review_0_1_0.md.

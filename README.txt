@@ -563,3 +563,7 @@ samples and does not invent boundary samples; formal export endpoint interpolati
 但不能据此启用实验计算。没有残差、MAE/RMSE、自动拟合、大模型分析或发动机优化功能。
 
 详细说明：docs/Theoretical_Curves.md
+
+同一个物理文件也可分别作为实验和理论来源导入，不需要复制文件：切换“新增数据来源”后
+再次选择该文件。两种来源保有独立 Source ID、映射和显示状态；只删除选中的那一种来源。
+同一文件、同一来源类型仍去重。复核说明及明早的最短验收步骤见 docs/Delivery_Review_0_1_0.md。

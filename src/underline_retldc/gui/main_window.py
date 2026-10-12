@@ -441,8 +441,8 @@ class MainWindow(QMainWindow):
         self.import_page.detect_requested.connect(self._parser_detect)
         self.import_page.parse_requested.connect(self._source_parse)
         self.import_page.parser_changed.connect(self._parser_selection_changed)
-        self.import_page.source_selected.connect(self._source_selection_changed)
-        self.import_page.source_removed.connect(self._source_removed)
+        self.import_page.source_entry_selected.connect(self._source_selection_changed)
+        self.import_page.source_entry_removed.connect(self._source_removed)
         tabular_editor = self.import_page.tabular_mapping_editor
         tabular_editor.preview_requested.connect(self._tabular_preview_refresh)
         tabular_editor.preset_selected.connect(self._tabular_preset_select)
@@ -812,6 +812,16 @@ class MainWindow(QMainWindow):
                 )
             self.session.reset_after_calibration()
             self.analyze_page.clear_result()
+            if bindings.thrust is not None:
+                source = self.session.project_data.sources[bindings.thrust.source_id]
+                for index in range(self.import_page.source_list.count()):
+                    item = self.import_page.source_list.item(index)
+                    if item.data(self.import_page.SOURCE_ID_ROLE) == source.id:
+                        self.import_page.source_list.setCurrentRow(index)
+                        self._source_selection_changed(
+                            str(source.path), source.id, source.source_kind.value
+                        )
+                        break
         elif workflow_input_changed:
             self.session.candidates.clear()
             self.session.regions.clear()
@@ -1021,8 +1031,9 @@ class MainWindow(QMainWindow):
         indeterminate: bool = False,
         failure: Callable[[BaseException], None] | None = None,
     ) -> TaskHandle[Any] | None:
-        if self._active_task is not None and not self._active_task.done:
-            QMessageBox.information(self, PRODUCT_NAME, self._active_task.name)
+        if self._active_task is not None:
+            # Even a finished worker still owns its pending GUI completion callback.
+            self.statusBar().showMessage(self._active_task.name)
             return None
         self._active_success = success
         self._active_failure = failure
@@ -1211,7 +1222,9 @@ class MainWindow(QMainWindow):
             if FACTORY_DEFAULTS.parser_auto_probe:
                 self._parser_detect()
 
-    def _source_selection_changed(self, path_text: str) -> None:
+    def _source_selection_changed(
+        self, path_text: str, source_id: str = "", source_kind: str | None = None
+    ) -> None:
         if not self.session.project_data.streams:
             return
         try:
@@ -1226,6 +1239,10 @@ class MainWindow(QMainWindow):
                     candidate.source_id
                 ].path.resolve()
                 == selected_path
+                and (not source_id or candidate.source_id == source_id)
+                and (source_kind is None or self.session.project_data.sources[
+                    candidate.source_id
+                ].source_kind == source_kind)
             ),
             None,
         )
@@ -1276,12 +1293,16 @@ class MainWindow(QMainWindow):
         except OSError:
             return left == right
 
-    def _source_removed(self, path_text: str) -> None:
+    def _source_removed(
+        self, path_text: str, source_id: str = "", source_kind: str | None = None
+    ) -> None:
         removed_path = Path(path_text)
         removed_source_ids = {
-            source_id
-            for source_id, source in self.session.project_data.sources.items()
+            candidate_id
+            for candidate_id, source in self.session.project_data.sources.items()
             if self._path_matches(source.path, removed_path)
+            and (not source_id or candidate_id == source_id)
+            and (source_kind is None or source.source_kind == source_kind)
         }
         if not removed_source_ids:
             if (
@@ -1812,10 +1833,14 @@ class MainWindow(QMainWindow):
         self._task_start(self.translations.translate("import.detect"), operation, success)
 
     def _source_parse(self) -> None:
+        if self._active_task is not None:
+            self._task_poll()
+            if self._active_task is not None:
+                return
         automatic_tabular_parse = self._tabular_auto_parse_pending
         self._tabular_auto_parse_pending = False
         try:
-            source_entries = self.import_page.source_entries()
+            source_entries = self.import_page.source_import_entries()
             if not source_entries:
                 raise ValueError("Select at least one source file")
             parser_config = self.import_page.parser_config()
@@ -1825,24 +1850,20 @@ class MainWindow(QMainWindow):
                 self.import_page.tabular_mapping_editor.set_auto_parse_failure(str(exc))
             self._error_show(exc)
             return
-        source_kinds = {
-            str(path.resolve()): self.import_page.source_kind(path)
-            for path, _offset in source_entries
-        }
-        existing_by_path = {
-            str(source.path.resolve()): source
+        existing_by_key = {
+            (str(source.path.resolve()), source.source_kind): source
             for source in self.session.project_data.sources.values()
         }
         pending_entries = tuple(
-            entry for entry in source_entries if str(entry[0].resolve()) not in existing_by_path
+            entry for entry in source_entries
+            if (str(entry[0].resolve()), entry[2]) not in existing_by_key
         )
-        theory_addition = bool(existing_by_path) and bool(pending_entries) and all(
-            source_kinds[str(path.resolve())] == SourceKind.THEORETICAL
-            for path, _offset in pending_entries
+        theory_addition = bool(existing_by_key) and bool(pending_entries) and all(
+            kind == SourceKind.THEORETICAL for _path, _offset, kind in pending_entries
         )
         if theory_addition:
             source_entries = pending_entries
-        elif not pending_entries and existing_by_path and self.import_page.source_kind(
+        elif not pending_entries and existing_by_key and self.import_page.source_kind(
             self.import_page.source_path()
         ) == SourceKind.THEORETICAL:
             self._measurement_workspaces_update()
@@ -1851,7 +1872,7 @@ class MainWindow(QMainWindow):
 
         def operation(context: TaskContext) -> list[tuple[Any, ...]]:
             results: list[tuple[Any, ...]] = []
-            for index, (source, time_offset_s) in enumerate(source_entries):
+            for index, (source, time_offset_s, kind) in enumerate(source_entries):
                 context.raise_if_cancelled()
                 recommendations = [
                     (parser, parser.probe(source, ProbeContext())) for parser in parsers
@@ -1860,7 +1881,7 @@ class MainWindow(QMainWindow):
                     key=lambda item: item[1].confidence, reverse=True
                 )
                 parser_id = selected_id
-                previous_source = existing_by_path.get(str(source.resolve()))
+                previous_source = existing_by_key.get((str(source.resolve()), kind))
                 if pending_entries and previous_source is not None:
                     parser_id = previous_source.parser_id
                 if parser_id is None:
@@ -1907,6 +1928,7 @@ class MainWindow(QMainWindow):
                         effective_config,
                         parse_result,
                         recommendations,
+                        kind,
                     )
                 )
                 context.report_progress(
@@ -1932,11 +1954,11 @@ class MainWindow(QMainWindow):
                 dict(self.session.stream_channel_calibrations) if theory_addition else {}
             )
             identity = self.registry.get(DEFAULT_CALIBRATION_ID)
-            reserved_source_ids = {source.id for source in existing_by_path.values()}
+            reserved_source_ids = {source.id for source in existing_by_key.values()}
             reserved_stream_ids = set(self.session.project_data.streams)
             for index, item in enumerate(payload):
-                path, offset, parser_id, effective_config, result, _recommendations = item
-                previous_source = existing_by_path.get(str(path.resolve()))
+                path, offset, parser_id, effective_config, result, _recommendations, kind = item
+                previous_source = existing_by_key.get((str(path.resolve()), kind))
                 previous_stream = next(
                     (stream for stream in self.session.project_data.streams.values()
                      if previous_source is not None and stream.source_id == previous_source.id),
@@ -1962,7 +1984,7 @@ class MainWindow(QMainWindow):
                     parser_id=parser_id,
                     parser_version=self.registry.get(parser_id).descriptor.version,
                     parser_config=effective_config,
-                    source_kind=source_kinds[str(path.resolve())],
+                    source_kind=kind,
                     display_transform=(
                         previous_source.display_transform if previous_source is not None
                         else SourceDisplayTransform()
@@ -2017,9 +2039,13 @@ class MainWindow(QMainWindow):
                         source.path, parser_id=str(source.parser_id),
                         stream_name=str(stream.name), channel_count=len(stream.dataset.channels),
                         status=self.translations.translate("import.status_parsed"),
+                        source_kind=source.source_kind, source_id=source.id,
                     )
                 self._measurement_workspaces_update()
-                self._source_selection_changed(str(self.import_page.source_path()))
+                self._source_selection_changed(
+                    str(self.import_page.source_path()), self.import_page.selected_source_id(),
+                    self.import_page.source_kind(self.import_page.source_path()).value,
+                )
                 return
             project_data = ProjectData(sources, streams)
             project_data = project_data.with_primary_channels(
@@ -2038,7 +2064,9 @@ class MainWindow(QMainWindow):
             )
             primary_source_path = sources[streams[primary_stream_id].source_id].path
             primary_index = next(
-                index for index, item in enumerate(payload) if item[0] == primary_source_path
+                index for index, item in enumerate(payload)
+                if item[0] == primary_source_path
+                and item[6] == sources[streams[primary_stream_id].source_id].source_kind
             )
             (
                 source,
@@ -2047,6 +2075,7 @@ class MainWindow(QMainWindow):
                 effective_config,
                 result,
                 recommendations,
+                _primary_kind,
             ) = payload[primary_index]
             primary_raw = project_data.streams[primary_stream_id].dataset
             primary_calibrated = calibrated_streams[primary_stream_id]
@@ -2097,6 +2126,7 @@ class MainWindow(QMainWindow):
                     stream_name=str(stream.name),
                     channel_count=len(stream.dataset.channels),
                     status=self.translations.translate("import.status_parsed"),
+                    source_kind=source_record.source_kind, source_id=source_record.id,
                 )
             self.import_page.set_recommendations(recommendations)
             self.import_page.set_parser_id(parser_id)
@@ -2766,18 +2796,18 @@ class MainWindow(QMainWindow):
                 for stream in self.session.project_data.streams.values()
             )
         else:
-            source_entries = self.import_page.source_entries()
+            source_entries = self.import_page.source_import_entries()
             source_states = tuple(
                 ProjectSourceState(
                     source_id=f"source_{index + 1}",
                     path=str(path.resolve()),
-                    source_kind=self.import_page.source_kind(path),
+                    source_kind=kind,
                     sha256=source_hash if index == 0 else None,
                     parser=self._plugin_reference_create(
                         parser_id, dict(parser_config)
                     ),
                 )
-                for index, (path, _offset) in enumerate(source_entries)
+                for index, (path, _offset, kind) in enumerate(source_entries)
             )
             stream_states = tuple(
                 ProjectStreamState(
@@ -2786,7 +2816,7 @@ class MainWindow(QMainWindow):
                     time_offset_s=offset,
                     name=path.name,
                 )
-                for index, (path, offset) in enumerate(source_entries)
+                for index, (path, offset, _kind) in enumerate(source_entries)
             )
         channel_states: dict[str, ChannelProjectState] = {}
         if self.session.project_data.streams:
@@ -3119,6 +3149,7 @@ class MainWindow(QMainWindow):
                         (
                             project_data.sources[stream.source_id].path,
                             stream.time_offset_s,
+                            project_data.sources[stream.source_id].source_kind,
                         )
                         for stream in project_data.streams.values()
                     ]
@@ -3136,10 +3167,11 @@ class MainWindow(QMainWindow):
                         stream_name=str(stream.name),
                         channel_count=len(stream.dataset.channels),
                         status=self.translations.translate("import.status_parsed"),
+                        source_kind=source_record.source_kind, source_id=source_record.id,
                     )
             elif document.sources:
                 pending_paths: dict[str, Path] = {}
-                pending_entries: list[tuple[Path, float]] = []
+                pending_entries: list[tuple[Path, float, SourceKind]] = []
                 for source_state in document.sources:
                     pending_path = Path(source_state.path)
                     if not pending_path.is_absolute():
@@ -3153,7 +3185,8 @@ class MainWindow(QMainWindow):
                         None,
                     )
                     pending_entries.append((
-                        pending_path, stream_state.time_offset_s if stream_state else 0.0
+                        pending_path, stream_state.time_offset_s if stream_state else 0.0,
+                        source_state.source_kind,
                     ))
                 self.import_page.set_source_entries(pending_entries)
                 for source_state in document.sources:
@@ -3495,19 +3528,30 @@ class MainWindow(QMainWindow):
         primary_source_id = "source_1"
         primary_stream_id = "stream_1"
         if document.sources and document.streams:
+            primary_reference = (
+                document.primary_channels.thrust or document.primary_channels.chamber_pressure
+                or next(iter(document.primary_channels.temperature_channels), None)
+            )
+            matching_sources = tuple(
+                item for item in document.sources
+                if Path(item.path) == Path(document.source_path or raw_source)
+            )
             primary_source_state = next(
-                (
-                    item
-                    for item in document.sources
-                    if Path(item.path) == Path(document.source_path or raw_source)
-                ),
-                document.sources[0],
+                (item for item in matching_sources
+                 if primary_reference is not None
+                 and item.source_id == primary_reference.source_id),
+                next(iter(matching_sources), document.sources[0]),
             )
             primary_stream_state = next(
                 (
                     item
                     for item in document.streams
                     if item.source_id == primary_source_state.source_id
+                    and (
+                        primary_reference is None
+                        or primary_reference.source_id != primary_source_state.source_id
+                        or item.stream_id == primary_reference.stream_id
+                    )
                 ),
                 None,
             )
@@ -3696,14 +3740,17 @@ class MainWindow(QMainWindow):
         for index, source_state in enumerate(source_states):
             configured_path = Path(source_state.path)
             is_primary = (
-                configured_path.resolve() == primary_resolved
-                or (
-                    document.source_path is not None
-                    and Path(document.source_path) == configured_path
-                    and index == 0
-                )
+                source_state.source_id == primary_dataset.source_id
+                if primary_dataset.source_id is not None
+                else index == 0
             )
-            actual_path = primary_resolved if is_primary else configured_path.resolve()
+            shares_primary_path = (
+                document.source_path is not None
+                and Path(document.source_path) == configured_path
+            )
+            actual_path = (
+                primary_resolved if is_primary or shares_primary_path else configured_path.resolve()
+            )
             if not actual_path.is_file():
                 raise FileNotFoundError(f"Project Source is missing: {actual_path}")
             if source_state.sha256 is not None:

@@ -262,3 +262,6 @@ Channel arrays, or Stream time offsets. Both origins use the same Parser referen
 Theoretical Source removal preserves experiment segmentation, derived state and export choices;
 ordinary parsed experimental Source removal retains its conservative invalidation rules.
 See Theoretical_Curves.md for the anchor algorithm, validation and operator workflow.
+Two Sources may reference the same physical file with different origins and saved mappings.
+Source ID, not path, determines selection/removal and Dataset reuse during reopen. Their hashes
+can match without making their interpretations, channels, or display state interchangeable.

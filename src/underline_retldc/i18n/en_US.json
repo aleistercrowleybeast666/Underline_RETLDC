@@ -448,6 +448,7 @@
   "tabular.preset_auto_applied": "Preset applied automatically: {name}",
   "source.new_kind": "New sources",
   "source.kind": "Selected source",
+  "source.duplicate_kind": "This file already exists with that source type.",
   "source.experimental": "Experimental",
   "source.theoretical": "Theoretical",
   "source.kind_hint": "Choose before parsing. To change a parsed source, remove it and import again.",

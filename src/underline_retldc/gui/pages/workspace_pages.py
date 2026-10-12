@@ -506,8 +506,12 @@ class MeasurementWorkspacePage(QWidget):
 
     def _pressure_display_unit(self) -> str:
         selected = self._selected_series()
-        if selected:
-            channel = selected[0].dataset.channel(selected[0].channel_id)
+        theory = self.theory_overlay._selected_curve()
+        channel = (
+            selected[0].dataset.channel(selected[0].channel_id) if selected
+            else theory.channel if theory is not None else None
+        )
+        if channel is not None:
             unit = channel.effective_display_unit(
                 self._display_preferences,
                 display_mode=self._display_mode,
@@ -890,6 +894,7 @@ class MeasurementWorkspacePage(QWidget):
             y_unit=unit,
         )
         self.analysis_plot.set_regions(self._regions)
+        self._reference_control_refresh()
         self._reference_plot_refresh()
         self.analysis_plot.set_empty_state(
             None if selected or theory_visible else self._translations.translate(self._empty_key),
@@ -924,6 +929,7 @@ class MeasurementWorkspacePage(QWidget):
 
     def set_theory_curves(self, project: ProjectData, curves: tuple[DisplayCurve, ...]) -> None:
         self.theory_overlay.set_curves(project, curves)
+        self._reference_control_refresh()
         self._plot_refresh()
 
     def _active_interval(self) -> tuple[float, float] | None:

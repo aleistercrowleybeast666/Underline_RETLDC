@@ -43,6 +43,13 @@ class ImportPage(QWidget):
     parser_changed = Signal(object)
     source_selected = Signal(str)
     source_removed = Signal(str)
+    source_entry_selected = Signal(str, str, str)
+    source_entry_removed = Signal(str, str, str)
+
+    KIND_ROLE = int(Qt.ItemDataRole.UserRole) + 1
+    SOURCE_ID_ROLE = int(Qt.ItemDataRole.UserRole) + 2
+    OFFSET_ROLE = int(Qt.ItemDataRole.UserRole) + 3
+    PARSED_ROLE = int(Qt.ItemDataRole.UserRole) + 4
 
     def __init__(
         self,
@@ -68,9 +75,6 @@ class ImportPage(QWidget):
         self.time_offset_edit.setDecimals(9)
         self.time_offset_edit.setRange(-1.0e12, 1.0e12)
         self.time_offset_edit.valueChanged.connect(self._time_offset_store)
-        self._source_offsets: dict[str, float] = {}
-        self._source_kinds: dict[str, SourceKind] = {}
-        self._parsed_paths: set[str] = set()
         self.new_kind_label = QLabel()
         self.new_kind_combo = StandardComboBox()
         self.source_kind_label = QLabel()
@@ -199,8 +203,7 @@ class ImportPage(QWidget):
                 combo.setItemText(index, t(f"source.{kind.value}"))
         for index in range(self.source_list.count()):
             item = self.source_list.item(index)
-            path_text = str(item.data(Qt.ItemDataRole.UserRole))
-            kind = self.source_kind(Path(path_text))
+            kind = SourceKind(item.data(self.KIND_ROLE))
             details = item.text().split("] ", 1)[-1]
             item.setText(f"[{t(f'source.{kind.value}')}] {details}")
         self.source_label.setText(t("import.source_file"))
@@ -316,46 +319,59 @@ class ImportPage(QWidget):
         return tuple(path for path, _offset in self.source_entries())
 
     def source_entries(self) -> tuple[tuple[Path, float], ...]:
+        return tuple((path, offset) for path, offset, _kind in self.source_import_entries())
+
+    def source_import_entries(self) -> tuple[tuple[Path, float, SourceKind], ...]:
         if self.source_list.count() == 0:
             value = self.source_edit.text().strip()
-            return ((Path(value), 0.0),) if value else ()
+            return (
+                ((Path(value), 0.0, SourceKind(self.new_kind_combo.currentData())),)
+                if value else ()
+            )
         return tuple(
             (
                 Path(self.source_list.item(index).data(Qt.ItemDataRole.UserRole)),
-                float(
-                    self._source_offsets.get(
-                        str(self.source_list.item(index).data(Qt.ItemDataRole.UserRole)),
-                        0.0,
-                    )
-                ),
+                float(self.source_list.item(index).data(self.OFFSET_ROLE) or 0.0),
+                SourceKind(self.source_list.item(index).data(self.KIND_ROLE)),
             )
             for index in range(self.source_list.count())
         )
 
     def set_source_entries(
-        self, entries: tuple[tuple[Path, float], ...] | list[tuple[Path, float]]
+        self,
+        entries: tuple[tuple[Path, float] | tuple[Path, float, SourceKind], ...]
+        | list[tuple[Path, float] | tuple[Path, float, SourceKind]],
     ) -> None:
+        previous = {
+            (str(Path(item.data(Qt.ItemDataRole.UserRole)).resolve()),
+             SourceKind(item.data(self.KIND_ROLE))): (
+                item.data(self.SOURCE_ID_ROLE), item.data(self.PARSED_ROLE)
+            )
+            for index in range(self.source_list.count())
+            if (item := self.source_list.item(index)) is not None
+        }
         self.source_list.blockSignals(True)
         self.source_list.clear()
-        self._source_offsets.clear()
-        previous_kinds = self._source_kinds
-        self._source_kinds = {}
-        retained_paths: set[str] = set()
-        for path, offset in entries:
+        for entry in entries:
+            path, offset = entry[:2]
             resolved_text = str(Path(path))
-            kind = previous_kinds.get(
-                resolved_text, SourceKind(self.new_kind_combo.currentData())
+            previous_kinds = tuple(kind for text, kind in previous if text == str(path.resolve()))
+            kind = (
+                SourceKind(entry[2]) if len(entry) == 3
+                else previous_kinds[0] if len(previous_kinds) == 1
+                else SourceKind(self.new_kind_combo.currentData())
             )
-            self._source_kinds[resolved_text] = kind
-            retained_paths.add(resolved_text)
             item = QListWidgetItem(
                 f"[{self._translations.translate(f'source.{kind.value}')}] {Path(path).name}"
             )
             item.setToolTip(resolved_text)
             item.setData(Qt.ItemDataRole.UserRole, resolved_text)
+            item.setData(self.KIND_ROLE, kind.value)
+            item.setData(self.OFFSET_ROLE, float(offset))
+            source_id, parsed = previous.get((str(path.resolve()), kind), (None, False))
+            item.setData(self.SOURCE_ID_ROLE, source_id)
+            item.setData(self.PARSED_ROLE, parsed)
             self.source_list.addItem(item)
-            self._source_offsets[resolved_text] = float(offset)
-        self._parsed_paths.intersection_update(retained_paths)
         self.source_list.blockSignals(False)
         if self.source_list.count():
             self.source_list.setCurrentRow(0)
@@ -365,13 +381,14 @@ class ImportPage(QWidget):
             self.time_offset_edit.setValue(0.0)
 
     def add_source_paths(self, sources: tuple[Path, ...] | list[Path]) -> None:
-        entries = list(self.source_entries())
-        existing = {str(path.resolve()) for path, _offset in entries}
+        entries = list(self.source_import_entries())
+        existing = {(str(path.resolve()), kind) for path, _offset, kind in entries}
+        kind = SourceKind(self.new_kind_combo.currentData())
         for source in sources:
             path = Path(source)
-            resolved = str(path.resolve())
+            resolved = (str(path.resolve()), kind)
             if resolved not in existing:
-                entries.append((path, 0.0))
+                entries.append((path, 0.0, kind))
                 existing.add(resolved)
         self.set_source_entries(entries)
         if self.source_list.count():
@@ -385,6 +402,8 @@ class ImportPage(QWidget):
         stream_name: str,
         channel_count: int,
         status: str,
+        source_kind: SourceKind | None = None,
+        source_id: str | None = None,
     ) -> None:
         target = Path(source).resolve()
         for index in range(self.source_list.count()):
@@ -394,10 +413,11 @@ class ImportPage(QWidget):
                 matches = item_path.resolve() == target
             except OSError:
                 matches = item_path == Path(source)
-            if not matches:
+            kind = SourceKind(item.data(self.KIND_ROLE))
+            if not matches or (source_kind is not None and kind != source_kind):
                 continue
-            self._parsed_paths.add(str(item_path))
-            kind = self.source_kind(item_path)
+            item.setData(self.PARSED_ROLE, True)
+            item.setData(self.SOURCE_ID_ROLE, source_id)
             item.setText(
                 f"[{self._translations.translate(f'source.{kind.value}')}] " +
                 self._translations.translate(
@@ -415,56 +435,93 @@ class ImportPage(QWidget):
             return
 
     def source_kind(self, source: Path) -> SourceKind:
-        return self._source_kinds.get(str(source), SourceKind.EXPERIMENTAL)
+        items = self._items_for_path(source)
+        current = self.source_list.currentItem()
+        item = current if current in items else next(iter(items), None)
+        return SourceKind(item.data(self.KIND_ROLE)) if item else SourceKind.EXPERIMENTAL
+
+    def selected_source_id(self) -> str:
+        item = self.source_list.currentItem()
+        return str(item.data(self.SOURCE_ID_ROLE) or "") if item else ""
+
+    def _items_for_path(self, source: Path) -> tuple[QListWidgetItem, ...]:
+        return tuple(
+            item for index in range(self.source_list.count())
+            if (item := self.source_list.item(index)) is not None
+            and Path(item.data(Qt.ItemDataRole.UserRole)).resolve() == source.resolve()
+        )
 
     def set_source_kind(self, source: Path, kind: SourceKind | str) -> None:
-        path_text = str(source)
-        self._source_kinds[path_text] = SourceKind(kind)
-        for index in range(self.source_list.count()):
-            item = self.source_list.item(index)
-            if str(item.data(Qt.ItemDataRole.UserRole)) == path_text:
-                item.setText(
-                    f"[{self._translations.translate(f'source.{SourceKind(kind).value}')}] "
-                    f"{Path(source).name}"
-                )
-                if index == self.source_list.currentRow():
-                    self._source_kind_controls_refresh(path_text)
-                break
+        items = self._items_for_path(source)
+        normalized = SourceKind(kind)
+        item = next(
+            (item for item in items if item.data(self.KIND_ROLE) == normalized.value),
+            next((item for item in items if not item.data(self.PARSED_ROLE)), None),
+        )
+        if item is None:
+            item = next(iter(items), None)
+        if item is not None:
+            item.setData(self.KIND_ROLE, normalized.value)
+            item.setText(
+                f"[{self._translations.translate(f'source.{normalized.value}')}] {source.name}"
+            )
+            if item is self.source_list.currentItem():
+                self._source_kind_controls_refresh()
 
     def _source_kind_store(self) -> None:
         row = self.source_list.currentRow()
         if row < 0:
             return
-        path_text = str(self.source_list.item(row).data(Qt.ItemDataRole.UserRole))
-        if path_text not in self._parsed_paths:
-            self.set_source_kind(Path(path_text), self.source_kind_combo.currentData())
+        item = self.source_list.item(row)
+        if not item.data(self.PARSED_ROLE):
+            kind = SourceKind(self.source_kind_combo.currentData())
+            path = Path(item.data(Qt.ItemDataRole.UserRole))
+            if any(
+                index != row
+                and other.data(self.KIND_ROLE) == kind.value
+                and Path(other.data(Qt.ItemDataRole.UserRole)).resolve() == path.resolve()
+                for index in range(self.source_list.count())
+                if (other := self.source_list.item(index)) is not None
+            ):
+                self._source_kind_controls_refresh()
+                self.source_kind_combo.setToolTip(
+                    self._translations.translate("source.duplicate_kind")
+                )
+                return
+            item.setData(self.KIND_ROLE, kind.value)
+            item.setText(f"[{self._translations.translate(f'source.{kind.value}')}] {path.name}")
+            self._source_kind_controls_refresh()
 
-    def _source_kind_controls_refresh(self, path_text: str) -> None:
-        kind = self.source_kind(Path(path_text))
+    def _source_kind_controls_refresh(self) -> None:
+        item = self.source_list.currentItem()
+        kind = SourceKind(item.data(self.KIND_ROLE)) if item else SourceKind.EXPERIMENTAL
         self.source_kind_combo.blockSignals(True)
         self.source_kind_combo.setCurrentIndex(self.source_kind_combo.findData(kind.value))
         self.source_kind_combo.blockSignals(False)
-        self.source_kind_combo.setEnabled(path_text not in self._parsed_paths)
+        self.source_kind_combo.setEnabled(item is not None and not item.data(self.PARSED_ROLE))
         self.time_offset_edit.setEnabled(kind != SourceKind.THEORETICAL)
         self.source_kind_combo.setToolTip(self._translations.translate("source.kind_hint"))
 
     def _source_selected(self, row: int) -> None:
         if row < 0 or row >= self.source_list.count():
             return
-        path_text = str(self.source_list.item(row).data(Qt.ItemDataRole.UserRole))
+        item = self.source_list.item(row)
+        path_text = str(item.data(Qt.ItemDataRole.UserRole))
         self.source_edit.setText(path_text)
         self.time_offset_edit.blockSignals(True)
-        self.time_offset_edit.setValue(self._source_offsets.get(path_text, 0.0))
+        self.time_offset_edit.setValue(float(item.data(self.OFFSET_ROLE) or 0.0))
         self.time_offset_edit.blockSignals(False)
-        self._source_kind_controls_refresh(path_text)
+        self._source_kind_controls_refresh()
         self.source_selected.emit(path_text)
+        self.source_entry_selected.emit(
+            path_text, str(item.data(self.SOURCE_ID_ROLE) or ""), str(item.data(self.KIND_ROLE))
+        )
 
     def _time_offset_store(self, value: float) -> None:
         row = self.source_list.currentRow()
         if row < 0:
             return
-        path_text = str(self.source_list.item(row).data(Qt.ItemDataRole.UserRole))
-        self._source_offsets[path_text] = float(value)
+        self.source_list.item(row).setData(self.OFFSET_ROLE, float(value))
 
     def _source_remove(self) -> None:
         row = self.source_list.currentRow()
@@ -472,10 +529,10 @@ class ImportPage(QWidget):
             return
         item = self.source_list.takeItem(row)
         path_text = str(item.data(Qt.ItemDataRole.UserRole))
-        self._source_offsets.pop(path_text, None)
-        self._source_kinds.pop(path_text, None)
-        self._parsed_paths.discard(path_text)
         self.source_removed.emit(path_text)
+        self.source_entry_removed.emit(
+            path_text, str(item.data(self.SOURCE_ID_ROLE) or ""), str(item.data(self.KIND_ROLE))
+        )
         if self.source_list.count() == 0:
             self.source_edit.clear()
             self.time_offset_edit.setValue(0.0)

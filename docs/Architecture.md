@@ -409,3 +409,9 @@ AnalysisPlotWidget retains NaN positions with finite adjacency and allocates dis
 The additive schema `/2` fields and exact behavior are documented in Theoretical_Curves.md.
 Primary binding controls suppress intermediate Qt selection signals during a rebuild so stale
 temperature references cannot escape when Sources change or a Project is reset/reopened.
+Import rows carry origin, Source ID and offset separately. Their deduplication key is path plus
+origin; stable-ID selection/removal and parser recomputation keep shared-file origins independent.
+Changing the primary thrust input also synchronizes the Project source/calibration view, so a
+previously selected theory entry cannot leave the calibration UI pointing at another active Stream.
+Task completion callbacks retain ownership until the GUI consumes them, including after a worker
+has finished. Rapid clicks cannot replace that pending callback with a new task.

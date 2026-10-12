@@ -6,6 +6,12 @@ adding a file on Project; ordinary existing and legacy sources default to Experi
 shows its origin. The selected pending source can be reclassified before parsing. A parsed origin
 is fixed; remove and import it again to change origin deliberately.
 
+The same physical file may be imported once as Experimental and once as Theoretical. Import
+deduplication uses path plus origin, not path alone. Each gets a distinct Source/Stream identity
+and its own saved mapping, calibration and display state. No file copy is needed. Selecting or
+removing one origin targets its stable Source ID and does not select/remove the other. Reopen
+parses each Source's own mapping even when its path and SHA-256 match another Source.
+
 ## Operator workflow
 
 1. Import experimental data normally and confirm its Primary Channels.
@@ -75,3 +81,7 @@ experiment. A failed import adds nothing. Formal exports continue to use experim
 inputs and do not include the display overlays or their alignment.
 
 Residual metrics, MAE/RMSE, fitting, LLM analysis, and motor optimization are outside this version.
+
+The four current time-curve pages are **Thrust / 推力** (`thrust_analysis`), **Chamber Pressure /
+燃烧室压力** (`chamber_pressure`), **Temperature / 温度** (`temperature`), and **Data Explorer /
+数据浏览器** (`data_explorer`). Project contains import/setup controls and no time-curve plot.

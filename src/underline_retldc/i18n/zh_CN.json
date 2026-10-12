@@ -448,6 +448,7 @@
   "tabular.preset_auto_applied": "已自动应用预设：{name}",
   "source.new_kind": "新增数据来源",
   "source.kind": "选中数据来源",
+  "source.duplicate_kind": "该文件在此来源类型下已存在。",
   "source.experimental": "实验数据",
   "source.theoretical": "理论数据",
   "source.kind_hint": "解析前选择。已解析来源需移除后重新导入才能更改类型。",
