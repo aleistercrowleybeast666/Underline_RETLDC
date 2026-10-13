@@ -233,3 +233,14 @@ Unknown/nonpositive mass disables Isp only; no Project motor mass is borrowed. D
 does not affect impulse, durations or recorded peak times. Source calculation results never
 replace primary experiment results, segmentation or export readiness. See Theoretical_Curves.md
 for operator controls, NaN behavior and independent saved completion/draft state.
+
+## Shared display alignment after acceptance feedback
+
+Experimental and theoretical signals are detected independently by the existing activity detector.
+Only experimental regions are shown and edited. Align Test Starts subtracts the theory's original
+scientific start from the current experimental start, including manual edits, and sets a shared
+absolute display offset across all time-curve pages. The synchronized slider and number field can
+fine-tune it; repeated alignment does not accumulate shifts. Neither alignment nor its internal
+theory detection replaces source calculation parameters/results or alters timestamp integration.
+The result selector now exposes only Experimental/Theoretical roles; existing primary experiment
+and independent theory calculators remain separate.

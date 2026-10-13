@@ -1274,8 +1274,9 @@ Experimental and theoretical Sources share existing Parsers and mappings, with e
 and an experimental legacy default. Existing Thrust, Chamber Pressure, Temperature, and suitable
 Data Explorer time curves overlay compatible theory, expose visibility, use distinct colors and
 dashed theoretical legends, and validate Quantity plus Unit before converting display values.
-Source view transforms support signed shifts, first-valid-source-start zeroing, original-timing
-reset, and Project save/reopen. Preserve sampling and NaN gaps without interpolation or resampling.
+Source view transforms support a shared signed shift with synchronized sliders/numeric inputs,
+current-experimental-start versus independently detected theory-start alignment, original-timing
+reset, and Project save/reopen. Theory detection is internal; only experimental regions are drawn. Preserve sampling and NaN gaps without interpolation or resampling.
 Theory never supplies experimental Primary Channels, segmentation, compensation, primary analysis,
 or formal export values. Both origins support independent source calculations in the existing
 result area: thrust impulse/Isp, pressure/temperature metrics and applicable Data Explorer

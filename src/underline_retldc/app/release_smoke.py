@@ -14,9 +14,16 @@ from typing import Any
 from xml.sax.saxutils import escape
 
 import numpy as np
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QPoint, Qt, QTimer
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QFileDialog, QInputDialog, QMessageBox
+from PySide6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QInputDialog,
+    QMessageBox,
+    QStyle,
+    QStyleOptionSlider,
+)
 
 from underline_retldc.core.project import Project_Load
 from underline_retldc.core.project_data import SourceKind
@@ -165,6 +172,11 @@ def _source_workflow_check(
     window.resize(1280, 820)
     for result_page in (window.analyze_page, *window._measurement_pages()):
         controls = result_page.source_analysis
+        check(f"source_two_roles_{controls.workspace_id}", (
+            controls.source_combo.count() == 2
+            and [controls.source_combo.itemText(i) for i in range(2)]
+            == ["Experimental", "Theoretical"]
+        ))
         controls.source_combo.setCurrentIndex(controls.source_combo.findData(theory.id))
         controls.parameter_button.setChecked(True)
         if controls.workspace_id == "data_explorer":
@@ -200,9 +212,32 @@ def _source_workflow_check(
         check(f"source_shift_{shift}", np.isclose(
             window.session.project_data.sources[theory.id].display_transform.shift_s, shift
         ))
-    overlay.zero_button.click()
-    check("source_zero_start",
-          window.session.project_data.sources[theory.id].display_transform.zero_start)
+    overlay.align_button.click()
+    _wait(window, errors)
+    detection = window.session.project_data.sources[theory.id].display_transform.detected_test
+    check("source_test_start_aligned", detection is not None and np.isclose(
+        overlay.shift_spin.value(), regions["active_test"][0] - detection.regions.burn.start,
+    ))
+    aligned = overlay.shift_spin.value()
+    overlay.align_button.click()
+    check("source_alignment_idempotent", overlay.shift_spin.value() == aligned)
+    window._workspace_select("thrust_analysis")
+    window.thrust_analysis_page.shell.controls_scroll.ensureWidgetVisible(overlay.shift_slider)
+    QApplication.processEvents()
+    slider = overlay.shift_slider
+    option = QStyleOptionSlider()
+    slider.initStyleOption(option)
+    handle = slider.style().subControlRect(
+        QStyle.ComplexControl.CC_Slider, option, QStyle.SubControl.SC_SliderHandle, slider,
+    )
+    QTest.mousePress(slider, Qt.MouseButton.LeftButton, pos=handle.center())
+    QTest.mouseMove(slider, handle.center() + QPoint(30, 0), delay=30)
+    QTest.mouseRelease(slider, Qt.MouseButton.LeftButton, pos=handle.center() + QPoint(30, 0))
+    check("source_slider_fine_tune", overlay.shift_spin.value() != aligned)
+    check("source_shared_shift", all(
+        page.theory_overlay.shift_spin.value() == overlay.shift_spin.value()
+        for page in window._measurement_pages()
+    ))
     overlay.shift_spin.setValue(.5)
     overlay.curve_list.item(0).setCheckState(Qt.CheckState.Unchecked)
     check("source_hidden", bool(
@@ -233,7 +268,7 @@ def _source_workflow_check(
         window._project_open_dialog()
         _wait(window, errors)
     check("source_reopen_display", (
-        window.session.project_data.sources[theory.id].display_transform.zero_start
+        window.session.project_data.sources[theory.id].display_transform.detected_test is not None
         and window.session.project_data.sources[theory.id].display_transform.shift_s == .5
     ))
     for workspace_id, expected in profiles.items():
@@ -339,12 +374,20 @@ def ReleaseSmoke_Run(window: MainWindow, output: Path) -> ReleaseSmokeResult:
             window.process_page.detect_button.click()
             _wait(window, errors)
             check("automatic_interval", bool(window.session.regions.get("active_test")))
+            report["automatic_interval"] = list(window.session.regions["active_test"])
+            start_edit = window.process_page.region_edits["active_test"][0]
+            start_edit.setValue(start_edit.value() + 0.1)
+            report["manual_interval"] = list(window.session.regions["active_test"])
+            check("manual_experiment_start", (
+                window.session.segmentation_manually_modified
+                and np.isclose(report["manual_interval"][0],
+                               report["automatic_interval"][0] + 0.1)
+            ))
             window.process_page.apply_button.click()
             _wait(window, errors)
             window.analyze_page.calculate_button.click()
             _wait(window, errors)
-            report["automatic_interval"] = window.session.regions["active_test"]
-            report["automatic_interval_metrics"] = dict(window.session.analysis_result.metrics)
+            report["accepted_interval_metrics"] = dict(window.session.analysis_result.metrics)
             window.chamber_pressure_page.calculate_button.click()
             window.temperature_page.calculate_button.click()
             _wait(window, errors)

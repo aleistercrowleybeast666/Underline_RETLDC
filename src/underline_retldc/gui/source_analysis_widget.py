@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 )
 
 from underline_retldc.app.source_analysis import SourceAnalysisState
-from underline_retldc.core.project_data import ChannelReference, ProjectData
+from underline_retldc.core.project_data import ChannelReference, ProjectData, SourceKind
 from underline_retldc.core.source_analysis import SourceAnalysisConfig, SourceAnalysisInput
 from underline_retldc.core.units import Quantity_Dimension
 from underline_retldc.gui.schema_form import SchemaForm
@@ -69,6 +69,10 @@ class SourceAnalysisWidget(QWidget):
         editor = QWidget()
         form = QFormLayout(editor)
         form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
+        self.record_label = QLabel()
+        self.record_combo = StandardComboBox()
+        self.record_combo.currentIndexChanged.connect(self._record_selected)
+        form.addRow(self.record_label, self.record_combo)
         self.channel_label = QLabel()
         self.channel_combo = StandardComboBox()
         self.channel_combo.currentIndexChanged.connect(self._changed)
@@ -151,6 +155,7 @@ class SourceAnalysisWidget(QWidget):
         t = self._translations.translate
         for label, key in (
             (self.source_label, "source_analysis.source"),
+            (self.record_label, "source_analysis.theory_file"),
             (self.channel_label, "source_analysis.channels"),
             (self.interval_label, "source_analysis.interval"),
             (self.start_label, "source_analysis.start"),
@@ -171,14 +176,8 @@ class SourceAnalysisWidget(QWidget):
             check.setText(t(f"source_analysis.{key}"))
         self.processor_form.retranslate()
         if self.source_combo.count():
-            self.source_combo.setItemText(0, t("source_analysis.project_result"))
-        for index in range(1, self.source_combo.count()):
-            source = self._project.sources.get(self.source_combo.itemData(index))
-            if source is not None:
-                self.source_combo.setItemText(
-                    index, f"[{t(f'source.{source.source_kind.value}')}] "
-                    f"{source.path.name} ({source.id})",
-                )
+            self.source_combo.setItemText(0, t("source_analysis.experimental"))
+            self.source_combo.setItemText(1, t("source_analysis.theoretical"))
         self._notice_refresh()
 
     def _expand(self, expanded: bool) -> None:
@@ -190,6 +189,13 @@ class SourceAnalysisWidget(QWidget):
 
     def source_id(self) -> str | None:
         return self.source_combo.currentData()
+
+    def _record_selected(self) -> None:
+        if self._syncing:
+            return
+        self.source_combo.setItemData(1, self.record_combo.currentData())
+        self._editor_populate()
+        self.view_changed.emit()
 
     def selected_state(self) -> SourceAnalysisState | None:
         source_id = self.source_id()
@@ -216,18 +222,22 @@ class SourceAnalysisWidget(QWidget):
             or Quantity_Dimension(item.dataset.channel(item.channel_id).quantity) == self.dimension
         )
         self._syncing = True
+        previous_theory = self.source_combo.itemData(1)
         self.source_combo.clear()
         self.source_combo.addItem(
-            self._translations.translate("source_analysis.project_result"), None
+            self._translations.translate("source_analysis.experimental"), None,
         )
+        self.record_combo.clear()
         source_ids = {item.reference.source_id for item in self._inputs}
         for source in project.sources.values():
-            if source.id in source_ids:
-                self.source_combo.addItem(
-                    f"[{self._translations.translate(f'source.{source.source_kind.value}')}] "
-                    f"{source.path.name} ({source.id})",
-                    source.id,
-                )
+            if source.id in source_ids and source.source_kind == SourceKind.THEORETICAL:
+                self.record_combo.addItem(source.path.name, source.id)
+        self.record_combo.setCurrentIndex(max(0, self.record_combo.findData(previous_theory)))
+        self.source_combo.addItem(
+            self._translations.translate("source_analysis.theoretical"),
+            self.record_combo.currentData(),
+        )
+        self.source_combo.model().item(1).setEnabled(self.record_combo.count() > 0)
         index = self.source_combo.findData(selected)
         self.source_combo.setCurrentIndex(max(0, index))
         self._syncing = False
@@ -392,6 +402,8 @@ class SourceAnalysisWidget(QWidget):
 
     def _visibility_refresh(self) -> None:
         active = self.source_id() is not None
+        self.record_label.setVisible(active and self.record_combo.count() > 1)
+        self.record_combo.setVisible(active and self.record_combo.count() > 1)
         self._expand(self.parameter_button.isChecked())
         for control in (self.start_spin, self.end_spin):
             control.setEnabled(self.interval_combo.currentData() == "custom")

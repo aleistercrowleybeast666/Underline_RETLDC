@@ -512,11 +512,14 @@ class AnalysisWorkspaceShell(QWidget):
         self.plot = plot
         self.results = results
         self._splitter_initialized = False
+        self._splitter_timer = QTimer(self)
+        self._splitter_timer.setSingleShot(True)
+        self._splitter_timer.timeout.connect(self._splitter_sizes_initialize)
 
     def showEvent(self, event: Any) -> None:
         super().showEvent(event)
         if not self._splitter_initialized:
-            QTimer.singleShot(0, self._splitter_sizes_initialize)
+            self._splitter_timer.start(0)
 
     def _splitter_sizes_initialize(self) -> None:
         handle_space = self.splitter.handleWidth() * 2

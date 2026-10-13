@@ -58,7 +58,9 @@ class TaskHandle(Generic[T]):
 
     @property
     def done(self) -> bool:
-        return self.state in {TaskResult.SUCCESS, TaskResult.FAILURE, TaskResult.CANCELLED}
+        # Terminal state is published inside run(); its stack can still own input objects.
+        # Consumers may release those objects only after the submitted callable has returned.
+        return self._future is not None and self._future.done()
 
     def wait(self, timeout: float | None = None) -> T:
         if self._future is None:

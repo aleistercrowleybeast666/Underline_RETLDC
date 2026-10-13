@@ -22,25 +22,32 @@ parses each Source's own mapping even when its path and SHA-256 match another So
    lists theoretical curves with visibility checkboxes. Each visible curve uses a distinct color,
    dashed line, and a localized Theoretical legend prefix. Multiple theoretical sources and
    temperature curves are supported without a separate comparison page.
-4. Select the curve whose source should be aligned. Enter a signed **Display time shift (s)**.
-   **First valid sample → t = 0** zeroes the source start and clears the manual shift. It does not
-   infer ignition. All curves from that Source move together; other Sources retain their timing.
-5. **Restore original timing** clears both zeroing and shift. Reset Chart fits the complete visible
+4. Enter a signed **Display time shift (s)** or drag its slider. Every theory Source and all
+   four workspaces share the same absolute offset; the controls synchronize in both directions.
+   **Align test starts** uses the current experimental ACTIVE_TEST start (including manual edits)
+   minus the independently detected theory start in original scientific Project Time. Repeated
+   clicks are idempotent. The slider can fine-tune the result immediately.
+5. **Restore original timing** clears the shared theory shift and any legacy start-zeroing. Reset Chart fits the complete visible
    record, including theoretical samples. Fit Interval continues to use the experimental test
    interval. Save Project and Open Project retain origin, visibility, and source alignment.
 
 With no experimental primary selected, a compatible theoretical curve can still be inspected.
-Select that Source in the result area's **Metric source** to calculate independently.
+Choose **Theoretical** in the result area to calculate independently.
 Automatic Project segmentation still requires an experimental reference.
 Data Explorer uses the selected experimental quantity as its overlay target; without one, its
-alignment selector chooses the theoretical quantity to inspect. Auxiliary/Other Channels with
+alignment-reference selector chooses the theoretical quantity to inspect. Auxiliary/Other Channels with
 known compatible physical quantities can be inspected and calculated through Data Explorer.
 
 ## Independent calculations in the same result area
 
 Thrust, Chamber Pressure, Temperature and Data Explorer keep their existing result table location.
-The calculation-source selector defaults to **Current primary experiment results**, retaining the
-original workflow. Choosing a specific Experimental or Theoretical Source shows its own results.
+The calculation-source selector contains exactly **Experimental** and **Theoretical**. Experimental
+uses the existing primary workflow, parameters and results; Theoretical uses its independently
+saved source parameters and results. It does not create duplicate experimental choices. If more
+than one theory file supplies this measurement, the folded parameters contain a Theory file
+selector. Channels, including multiple Temperature Channels, still come from the original mapping.
+Historical independent experimental profiles remain in saved Projects without replacing the
+primary workflow.
 Expand **Source calculation parameters** to select the engineering Channel (multiple Temperature
 Channels are supported), full record or custom scientific Project-time interval. Calculate uses
 the same thrust Analyzer or measurement-statistics implementation as the existing workflow.
@@ -69,7 +76,7 @@ No endpoint interpolation, sorting or resampling is added for calculation.
 
 Source results and configuration use full Source/Stream/Channel references, so two origins of one
 file or equal local Channel names do not share caches. Calculation uses `dataset.project_time`:
-manual display shifts, source-start zeroing, visibility and restoring timing affect only plots.
+manual display shifts, test-start alignment, visibility and restoring timing affect only plots.
 The source calculation interval is separate from the Project's experimental Test Segmentation;
 existing experimental markers remain unchanged. Saving stores independent parameters, calculator
 provenance, results and completion. Reopen verifies source hashes and recomputes completed profiles
@@ -87,17 +94,19 @@ equal local Channel IDs. Project schema `/2` adds source `display_transform`:
   "source_kind": "theoretical",
   "display_transform": {
     "shift_s": -0.25,
-    "zero_start": true,
+    "zero_start": false,
     "hidden_curve_ids": ["source_2/stream_2/f"]
   }
 }
 ```
 
 Old `/1` and `/2` Projects missing these fields read as Experimental with zero shift and ordinary
-timing. Unknown origin values, nonfinite/invalid shifts, malformed visibility lists, and invalid
-zeroing flags are rejected. Plugin API v1 and parser signatures are unchanged.
+timing. Unknown origin values, nonfinite/invalid shifts, malformed visibility lists, invalid
+zeroing flags and malformed detected intervals/references are rejected. Plugin API v1 and parser signatures are unchanged.
 
-The display clock is `t_display = t_project - anchor + shift_s`, where anchor is zero unless
+New UI operations use `t_display = t_project + shared_shift_s`; every theory Source stores the
+same absolute shift. Newly imported theory inherits it. The older display clock remains readable
+as `t_display = t_project - anchor + shift_s`, where anchor is zero unless
 `zero_start` is enabled. For each Stream, the first row with finite time and at least one finite
 measurement supplies its start; the earliest of these Stream starts is the Source anchor. Empty
 or all-invalid sources have no anchor and cannot be zeroed through the UI. Stream local time,
@@ -126,3 +135,27 @@ Residual metrics, MAE/RMSE, fitting, LLM analysis, and motor optimization are ou
 The four current time-curve pages are **Thrust / 推力** (`thrust_analysis`), **Chamber Pressure /
 燃烧室压力** (`chamber_pressure`), **Temperature / 温度** (`temperature`), and **Data Explorer /
 数据浏览器** (`data_explorer`). Project contains import/setup controls and no time-curve plot.
+
+## Test-start alignment reference
+
+The Thrust/Chamber Pressure detection action independently runs the existing activity detector
+on the experimental primary and eligible theory Channels of the same measurement family. Only
+the experimental PRE/ACTIVE_TEST/POST is drawn and remains manually editable. Theory detection
+is an internal advisory reference, stored as optional `display_transform.detected_test` with a
+full Channel reference, original-clock regions, detection role and own polarity. It does not
+replace calculation intervals, processing parameters, mass or completed metrics. Pressure uses
+positive polarity; theory thrust never borrows the experiment's installation sign.
+
+Align Test Starts uses the selected reference curve's Source detection. If it has not been
+detected, the shared TaskManager detects theory only (pressure then thrust); the current manual
+experimental interval is preserved. Ambiguous Channels require an explicit existing calculation
+Channel selection. Missing theory, missing experimental ACTIVE_TEST and no usable theory region
+show localized notices without changing the current shift. Calibration/reparse invalidates the
+affected cached reference. Changing the selected calculation Channel or its thrust polarity also
+invalidates that family's reference. Detection rejects nonphysical or conflicting units.
+Save/reopen preserves the reference and manual experimental regions
+after source hash verification. A hidden or incompatible family still shares the global offset.
+
+No theory intervals are drawn. Alignment is not fitting, resampling, a residual metric, a
+scientific Stream offset, or a mixed-source calculation. Legacy per-Source display transforms
+remain readable until a new slider/input/alignment/reset action applies the shared absolute shift.

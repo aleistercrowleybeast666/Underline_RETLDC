@@ -85,6 +85,7 @@ from underline_retldc.core.project_data import (
     Source,
     SourceDisplayTransform,
     SourceKind,
+    SourceTestDetection,
     Stream,
 )
 from underline_retldc.core.region_detection import Activity_DetectSegments
@@ -95,6 +96,7 @@ from underline_retldc.core.segmentation import (
     Segmentation_SelectReference,
     Segmentation_SelectReferenceForRole,
 )
+from underline_retldc.core.source_alignment import SourceAlignment_Detect, SourceAlignment_Offset
 from underline_retldc.core.source_analysis import SourceAnalysisConfig, SourceAnalysisInput
 from underline_retldc.core.tabular import (
     Tabular_MappingSuggest,
@@ -211,7 +213,14 @@ class MainWindow(QMainWindow):
         self._active_success: Callable[[Any], None] | None = None
         self._active_failure: Callable[[BaseException], None] | None = None
         self._active_task_indeterminate = False
+        self._closing = False
         self._tabular_auto_parse_pending = False
+        self._auto_preview_timer = QTimer(self)
+        self._auto_preview_timer.setSingleShot(True)
+        self._auto_preview_timer.timeout.connect(self._tabular_auto_preview)
+        self._auto_parse_timer = QTimer(self)
+        self._auto_parse_timer.setSingleShot(True)
+        self._auto_parse_timer.timeout.connect(self._source_parse)
         self._source_preview_timer = QTimer(self)
         self._source_preview_timer.setSingleShot(True)
         self._source_preview_timer.timeout.connect(
@@ -451,6 +460,7 @@ class MainWindow(QMainWindow):
             page.source_analysis.config_changed.connect(self._source_analysis_config_changed)
         for page in (self.process_page, *self._measurement_pages()):
             page.theory_overlay.display_changed.connect(self._source_display_changed)
+            page.theory_overlay.align_requested.connect(self._theory_align)
         self.import_page.browse_requested.connect(self._source_browse)
         self.import_page.detect_requested.connect(self._parser_detect)
         self.import_page.parse_requested.connect(self._source_parse)
@@ -957,12 +967,30 @@ class MainWindow(QMainWindow):
         previous = self.session.source_analyses.get(config.key)
         if previous is None or previous.config != config:
             self.session.source_analyses[config.key] = SourceAnalysisState(config)
+        source = self.session.project_data.sources.get(config.source_id)
+        detection = source.display_transform.detected_test if source else None
+        role = {"thrust_analysis": "thrust", "chamber_pressure": "chamber_pressure"}.get(
+            config.workspace_id,
+        )
+        if (source and detection and detection.role == role
+                and (config.channels != (detection.reference,)
+                     or (role == "thrust" and config.polarity != detection.polarity))):
+            self.session.project_data = self.session.project_data.with_source_display(
+                source.id, replace(source.display_transform, detected_test=None),
+            )
         for page in (self.analyze_page, *self._measurement_pages()):
             page._results_refresh()
 
     def _source_analysis_invalidate(
         self, source_ids: set[str] | None = None, *, processed_only: bool = False,
     ) -> None:
+        if not processed_only:
+            for source in tuple(self.session.project_data.sources.values()):
+                if (source.source_kind == SourceKind.THEORETICAL
+                        and (source_ids is None or source.id in source_ids)):
+                    self.session.project_data = self.session.project_data.with_source_display(
+                        source.id, replace(source.display_transform, detected_test=None),
+                    )
         for key, state in tuple(self.session.source_analyses.items()):
             if source_ids is not None and state.config.source_id not in source_ids:
                 continue
@@ -1033,10 +1061,104 @@ class MainWindow(QMainWindow):
     def _source_display_changed(self, source_id: str, transform: object) -> None:
         if not isinstance(transform, SourceDisplayTransform):
             return
+        previous = self.session.project_data.sources[source_id].display_transform
         self.session.project_data = self.session.project_data.with_source_display(
             source_id, transform
         )
+        if previous.hidden_curve_ids == transform.hidden_curve_ids:
+            self.session.project_data = self.session.project_data.with_theory_shift(
+                transform.shift_s
+            )
+            self._theory_notice("theory.shifted", offset=f"{transform.shift_s:.9g}")
         self._measurement_workspaces_update()
+
+    def _theory_detection_operation(
+        self, role: str | None = None, source_id: str | None = None,
+    ) -> Callable[[TaskContext], dict[str, SourceTestDetection | None]]:
+        inputs = self._source_analysis_inputs()
+        grouped = {
+            source.id: tuple(item for item in inputs if item.reference.source_id == source.id)
+            for source in self.session.project_data.sources.values()
+            if source.source_kind == SourceKind.THEORETICAL
+            and (source_id is None or source.id == source_id)
+        }
+        states = dict(self.session.source_analyses)
+
+        def operation(context: TaskContext) -> dict[str, SourceTestDetection | None]:
+            result: dict[str, SourceTestDetection | None] = {}
+            for key, values in grouped.items():
+                context.raise_if_cancelled()
+                thrust = states.get(f"{key}/thrust_analysis")
+                try:
+                    result[key] = None
+                    for family in ((role,) if role else ("chamber_pressure", "thrust")):
+                        workspace = (
+                            "chamber_pressure"
+                            if family == "chamber_pressure" else "thrust_analysis"
+                        )
+                        state = states.get(f"{key}/{workspace}")
+                        preferred = (
+                            state.config.channels[0] if state and state.config.channels else None
+                        )
+                        result[key] = SourceAlignment_Detect(
+                            values, role=family, preferred=preferred,
+                            polarity=thrust.config.polarity if thrust else 1,
+                        )
+                        if result[key] is not None:
+                            break
+                except ValueError:
+                    # An unusable theory signal must not abort experimental detection.
+                    result[key] = None
+            return result
+
+        return operation
+
+    def _theory_detection_store(self, detections: Mapping[str, SourceTestDetection | None]) -> None:
+        for source_id, detection in detections.items():
+            source = self.session.project_data.sources.get(source_id)
+            if source is not None:
+                self.session.project_data = self.session.project_data.with_source_display(
+                    source_id, replace(source.display_transform, detected_test=detection),
+                )
+
+    def _theory_notice(self, key: str, **values: object) -> None:
+        for page in (self.process_page, *self._measurement_pages()):
+            page.theory_overlay.set_alignment_notice(key, **values)
+
+    def _theory_align(self, source_id: str) -> None:
+        source = self.session.project_data.sources.get(source_id)
+        if source is None or source.source_kind != SourceKind.THEORETICAL:
+            self._theory_notice("theory.no_source")
+            return
+        interval = self.session.regions.get("active_test", self.session.regions.get("burn"))
+        if not interval:
+            self._theory_notice("theory.no_experiment_interval")
+            return
+        if self._active_task is not None:
+            self._theory_notice("theory.detecting")
+            return
+
+        def apply(detections: Mapping[str, SourceTestDetection | None]) -> None:
+            self._theory_detection_store(detections)
+            detection = detections.get(source_id)
+            active = self.session.regions.get("active_test", self.session.regions.get("burn"))
+            if detection is None:
+                self._theory_notice("theory.no_interval")
+            elif active and source_id in self.session.project_data.sources:
+                offset = SourceAlignment_Offset(active[0], detection)
+                self.session.project_data = self.session.project_data.with_theory_shift(offset)
+                self._measurement_workspaces_update()
+                self._theory_notice("theory.aligned", offset=f"{offset:.9g}")
+
+        detection = source.display_transform.detected_test
+        thrust = self.session.source_analyses.get(f"{source_id}/thrust_analysis")
+        polarity = thrust.config.polarity if thrust else 1
+        if detection and (detection.role != "thrust" or detection.polarity == polarity):
+            apply({source_id: detection})
+        else:
+            self._theory_notice("theory.detecting")
+            self._task_start(self.translations.translate("theory.detecting"),
+                             self._theory_detection_operation(source_id=source_id), apply)
 
     @staticmethod
     def _channel_reference_key(
@@ -1158,6 +1280,8 @@ class MainWindow(QMainWindow):
         indeterminate: bool = False,
         failure: Callable[[BaseException], None] | None = None,
     ) -> TaskHandle[Any] | None:
+        if self._closing:
+            return None
         if self._active_task is not None:
             # Even a finished worker still owns its pending GUI completion callback.
             self.statusBar().showMessage(self._active_task.name)
@@ -1178,6 +1302,10 @@ class MainWindow(QMainWindow):
         return self._active_task
 
     def _task_poll(self) -> None:
+        if self._closing:
+            if all(task.done for task in self.task_manager.tasks):
+                self.close()
+            return
         handle = self._active_task
         if handle is None:
             self.task_timer.stop()
@@ -1597,7 +1725,7 @@ class MainWindow(QMainWindow):
             )
             if isinstance(plugin, TabularParserPlugin):
                 self._tabular_presets_refresh()
-                QTimer.singleShot(0, self._tabular_auto_preview)
+                self._auto_preview_timer.start(0)
         except (KeyError, TypeError, ValueError) as exc:
             self._error_show(exc)
 
@@ -1724,7 +1852,7 @@ class MainWindow(QMainWindow):
             editor.set_advanced_expanded(not detection.can_parse)
             if detection.can_parse:
                 self._tabular_auto_parse_pending = True
-                QTimer.singleShot(0, self._source_parse)
+                self._auto_parse_timer.start(0)
 
         self._task_start(
             self.translations.translate("tabular.auto_detecting"),
@@ -1955,7 +2083,7 @@ class MainWindow(QMainWindow):
                 unchanged = self.import_page.selected_parser_id() == detected_id
                 self.import_page.set_parser_id(detected_id)
                 if unchanged and isinstance(decision.parser, TabularParserPlugin):
-                    QTimer.singleShot(0, self._tabular_auto_preview)
+                    self._auto_preview_timer.start(0)
             elif decision.result is ParserSelectionResult.AMBIGUOUS:
                 self.import_page.set_parser_id(None)
                 self.import_page.set_parser_ambiguity(decision.candidates)
@@ -2120,8 +2248,13 @@ class MainWindow(QMainWindow):
                     parser_config=effective_config,
                     source_kind=kind,
                     display_transform=(
-                        previous_source.display_transform if previous_source is not None
-                        else SourceDisplayTransform()
+                        replace(previous_source.display_transform, detected_test=None)
+                        if previous_source is not None else SourceDisplayTransform(
+                            shift_s=next((
+                                item.display_transform.shift_s for item in sources.values()
+                                if item.source_kind == SourceKind.THEORETICAL
+                            ), 0.0) if kind == SourceKind.THEORETICAL else 0.0,
+                        )
                     ),
                 )
                 stream_record = Stream(
@@ -2586,15 +2719,19 @@ class MainWindow(QMainWindow):
             else "process.detect_with_thrust"
         )
 
+        theory_operation = self._theory_detection_operation(priority)
+
         def operation(context: TaskContext):
             context.raise_if_cancelled()
             result = Activity_DetectSegments(
                 reference_dataset.project_time, channel.values, sign=1
             )
             context.report_progress(1.0, task_name)
-            return result
+            return result, theory_operation(context)
 
-        def success(candidates) -> None:
+        def success(payload) -> None:
+            candidates, detections = payload
+            self._theory_detection_store(detections)
             self.session.candidates = list(candidates)
             self.session.segmentation_reference = selected_reference.reference
             self.session.segmentation_reference_priority = priority
@@ -2607,6 +2744,9 @@ class MainWindow(QMainWindow):
                 self._segmentation_candidate_apply(0)
             else:
                 self._segmentation_views_sync()
+            self._measurement_workspaces_update()
+            if detections and not all(detections.values()):
+                self._theory_notice("theory.no_interval")
 
         self._task_start(task_name, operation, success)
 
@@ -4609,6 +4749,22 @@ class MainWindow(QMainWindow):
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(directory.resolve())))
 
     def closeEvent(self, event: QCloseEvent) -> None:
+        self._closing = True
+        self._source_preview_timer.stop()
+        self._auto_preview_timer.stop()
+        self._auto_parse_timer.stop()
+        self._active_success = None
+        self._active_failure = None
+        unfinished = [task for task in self.task_manager.tasks if not task.done]
+        if unfinished:
+            for task in unfinished:
+                task.cancel()
+            # Continue processing Qt events while cancellation unwinds. Neither the window
+            # nor worker-owned objects may be destroyed while a callable still uses them.
+            event.ignore()
+            self.task_timer.start()
+            return
         self.task_timer.stop()
-        self.task_manager.shutdown(wait=False, cancel_pending=True)
+        self.task_manager.shutdown(wait=True, cancel_pending=True)
+        self._active_task = None
         super().closeEvent(event)

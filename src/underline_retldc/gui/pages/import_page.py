@@ -58,6 +58,9 @@ class ImportPage(QWidget):
     ) -> None:
         super().__init__()
         self._translations = translations
+        self._recommendation_layout_timer = QTimer(self)
+        self._recommendation_layout_timer.setSingleShot(True)
+        self._recommendation_layout_timer.timeout.connect(self._recommendation_table_layout_refresh)
         self._parsers: tuple[Any, ...] = ()
         self._ambiguity_candidates: tuple[tuple[Any, ProbeResult], ...] = ()
 
@@ -611,7 +614,7 @@ class ImportPage(QWidget):
             confidence_item.setToolTip(probe.reason)
             self.recommendation_table.setItem(row, 0, name_item)
             self.recommendation_table.setItem(row, 1, confidence_item)
-        QTimer.singleShot(0, self._recommendation_table_layout_refresh)
+        self._recommendation_layout_timer.start(0)
 
     def _recommendation_table_layout_refresh(self) -> None:
         header = self.recommendation_table.horizontalHeader()
@@ -622,7 +625,7 @@ class ImportPage(QWidget):
 
     def showEvent(self, event) -> None:
         super().showEvent(event)
-        QTimer.singleShot(0, self._recommendation_table_layout_refresh)
+        self._recommendation_layout_timer.start(0)
 
     def _recommendation_activate(self, row: int, _column: int) -> None:
         item = self.recommendation_table.item(row, 0)

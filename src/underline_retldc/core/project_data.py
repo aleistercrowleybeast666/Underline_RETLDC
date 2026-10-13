@@ -13,6 +13,7 @@ from numpy.typing import NDArray
 
 from underline_retldc.core.channel import Channel
 from underline_retldc.core.dataset import Dataset
+from underline_retldc.core.regions import RegionSelection
 
 
 class SourceKind(StrEnum):
@@ -27,6 +28,7 @@ class SourceDisplayTransform:
     shift_s: float = 0.0
     zero_start: bool = False
     hidden_curve_ids: tuple[str, ...] = ()
+    detected_test: SourceTestDetection | None = None
 
     def __post_init__(self) -> None:
         try:
@@ -37,6 +39,10 @@ class SourceDisplayTransform:
             raise ValueError("Source display shift must be finite")
         if not isinstance(self.zero_start, bool):
             raise ValueError("Source display zero_start must be a boolean")
+        if self.detected_test is not None and not isinstance(
+            self.detected_test, SourceTestDetection
+        ):
+            raise ValueError("Source display detected_test must be a SourceTestDetection")
         object.__setattr__(self, "shift_s", shift)
         object.__setattr__(self, "hidden_curve_ids", tuple(self.hidden_curve_ids))
 
@@ -45,6 +51,7 @@ class SourceDisplayTransform:
             "shift_s": self.shift_s,
             "zero_start": self.zero_start,
             "hidden_curve_ids": list(self.hidden_curve_ids),
+            "detected_test": self.detected_test.to_dict() if self.detected_test else None,
         }
 
     @classmethod
@@ -58,6 +65,8 @@ class SourceDisplayTransform:
             shift_s=payload.get("shift_s", 0.0),
             zero_start=payload.get("zero_start", False),
             hidden_curve_ids=tuple(hidden),
+            detected_test=(SourceTestDetection.from_dict(payload["detected_test"])
+                           if payload.get("detected_test") is not None else None),
         )
 
 
@@ -138,6 +147,35 @@ class ChannelReference:
 
 
 @dataclass(frozen=True, slots=True)
+class SourceTestDetection:
+    """An advisory source-local detection used only as a display alignment reference."""
+
+    reference: ChannelReference
+    regions: RegionSelection
+    role: str
+    polarity: int = 1
+
+    def __post_init__(self) -> None:
+        if self.role not in {"thrust", "chamber_pressure"} or self.polarity not in {-1, 1}:
+            raise ValueError("Invalid source detection role or polarity")
+        for region in (self.regions.pre, self.regions.burn, self.regions.post):
+            if region and not all(math.isfinite(value) for value in (region.start, region.end)):
+                raise ValueError("Source detection times must be finite")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"reference": self.reference.to_dict(), "regions": self.regions.to_dict(),
+                "role": self.role, "polarity": self.polarity}
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> SourceTestDetection:
+        if not isinstance(payload, Mapping):
+            raise ValueError("Source detection must be an object")
+        return cls(ChannelReference.from_dict(payload["reference"]),
+                   RegionSelection.from_dict(payload["regions"]),
+                   str(payload["role"]), int(payload.get("polarity", 1)))
+
+
+@dataclass(frozen=True, slots=True)
 class PrimaryChannelBindings:
     thrust: ChannelReference | None = None
     chamber_pressure: ChannelReference | None = None
@@ -205,6 +243,15 @@ class ProjectData:
                 raise ValueError("Stream mapping key does not match Stream.id")
             if stream.source_id not in sources:
                 raise ValueError(f"Stream {stream_id!r} refers to an unknown Source")
+        for source in sources.values():
+            detection = source.display_transform.detected_test
+            if detection is not None:
+                reference = detection.reference
+                stream = streams.get(reference.stream_id)
+                if (reference.source_id != source.id or stream is None
+                        or stream.source_id != source.id
+                        or reference.channel_id not in stream.dataset.channels):
+                    raise ValueError("Source detection reference does not belong to this Source")
         object.__setattr__(self, "sources", MappingProxyType(sources))
         object.__setattr__(self, "streams", MappingProxyType(streams))
 
@@ -261,6 +308,17 @@ class ProjectData:
             if indices.size:
                 starts.append(float(time[indices[0]]))
         return min(starts) if starts else None
+
+    def with_theory_shift(self, shift_s: float) -> ProjectData:
+        """Set one absolute display offset for every theory source and measurement family."""
+        SourceDisplayTransform(shift_s=shift_s)  # Validate before changing any Source.
+        sources = {
+            key: replace(source, display_transform=replace(
+                source.display_transform, shift_s=shift_s, zero_start=False,
+            )) if source.source_kind == SourceKind.THEORETICAL else source
+            for key, source in self.sources.items()
+        }
+        return ProjectData(sources, self.streams, self.primary_channels)
 
     def display_time(self, reference: ChannelReference) -> NDArray[np.float64]:
         self.channel(reference)  # Validate the full Source/Stream/Channel identity.

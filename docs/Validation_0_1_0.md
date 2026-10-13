@@ -1,5 +1,8 @@
 # 0.1.0 development validation
 
+Latest shared alignment and lifecycle validation: see
+[Alignment_Acceptance_0_1_0.md](Alignment_Acceptance_0_1_0.md). Entries below are historical.
+
 Validated on the local Windows checkout for the 2026-10-15 release target. This records source
 development validation, not a published release or portable package validation.
 

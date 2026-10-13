@@ -272,7 +272,10 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   fitting, LLM analysis, or
   motor optimization for this release.
 - Source display alignment and visibility are persisted view state, separate from Stream
-  scientific time offsets. Zeroing uses the Source's first valid measurement, not detected ignition.
+  scientific time offsets. All time-curve pages share one theory display shift. Align Test Starts
+  uses the current experimental start (including manual edits) and an independently detected
+  theory start in scientific time; repeated clicks never accumulate. Theory regions stay internal.
+  Legacy first-valid-sample zeroing remains read-compatible; the GUI now aligns test starts.
 - Theory source import/removal/calibration and view edits must not invalidate experimental
   primary bindings, segmentation, compensation, analysis, or export readiness.
 - Source calculations use scientific Project timestamps, never display alignment. Missing or

@@ -187,7 +187,8 @@ def test_theory_import_overlay_alignment_reopen_and_removal(
         np.testing.assert_allclose(window.process_page.analysis_plot._series_data[-1][0],
                                    np.array([8, 9, 10, 11, 13]) + shift)
         assert window.session.analysis_result is analysis
-    overlay.zero_button.click()
+    overlay.align_button.click()
+    _wait(window)
     np.testing.assert_array_equal(window.process_page.analysis_plot._series_data[-1][0],
                                   [0, 1, 2, 3, 5])
     overlay.shift_spin.setValue(-1.25)
@@ -217,7 +218,7 @@ def test_theory_import_overlay_alignment_reopen_and_removal(
     assert saved.software_version == "0.1.0"
     state = next(source for source in saved.sources if source.source_id == theory_source.id)
     assert state.display_transform.shift_s == -1.25
-    assert state.display_transform.zero_start
+    assert not state.display_transform.zero_start
     assert state.source_kind == SourceKind.THEORETICAL
     assert len(state.display_transform.hidden_curve_ids) == 1
     monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project_path), ""))
@@ -231,7 +232,7 @@ def test_theory_import_overlay_alignment_reopen_and_removal(
     )
     assert len(window.chamber_pressure_page.analysis_plot._series_data) == 1
     np.testing.assert_array_equal(window.process_page.analysis_plot._series_data[-1][0],
-                                  [-1.25, -.25, .75, 1.75, 3.75])
+                                  [6.75, 7.75, 8.75, 9.75, 11.75])
     window.process_page.theory_overlay.reset_button.click()
     np.testing.assert_array_equal(window.process_page.analysis_plot._series_data[-1][0],
                                   [8, 9, 10, 11, 13])
@@ -292,7 +293,11 @@ def test_theory_only_import_and_legacy_reopen(
     assert len(window.process_page.analysis_plot._series_data) == 1
     assert window.chamber_pressure_page.calculate_button.isEnabled() is False
     theory_source = next(iter(window.session.project_data.sources.values()))
-    window._source_display_changed(theory_source.id, SourceDisplayTransform(-2, True))
+    # Legacy saved source-start zeroing remains readable; the new GUI emits absolute shifts.
+    window.session.project_data = window.session.project_data.with_source_display(
+        theory_source.id, SourceDisplayTransform(-2, True),
+    )
+    window._measurement_workspaces_update()
     exp_path = tmp_path / "experimental.csv"
     window.import_page.new_kind_combo.setCurrentIndex(0)
     exp_path.write_bytes(path.read_bytes())
@@ -369,7 +374,11 @@ def test_independent_source_results_params_display_reopen_and_removal(
     bindings = window.session.project_data.primary_channels
     exports = window.export_dialog.selected_exporter_ids()
     experimental_id = bindings.thrust.source_id
-    experiment_profile = _source_result_calculate(window, window.analyze_page, experimental_id)
+    window._source_analysis_calculate(SourceAnalysisConfig(
+        experimental_id, "thrust_analysis", (bindings.thrust,),
+    ))
+    _wait(window)
+    experiment_profile = window.session.source_analyses[f"{experimental_id}/thrust_analysis"]
     assert next(iter(experiment_profile.results.values())).metrics["total_impulse_ns"] == 4000
     window.import_page.new_kind_combo.setCurrentIndex(1)
     window.import_page.add_source_paths([path])
@@ -399,7 +408,8 @@ def test_independent_source_results_params_display_reopen_and_removal(
         assert page.metrics_table.rowCount() > 0
     overlay = window.process_page.theory_overlay
     overlay.shift_spin.setValue(-5)
-    overlay.zero_button.click()
+    overlay.align_button.click()
+    _wait(window)
     overlay.shift_spin.setValue(2)
     overlay.reset_button.click()
     assert window.session.source_analyses[theory_profile.config.key] is theory_profile
@@ -410,8 +420,9 @@ def test_independent_source_results_params_display_reopen_and_removal(
     # Selecting the legacy result or another same-name Source cannot replace its metrics.
     control.source_combo.setCurrentIndex(0)
     assert window.analyze_page._result is legacy_analysis
-    control.source_combo.setCurrentIndex(control.source_combo.findData(experimental_id))
-    assert control.selected_state() is experiment_profile
+    assert control.source_combo.findData(experimental_id) == -1
+    assert control.source_combo.count() == 2
+    assert control.selected_state() is None
     control.source_combo.setCurrentIndex(control.source_combo.findData(theory.id))
     # Draft remains pending after save/reopen instead of being implicitly calculated.
     pressure_control = window.chamber_pressure_page.source_analysis
@@ -777,7 +788,8 @@ def test_one_physical_file_two_origins_with_real_compensation_and_reopen(
     overlay = window.process_page.theory_overlay
     for index in range(12):
         window.navigation.setCurrentRow(index % len(window.workspaces))
-        overlay.zero_button.click()
+        overlay.align_button.click()
+        _wait(window)
         overlay.shift_spin.setValue(-.25 if index % 2 else .5)
         overlay.curve_list.item(0).setCheckState(Qt.CheckState.Unchecked)
         overlay.curve_list.item(0).setCheckState(Qt.CheckState.Checked)

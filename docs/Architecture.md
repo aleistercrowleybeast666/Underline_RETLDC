@@ -415,3 +415,11 @@ Changing the primary thrust input also synchronizes the Project source/calibrati
 previously selected theory entry cannot leave the calibration UI pointing at another active Stream.
 Task completion callbacks retain ownership until the GUI consumes them, including after a worker
 has finished. Rapid clicks cannot replace that pending callback with a new task.
+
+Closing cancels outstanding tasks and discards GUI completion callbacks, then keeps the Qt event
+loop responsive until submitted callables have exited. Only then are the executor and window
+closed. TaskHandle.done reflects Future completion, not merely the terminal state published
+inside the worker. Automatic preview/parse and deferred layout callbacks use owner-bound timers,
+so a destroyed page/window cannot receive a stale single-shot callback. Test teardown also waits
+for cancellation before deleting windows; a timed-out test must not leave a worker using the next
+test's Qt lifecycle. No global GC setting is changed.
