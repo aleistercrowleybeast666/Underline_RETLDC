@@ -22,12 +22,14 @@ from underline_retldc.gui.analysis_widgets import (
     AnalysisDiagnosticsPanel,
     AnalysisResultsPanel,
 )
+from underline_retldc.gui.source_analysis_widget import SourceAnalysisWidget
 from underline_retldc.i18n.service import TranslationService
 from underline_retldc.plugin_api.common import AnalysisResult
 
 
 class AnalyzePage(QWidget):
     calculate_requested = Signal()
+    source_calculate_requested = Signal(object)
 
     METRIC_ORDER = (
         "peak_value",
@@ -50,7 +52,9 @@ class AnalyzePage(QWidget):
         self._display_mode = UnitDisplayMode.ENGINEERING
         self.calculate_button = QPushButton()
         self.calculate_button.setObjectName("primaryButton")
-        self.calculate_button.clicked.connect(self.calculate_requested)
+        self.calculate_button.clicked.connect(self._calculate)
+        self.source_analysis = SourceAnalysisWidget(translations, "thrust_analysis", "force")
+        self.source_analysis.view_changed.connect(self._results_refresh)
 
         self.metrics_group = AnalysisResultsPanel()
         self.metrics_table = self.metrics_group.table
@@ -60,6 +64,7 @@ class AnalyzePage(QWidget):
         self.diagnostics_list = self.diagnostics_group.list
 
         layout = QVBoxLayout(self)
+        layout.addWidget(self.source_analysis)
         layout.addWidget(self.calculate_button)
         layout.addWidget(self.metrics_group, 2)
         layout.addWidget(self.diagnostics_group, 1)
@@ -67,17 +72,35 @@ class AnalyzePage(QWidget):
 
     def retranslate(self) -> None:
         t = self._translations.translate
+        self.source_analysis.retranslate()
         self.calculate_button.setText(t("analyze.calculate"))
         self.metrics_group.setTitle(t("page.analyze"))
         self.diagnostics_group.setTitle(t("import.diagnostics"))
         self.metrics_table.setHorizontalHeaderLabels(
             [t("workspace.metric"), t("common.value")]
         )
-        if self._result is not None:
-            self.set_result(self._result)
+        self._results_refresh()
 
     def set_result(self, result: AnalysisResult) -> None:
         self._result = result
+        self._results_refresh()
+
+    def _calculate(self) -> None:
+        if self.source_analysis.source_id() is None:
+            self.calculate_requested.emit()
+        else:
+            self.source_calculate_requested.emit(self.source_analysis.config())
+
+    def _results_refresh(self) -> None:
+        result = self._result
+        if self.source_analysis.source_id() is not None:
+            state = self.source_analysis.selected_state()
+            result = next(iter(state.results.values()), None) if state and state.completed else None
+            self.source_analysis._notice_refresh()
+        if result is None:
+            self.metrics_table.setRowCount(0)
+            self.diagnostics_list.clear()
+            return
         available = [key for key in self.METRIC_ORDER if key in result.metrics]
         self.metrics_table.setRowCount(len(available))
         for row, key in enumerate(available):
@@ -107,8 +130,7 @@ class AnalyzePage(QWidget):
     ) -> None:
         self._display_preferences = dict(preferences)
         self._display_mode = UnitDisplayMode_Normalize(display_mode)
-        if self._result is not None:
-            self.set_result(self._result)
+        self._results_refresh()
 
     def _metric_display(
         self,
@@ -124,12 +146,14 @@ class AnalyzePage(QWidget):
         force_unit = Unit_DisplayUnitResolve(
             "force",
             "N",
+            override=result.metadata.get("source_display_unit"),
             preferences=self._display_preferences,
             display_mode=self._display_mode,
         )
         relative_unit = Unit_DisplayUnitResolve(
             input_quantity,
             input_unit,
+            override=result.metadata.get("source_display_unit"),
             preferences=self._display_preferences,
             display_mode=self._display_mode,
         )
@@ -166,5 +190,4 @@ class AnalyzePage(QWidget):
 
     def clear_result(self) -> None:
         self._result = None
-        self.metrics_table.setRowCount(0)
-        self.diagnostics_list.clear()
+        self._results_refresh()

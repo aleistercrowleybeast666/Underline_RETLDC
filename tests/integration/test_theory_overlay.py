@@ -23,6 +23,7 @@ from underline_retldc.core.project_data import (
     SourceKind,
     Stream,
 )
+from underline_retldc.core.source_analysis import SourceAnalysisConfig
 from underline_retldc.core.units import UnitDisplayMode
 from underline_retldc.gui.main_window import MainWindow
 from underline_retldc.i18n.service import TranslationService
@@ -338,6 +339,208 @@ def test_theory_only_import_and_legacy_reopen(
     assert all(window.import_page.source_kind(path) == SourceKind.EXPERIMENTAL
                for path in window.import_page.source_paths())
     assert "Traceback" not in capsys.readouterr().err
+
+
+def _source_result_calculate(window: MainWindow, page, source_id: str):
+    control = page.source_analysis
+    control.source_combo.setCurrentIndex(control.source_combo.findData(source_id))
+    if control.workspace_id == "data_explorer" and control.channel_combo.currentData() is None:
+        control.channel_combo.setCurrentIndex(1)
+    page.calculate_button.click()
+    _wait(window)
+    state = window.session.source_analyses[f"{source_id}/{control.workspace_id}"]
+    assert state.completed, state.error
+    return state
+
+
+def test_independent_source_results_params_display_reopen_and_removal(
+    window: MainWindow, tmp_path: Path, monkeypatch,
+) -> None:
+    path = tmp_path / "shared.csv"
+    _experimental_import(window, path)
+    window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+    window.process_page.apply_button.click()
+    _wait(window)
+    window.setup_page.set_motor_metadata({"propellant_mass_kg": .1})
+    window.analyze_page.calculate_button.click()
+    _wait(window)
+    legacy_analysis = window.session.analysis_result
+    legacy_processing = window.session.processing_result
+    bindings = window.session.project_data.primary_channels
+    exports = window.export_dialog.selected_exporter_ids()
+    experimental_id = bindings.thrust.source_id
+    experiment_profile = _source_result_calculate(window, window.analyze_page, experimental_id)
+    assert next(iter(experiment_profile.results.values())).metrics["total_impulse_ns"] == 4000
+    window.import_page.new_kind_combo.setCurrentIndex(1)
+    window.import_page.add_source_paths([path])
+    _configure_theory_mapping(window, path)
+    window.import_page.parse_button.click()
+    _wait(window)
+    theory = next(source for source in window.session.project_data.sources.values()
+                  if source.source_kind == SourceKind.THEORETICAL)
+    theory_profile = _source_result_calculate(window, window.analyze_page, theory.id)
+    result = next(iter(theory_profile.results.values()))
+    assert result.metrics["total_impulse_ns"] == 8000
+    assert result.metrics["specific_impulse_s"] is None
+    assert window.setup_page.motor_metadata()["propellant_mass_kg"] == .1
+    control = window.analyze_page.source_analysis
+    control.mass_known.setChecked(True)
+    control.mass_spin.setValue(.25)
+    assert not window.session.source_analyses[theory_profile.config.key].completed
+    window.analyze_page.calculate_button.click()
+    _wait(window)
+    theory_profile = window.session.source_analyses[theory_profile.config.key]
+    metrics = dict(next(iter(theory_profile.results.values())).metrics)
+    assert metrics["specific_impulse_s"] == 8000 / (.25 * 9.80665)
+    states = {}
+    for page in window._measurement_pages():
+        state = _source_result_calculate(window, page, theory.id)
+        states[state.config.key] = state
+        assert page.metrics_table.rowCount() > 0
+    overlay = window.process_page.theory_overlay
+    overlay.shift_spin.setValue(-5)
+    overlay.zero_button.click()
+    overlay.shift_spin.setValue(2)
+    overlay.reset_button.click()
+    assert window.session.source_analyses[theory_profile.config.key] is theory_profile
+    assert window.session.analysis_result is legacy_analysis
+    assert window.session.processing_result is legacy_processing
+    assert window.session.project_data.primary_channels == bindings
+    assert window.export_dialog.selected_exporter_ids() == exports
+    # Selecting the legacy result or another same-name Source cannot replace its metrics.
+    control.source_combo.setCurrentIndex(0)
+    assert window.analyze_page._result is legacy_analysis
+    control.source_combo.setCurrentIndex(control.source_combo.findData(experimental_id))
+    assert control.selected_state() is experiment_profile
+    control.source_combo.setCurrentIndex(control.source_combo.findData(theory.id))
+    # Draft remains pending after save/reopen instead of being implicitly calculated.
+    pressure_control = window.chamber_pressure_page.source_analysis
+    pressure_control.interval_combo.setCurrentIndex(1)
+    pressure_control.start_spin.setValue(1)
+    pressure_control.end_spin.setValue(3)
+    pressure_key = f"{theory.id}/chamber_pressure"
+    assert not window.session.source_analyses[pressure_key].completed
+    project_path = tmp_path / "source-results.retldc.json"
+    window._project_save_path(project_path)
+    _wait(window)
+    saved = json.loads(project_path.read_text(encoding="utf-8"))
+    snapshot = saved["source_analyses"][theory_profile.config.key]["results"]
+    next(iter(snapshot.values()))["metrics"]["total_impulse_ns"] = -999
+    project_path.write_text(json.dumps(saved), encoding="utf-8")
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project_path), ""))
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    assert not window._test_errors
+    loaded = window.session.source_analyses
+    assert dict(next(iter(loaded[theory_profile.config.key].results.values())).metrics) == metrics
+    assert not loaded[pressure_key].completed
+    assert loaded[pressure_key].config.interval == (1, 3)
+    assert loaded[experiment_profile.config.key].completed
+    assert dict(window.session.analysis_result.metrics) == dict(legacy_analysis.metrics)
+    row = next(index for index in range(window.import_page.source_list.count())
+               if window.import_page.source_list.item(index).data(
+                   window.import_page.SOURCE_ID_ROLE) == theory.id)
+    window.import_page.source_list.setCurrentRow(row)
+    experimental_profile_after_reopen = loaded[experiment_profile.config.key]
+    experimental_analysis_after_reopen = window.session.analysis_result
+    window._calibration_apply()
+    _wait(window)
+    assert not window.session.source_analyses[theory_profile.config.key].completed
+    assert window.session.source_analyses[experiment_profile.config.key] is (
+        experimental_profile_after_reopen
+    )
+    assert window.session.analysis_result is experimental_analysis_after_reopen
+    window.import_page.remove_source_button.click()
+    assert set(window.session.source_analyses) == {experiment_profile.config.key}
+    assert window.session.source_analyses[experiment_profile.config.key].completed
+    assert dict(window.session.analysis_result.metrics) == dict(legacy_analysis.metrics)
+
+
+def test_theory_only_calculation_reopen_preserves_independent_calibration_stage(
+    window: MainWindow, tmp_path: Path, monkeypatch,
+) -> None:
+    source = tmp_path / "theory-only.csv"
+    source.write_text("time,f,p,t,web\n0,0,0,20,0\n1,1000,1000000,21,1\n"
+                      "2,2000,2000000,22,2\n3,1000,1000000,23,3\n4,0,0,24,4\n",
+                      encoding="utf-8")
+    window.import_page.new_kind_combo.setCurrentIndex(1)
+    window.import_page.add_source_paths([source])
+    window.import_page.set_parser_id("builtin.parser.generic_delimited")
+    _configure_mapping(window, source, ["N", "Pa", "°C", "mm"])
+    window.import_page.parse_button.click()
+    _wait(window)
+    assert window.session.project_data.primary_channels.thrust is None
+    window._calibration_apply()
+    _wait(window)
+    source_id = next(iter(window.session.project_data.sources))
+    profile = _source_result_calculate(window, window.analyze_page, source_id)
+    assert window.session.analysis_result is None
+    assert window.session.processing_result is None
+
+    path = tmp_path / "theory-only.retldc.json"
+    window._project_save_path(path)
+    _wait(window)
+    document = Project_Load(path)
+    assert document.calibrated_stream_ids
+    assert not document.workflow_state["analyzed"]
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(path), ""))
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    assert not window._test_errors
+    assert window.session.source_analyses[profile.config.key].completed
+    assert window.session.calibrated_streams
+    assert window.session.analysis_result is None
+    assert window.session.processing_result is None
+
+    def fail_calculator(*_args, **_kwargs):
+        raise RuntimeError("Source Analyzer failure fixture")
+
+    analyzer = window.registry.get("builtin.analyzer.thrust")
+    monkeypatch.setattr(analyzer, "analyze", fail_calculator)
+    window._source_analysis_calculate(profile.config)
+    _wait(window)
+    failed = window.session.source_analyses[profile.config.key]
+    assert not failed.completed
+    assert "failure fixture" in failed.error
+    assert not window._test_errors
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    assert not window._test_errors
+    assert len(window.session.project_data.sources) == 1
+    assert "failure fixture" in window.session.source_analyses[profile.config.key].error
+
+
+def test_processed_source_result_invalidation_and_own_source_error_isolation(
+    window: MainWindow, tmp_path: Path,
+) -> None:
+    _experimental_import(window, tmp_path / "exp.csv")
+    reference = window.session.project_data.primary_channels.thrust
+    window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+    window.process_page.apply_button.click()
+    _wait(window)
+    config = SourceAnalysisConfig(reference.source_id, "thrust_analysis", (reference,),
+                                  input_stage="project_processed", interval=(1, 3),
+                                  propellant_mass_kg=.25)
+    window._source_analysis_calculate(config)
+    _wait(window)
+    assert window.session.source_analyses[config.key].completed
+    window._thrust_polarity_changed(-1)
+    assert not window.session.source_analyses[config.key].completed
+    independent = replace(config, input_stage="calibrated")
+    window._source_analysis_calculate(independent)
+    _wait(window)
+    completed = window.session.source_analyses[config.key]
+    assert completed.completed
+    window._regions_store({"pre": None, "active_test": [0, 4], "post": None})
+    assert window.session.source_analyses[config.key] is completed
+    invalid = replace(independent, workspace_id="chamber_pressure")
+    window._source_analysis_calculate(invalid)
+    _wait(window)
+    assert window.session.source_analyses[invalid.key].error
+    assert window.session.source_analyses[config.key] is completed
 
 
 def _metric_cells(window: MainWindow) -> tuple[tuple[str, ...], ...]:

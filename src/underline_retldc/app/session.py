@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from underline_retldc.app.source_analysis import SourceAnalysisState
 from underline_retldc.core.calibration import CalibrationSelectionSource
 from underline_retldc.core.data_quality import DataQualityReport
 from underline_retldc.core.dataset import Dataset
@@ -56,6 +57,7 @@ class AnalysisSession:
     analysis_result: AnalysisResult | None = None
     motor_metadata: dict[str, Any] = field(default_factory=dict)
     export_settings: dict[str, Any] = field(default_factory=dict)
+    source_analyses: dict[str, SourceAnalysisState] = field(default_factory=dict)
 
     @property
     def processed_dataset(self) -> Dataset | None:

@@ -258,18 +258,27 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   Project to presets or run auto-detection during reopen.
 - Release packaging runs pytest and Ruff before PyInstaller and stops on either failure.
 
-## v0.1.0 theoretical display boundaries
+## v0.1.0 source display and calculation boundaries
 
 - Source origin is explicit `experimental` / `theoretical`; legacy Projects default to experimental.
   Channel processing roles must not be reused as origin markers.
 - Both origins use existing Parsers and Mapping Presets without software-specific restrictions.
 - Theory overlays belong in existing time-curve workspaces. Validate Quantity and physical Unit;
-  preserve original samples and gaps. Do not add residual metrics, fitting, LLM analysis, or
+  preserve original samples and gaps. Both origins support independent Source calculations in
+  the same result panels using existing analyzers/statistics. Store full Channel references,
+  source-specific interval, processing parameters, explicit propellant mass, completion and
+  results separately from the experimental primary workflow. Never borrow unrelated Project
+  propellant mass or experimental segmentation/correction implicitly. Do not add residual metrics,
+  fitting, LLM analysis, or
   motor optimization for this release.
 - Source display alignment and visibility are persisted view state, separate from Stream
   scientific time offsets. Zeroing uses the Source's first valid measurement, not detected ignition.
 - Theory source import/removal/calibration and view edits must not invalidate experimental
   primary bindings, segmentation, compensation, analysis, or export readiness.
+- Source calculations use scientific Project timestamps, never display alignment. Missing or
+  invalid source propellant mass leaves Isp unavailable while other computable metrics remain
+  available. Reopening restores drafts without advancing them and recomputes completed source
+  calculations from verified files and saved plugin/configuration references.
 
 ## Process-file lifecycle and storage
 

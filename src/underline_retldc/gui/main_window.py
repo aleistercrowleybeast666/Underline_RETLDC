@@ -34,6 +34,7 @@ from underline_retldc.app.settings import (
     SettingsService,
     Theme_Normalize,
 )
+from underline_retldc.app.source_analysis import SourceAnalysis_Calculate, SourceAnalysisState
 from underline_retldc.app.version import NAME, PRODUCT_NAME, __version__
 from underline_retldc.core.calibration import (
     Calibration_Load,
@@ -43,6 +44,7 @@ from underline_retldc.core.calibration import (
 )
 from underline_retldc.core.curve_display import DisplayCurve
 from underline_retldc.core.data_quality import Dataset_QualityInspect
+from underline_retldc.core.dataset import Dataset
 from underline_retldc.core.defaults import FACTORY_DEFAULTS
 from underline_retldc.core.parser_selection import (
     ParserSelection_Decide,
@@ -93,6 +95,7 @@ from underline_retldc.core.segmentation import (
     Segmentation_SelectReference,
     Segmentation_SelectReferenceForRole,
 )
+from underline_retldc.core.source_analysis import SourceAnalysisConfig, SourceAnalysisInput
 from underline_retldc.core.tabular import (
     Tabular_MappingSuggest,
     TabularPreset,
@@ -129,6 +132,7 @@ from underline_retldc.plugin_api.common import (
     ProbeContext,
     ProbeResult,
     ProcessingResult,
+    TaskCancelledError,
     TaskContext,
 )
 from underline_retldc.plugin_api.parser import TabularParserPlugin
@@ -208,10 +212,16 @@ class MainWindow(QMainWindow):
         self._active_failure: Callable[[BaseException], None] | None = None
         self._active_task_indeterminate = False
         self._tabular_auto_parse_pending = False
+        self._source_preview_timer = QTimer(self)
+        self._source_preview_timer.setSingleShot(True)
+        self._source_preview_timer.timeout.connect(
+            lambda: self._tabular_preview_refresh(False)
+        )
         self._recommendations: list[tuple[Any, ProbeResult]] = []
         self._recommendation_source: Path | None = None
         self._recomputed_project_data = ProjectData()
         self._recomputed_calibrated_streams: dict[str, Any] = {}
+        self._source_processors: tuple[Any, ...] = ()
 
         self.workspace_capabilities = WorkspaceCapabilities_Default()
         self.import_page = ImportPage(translations, self.workspace_capabilities)
@@ -427,6 +437,7 @@ class MainWindow(QMainWindow):
             page.set_display_mode(self.settings.unit_display_mode())
         self._segmentation_views_sync()
         self.translations.locale_changed.connect(self._retranslate)
+        self._source_analysis_views_sync()
         self._locale_widgets_sync(self.translations.locale)
         self._theme_widgets_sync(self._theme)
         self._retranslate()
@@ -435,6 +446,9 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(980, 640)
 
     def _signals_connect(self) -> None:
+        for page in (self.analyze_page, *self._measurement_pages()):
+            page.source_calculate_requested.connect(self._source_analysis_calculate)
+            page.source_analysis.config_changed.connect(self._source_analysis_config_changed)
         for page in (self.process_page, *self._measurement_pages()):
             page.theory_overlay.display_changed.connect(self._source_display_changed)
         self.import_page.browse_requested.connect(self._source_browse)
@@ -729,6 +743,7 @@ class MainWindow(QMainWindow):
         if normalized == self.session.thrust_polarity:
             return
         self.session.thrust_polarity = normalized
+        self._source_analysis_invalidate(processed_only=True)
         self.session.processing_result = None
         self.session.reset_after_processing()
         if self.session.segmentation_reference_priority == "thrust":
@@ -794,6 +809,7 @@ class MainWindow(QMainWindow):
         self.session.project_data = self.session.project_data.with_primary_channels(
             bindings
         )
+        self._source_analysis_invalidate(processed_only=True)
         workflow_input_changed = (
             previous.thrust != bindings.thrust
             or previous.chamber_pressure != bindings.chamber_pressure
@@ -902,6 +918,117 @@ class MainWindow(QMainWindow):
             page.set_theory_curves(self.session.project_data, tuple(theory_curves))
         for page in self._measurement_pages():
             page.set_regions(self.session.regions)
+        self._source_analysis_views_sync()
+
+    def _source_analysis_inputs(self) -> tuple[SourceAnalysisInput, ...]:
+        inputs: list[SourceAnalysisInput] = []
+        for reference in self.session.project_data.channel_references():
+            raw = self.session.project_data.channel(reference)
+            try:
+                dataset, channel_id = self._calibrated_binding_resolve(reference)
+            except ValueError:
+                dataset = self.session.project_data.streams[reference.stream_id].dataset
+                channel_id = reference.channel_id
+            channel = dataset.channel(channel_id)
+            source = self.session.project_data.sources[reference.source_id]
+            inputs.append(SourceAnalysisInput(
+                reference, dataset, channel_id,
+                f"{source.path.name} — {raw.name} [{channel.data_unit}]",
+            ))
+        return tuple(inputs)
+
+    def _source_analysis_views_sync(self) -> None:
+        inputs = self._source_analysis_inputs()
+        processors = self._source_processors
+        processed_reference = (
+            self.session.project_data.primary_channels.thrust
+            if self.session.processing_result is not None else None
+        )
+        for page in (self.analyze_page, *self._measurement_pages()):
+            page.source_analysis.set_context(
+                self.session.project_data, inputs, self.session.source_analyses,
+                processors, processed_reference,
+            )
+            page._results_refresh()
+
+    def _source_analysis_config_changed(self, config: object) -> None:
+        if not isinstance(config, SourceAnalysisConfig):
+            return
+        previous = self.session.source_analyses.get(config.key)
+        if previous is None or previous.config != config:
+            self.session.source_analyses[config.key] = SourceAnalysisState(config)
+        for page in (self.analyze_page, *self._measurement_pages()):
+            page._results_refresh()
+
+    def _source_analysis_invalidate(
+        self, source_ids: set[str] | None = None, *, processed_only: bool = False,
+    ) -> None:
+        for key, state in tuple(self.session.source_analyses.items()):
+            if source_ids is not None and state.config.source_id not in source_ids:
+                continue
+            if processed_only and state.config.input_stage != "project_processed":
+                continue
+            self.session.source_analyses[key] = SourceAnalysisState(state.config)
+
+    def _source_analysis_calculate(self, config: object) -> None:
+        if not isinstance(config, SourceAnalysisConfig) or self._active_task is not None:
+            return
+        self._source_analysis_config_changed(config)
+        pending_state = self.session.source_analyses[config.key]
+        inputs_by_id = {item.reference.stable_id: item for item in self._source_analysis_inputs()}
+        try:
+            inputs = tuple(inputs_by_id[reference.stable_id] for reference in config.channels)
+            if config.input_stage == "project_processed":
+                binding = self.session.project_data.primary_channels.thrust
+                dataset = self.session.processed_dataset
+                if dataset is None or config.channels != (binding,):
+                    raise ValueError("The selected Source/Channel has no current processed curve")
+                inputs = (SourceAnalysisInput(
+                    binding, dataset, "thrust_processed", inputs[0].label,
+                    self.session.processing_result.metadata,
+                ),)
+            analyzer = (
+                self.registry.get(THRUST_ANALYZER_ID)
+                if config.workspace_id == "thrust_analysis" else None
+            )
+            processor = None
+            if config.processor is not None and config.input_stage != "project_processed":
+                processor = self._plugin_reference_resolve(
+                    PluginReference.from_dict(config.processor)
+                )
+                if processor.requirements().get("processor_role") != "motor_weight_compensation":
+                    raise ValueError("Processor does not support motor-weight compensation")
+        except (KeyError, ValueError) as exc:
+            self.session.source_analyses[config.key] = SourceAnalysisState(config, error=str(exc))
+            self._source_analysis_views_sync()
+            return
+
+        def operation(context: TaskContext) -> SourceAnalysisState:
+            try:
+                return SourceAnalysis_Calculate(
+                    config, inputs, context, analyzer=analyzer, processor=processor,
+                )
+            except (KeyError, ValueError) as exc:
+                return SourceAnalysisState(config, error=str(exc))
+            except TaskCancelledError:
+                raise
+            except Exception as exc:
+                # Optional calculator errors belong to this Source's result panel.
+                LOGGER.exception("Source calculation %s failed", config.key)
+                return SourceAnalysisState(config, error=str(exc))
+
+        def success(state: SourceAnalysisState) -> None:
+            current = self.session.source_analyses.get(config.key)
+            if (
+                config.source_id in self.session.project_data.sources
+                and current is pending_state and current.config == config
+            ):
+                self.session.source_analyses[config.key] = state
+            self._source_analysis_views_sync()
+
+        self._task_start(
+            self.translations.translate("source_analysis.calculating"), operation, success,
+        )
 
     def _source_display_changed(self, source_id: str, transform: object) -> None:
         if not isinstance(transform, SourceDisplayTransform):
@@ -1284,7 +1411,7 @@ class MainWindow(QMainWindow):
                     state.plugin_id, dict(state.config)
                 )
         if self.import_page.uses_tabular_mapping():
-            QTimer.singleShot(0, lambda: self._tabular_preview_refresh(False))
+            self._source_preview_timer.start(0)
 
     @staticmethod
     def _path_matches(left: Path, right: Path) -> bool:
@@ -1323,6 +1450,10 @@ class MainWindow(QMainWindow):
         removed_sources = {
             source_id: self.session.project_data.sources[source_id]
             for source_id in removed_source_ids
+        }
+        self.session.source_analyses = {
+            key: state for key, state in self.session.source_analyses.items()
+            if state.config.source_id not in removed_source_ids
         }
         sources = {
             source_id: source
@@ -1373,6 +1504,8 @@ class MainWindow(QMainWindow):
                     self.session.active_stream_id = next(iter(streams))
             self._measurement_workspaces_update()
             return
+
+        self._source_analysis_invalidate(processed_only=True)
 
         self.session.candidates.clear()
         self.session.regions.clear()
@@ -1939,6 +2072,7 @@ class MainWindow(QMainWindow):
 
         def success(payload: list[tuple[Any, ...]]) -> None:
             if not theory_addition:
+                self._source_analysis_invalidate()
                 self.session.reset_after_parse()
             sources: dict[str, Source] = (
                 dict(self.session.project_data.sources) if theory_addition else {}
@@ -2087,6 +2221,10 @@ class MainWindow(QMainWindow):
             self.session.parser_id = parser_id
             self.session.parser_config = dict(effective_config)
             self.session.project_data = project_data
+            self.session.source_analyses = {
+                key: state for key, state in self.session.source_analyses.items()
+                if state.config.source_id in project_data.sources
+            }
             self.session.primary_stream_id = primary_stream_id
             self.session.active_stream_id = primary_stream_id
             self.session.calibrated_streams = calibrated_streams
@@ -2281,12 +2419,15 @@ class MainWindow(QMainWindow):
 
         def success(payload: tuple[Any, dict[str, ChannelCalibrationState]]) -> None:
             dataset, states = payload
+            if active_source_id is not None:
+                self._source_analysis_invalidate({active_source_id})
             theory_source = (
                 active_source_id is not None
                 and self.session.project_data.sources[active_source_id].source_kind
                 == SourceKind.THEORETICAL
             )
             if not theory_source:
+                self._source_analysis_invalidate(processed_only=True)
                 self.session.reset_after_calibration()
             if active_stream_id is not None and active_source_id is not None:
                 self.session.calibrated_streams[active_stream_id] = dataset
@@ -2590,6 +2731,7 @@ class MainWindow(QMainWindow):
         self.session.regions = normalized
         self.session.segmentation_manually_modified = bool(manually_modified)
         if changed:
+            self._source_analysis_invalidate(processed_only=True)
             self.session.processing_result = None
             self.session.analyzer_id = None
             self.session.analyzer_config.clear()
@@ -2627,6 +2769,7 @@ class MainWindow(QMainWindow):
             return processor.process(dataset, config, context)
 
         def success(result: ProcessingResult) -> None:
+            self._source_analysis_invalidate(processed_only=True)
             self.session.reset_after_processing()
             self.session.processor_id = plugin_id
             self.session.processor_config = dict(config)
@@ -2879,6 +3022,10 @@ class MainWindow(QMainWindow):
                     ),
                 )
         return ProjectDocument(
+            source_analyses={
+                key: state.document() for key, state in self.session.source_analyses.items()
+            },
+            calibrated_stream_ids=tuple(self.session.calibrated_streams),
             source_path=str(source_path) if source_path is not None else None,
             source_hash=source_hash or self.session.source_hash,
             sources=source_states,
@@ -3075,6 +3222,7 @@ class MainWindow(QMainWindow):
             if primary_stream_id is not None and calibrated is not None:
                 calibrated_streams[primary_stream_id] = calibrated
             self.session = AnalysisSession(
+                source_analyses=dict(self._recomputed_source_analyses),
                 project_path=project_path,
                 source_path=raw_source.resolve() if raw_source is not None else None,
                 source_hash=document.source_hash,
@@ -3483,12 +3631,88 @@ class MainWindow(QMainWindow):
         return stream_states, primary_states
 
     def _project_recompute(
+        self, document: ProjectDocument, context: TaskContext, *, raw_source: Path | None = None,
+    ) -> tuple[
+        ProjectDocument, Path | None, ParseResult | None, Dataset | None,
+        ProcessingResult | None, AnalysisResult | None,
+    ]:
+        payload = self._project_pipeline_recompute(document, context, raw_source=raw_source)
+        project = self._recomputed_project_data
+        calibrated_streams = self._recomputed_calibrated_streams
+        inputs_by_id: dict[str, SourceAnalysisInput] = {}
+        for reference in project.channel_references():
+            stream = project.streams[reference.stream_id]
+            dataset = calibrated_streams.get(stream.id, stream.dataset)
+            states = self._project_channel_states_for_stream(
+                document, reference.source_id, reference.stream_id,
+                include_legacy=len(project.streams) == 1,
+            )
+            channel_state = next((state for state in states
+                                  if state.channel_id == reference.channel_id), None)
+            channel_id = reference.channel_id
+            if dataset is not stream.dataset:
+                if channel_state and channel_state.output_channel_id:
+                    channel_id = channel_state.output_channel_id
+                else:
+                    matches = tuple(channel.id for channel in dataset.channels.values()
+                                    if channel.role == "calibrated"
+                                    and channel.metadata.get("source_channel_id")
+                                    == reference.channel_id)
+                    if len(matches) == 1:
+                        channel_id = matches[0]
+            inputs_by_id[reference.stable_id] = SourceAnalysisInput(
+                reference, dataset, channel_id,
+                f"{project.sources[reference.source_id].path.name} — "
+                f"{project.channel(reference).name}",
+            )
+        self._recomputed_source_analyses = {}
+        for key, saved in document.source_analyses.items():
+            config = saved.config
+            state = SourceAnalysisState(config)
+            if saved.completed:
+                try:
+                    inputs = tuple(inputs_by_id[item.stable_id] for item in config.channels)
+                    if config.input_stage == "project_processed":
+                        processing = payload[4]
+                        binding = project.primary_channels.thrust
+                        if processing is None or config.channels != (binding,):
+                            raise ValueError("Source calculation has no matching processed curve")
+                        inputs = (SourceAnalysisInput(
+                            binding, processing.dataset, "thrust_processed", inputs[0].label,
+                            processing.metadata,
+                        ),)
+                    analyzer = None
+                    if config.workspace_id == "thrust_analysis":
+                        reference = PluginReference.from_dict(saved.calculator)
+                        analyzer = self._plugin_reference_resolve(reference)
+                    elif saved.calculator != {"id": "core.measurement_statistics", "version": "1"}:
+                        raise ValueError("Unsupported saved measurement calculator version")
+                    processor = (
+                        self._plugin_reference_resolve(PluginReference.from_dict(config.processor))
+                        if config.processor and config.input_stage != "project_processed" else None
+                    )
+                    state = SourceAnalysis_Calculate(
+                        config, inputs, context, analyzer=analyzer, processor=processor,
+                    )
+                except TaskCancelledError:
+                    raise
+                except Exception as exc:
+                    # An optional Source calculator failure must not discard the Project.
+                    state.error = str(exc)
+                    LOGGER.warning("Source calculation %s could not reopen: %s", key, exc)
+            self._recomputed_source_analyses[key] = state
+        return payload
+
+    def _project_pipeline_recompute(
         self,
         document: ProjectDocument,
         context: TaskContext,
         *,
         raw_source: Path | None = None,
-    ):
+    ) -> tuple[
+        ProjectDocument, Path | None, ParseResult | None, Dataset | None,
+        ProcessingResult | None, AnalysisResult | None,
+    ]:
         self._project_references_validate(document)
         self._recomputed_project_data = ProjectData()
         self._recomputed_calibrated_streams = {}
@@ -3824,7 +4048,11 @@ class MainWindow(QMainWindow):
                     stream_state.name,
                 )
                 streams[stream.id] = stream
-                if apply_identity:
+                stream_calibrated = (
+                    stream.id in document.calibrated_stream_ids
+                    if document.calibrated_stream_ids is not None else apply_identity
+                )
+                if stream_calibrated:
                     calibrated_streams[stream.id] = self._project_calibrations_apply(
                         stream.dataset,
                         channel_states,
@@ -4156,6 +4384,7 @@ class MainWindow(QMainWindow):
         self.process_page.set_processors(
             tuple(compatible_processors), preferred_id=selected_processor
         )
+        self._source_processors = tuple(compatible_processors)
         self.export_dialog.set_exporters(
             self.registry.plugins(PluginType.EXPORTER)
         )
@@ -4163,6 +4392,7 @@ class MainWindow(QMainWindow):
         if selected_parser is not None:
             self._parser_selection_changed(selected_parser)
         self._plugins_initialized = True
+        self._source_analysis_views_sync()
 
     def _plugin_install_dialog(self) -> None:
         t = self.translations.translate

@@ -265,3 +265,18 @@ See Theoretical_Curves.md for the anchor algorithm, validation and operator work
 Two Sources may reference the same physical file with different origins and saved mappings.
 Source ID, not path, determines selection/removal and Dataset reuse during reopen. Their hashes
 can match without making their interpretations, channels, or display state interchangeable.
+
+Project `/2` also adds `source_analyses`, keyed by `<source_id>/<workspace_id>`. Each value stores
+`config` (full Channel references, scientific `interval` or null for full record, source-specific
+`propellant_mass_kg`, input stage, polarity, Processor reference/config, PRE/POST), `completed`,
+`calculator` (stable ID/version/API for plugins or the generic statistics version) and `results`.
+Result metadata records source/reference, scientific interval/clock and no applied display
+transform. The source mass is never inherited from `motor_metadata`. Missing source profiles mean
+none. Missing or invalid mass preserves other metrics while Isp stays unavailable.
+
+`calibrated_stream_ids` records independently completed stream calibrations; absence retains
+legacy global workflow-stage interpretation. This permits a calibrated theoretical Source with
+an unfinished experimental workflow without advancing the latter on reopen. Completed source
+profiles are recomputed from hash-verified files/configuration; drafts remain pending. Profiles
+with unavailable saved calculators remain pending with their own error. Source removal prunes its
+profiles; scientific changes invalidate affected profiles. View transforms never invalidate them.

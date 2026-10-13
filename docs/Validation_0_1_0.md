@@ -87,3 +87,49 @@ compensation and analysis plugins. Only file-picker paths and error-dialog colle
 scripted. It covers real import through theory removal/save/reopen and is distinct from startup
 smoke or the earlier generated-model layout screenshots. Detailed review and a short morning
 acceptance path are in Delivery_Review_0_1_0.md.
+
+## 2026-10-13 independent Source calculation extension
+
+The latest requirement supersedes the earlier display-only theory boundary. Both origins now
+calculate independently in the existing result panels. The primary experiment result remains a
+separate selector choice. Source parameters/completion/results use full references and own mass,
+interval, polarity and optional correction; existing Analyzer/statistics definitions are reused.
+
+- Final complete suite on the frozen implementation: **236 passed, 248.62 seconds; 0 failures**.
+  No program/test changes were made during or after this final run; subsequent edits are docs only.
+- Final `.venv\Scripts\python.exe -m ruff check .` and `git diff --check`: passed.
+- Venv GUI startup: en_US/light and zh_CN/dark, both exit 0.
+- Real Qt acceptance script: passed, error collection empty. Automatic preview enabled, real
+  parsing/correction/analysis/statistics, only file-picker paths supplied. It calculates all four
+  source result families, changes source parameters, preserves experimental results and scientific
+  clocks during alignment, saves/reopens each completed result, and removes theory without clearing
+  experiment results. Source impulse **4000 N·s**, own mass **0.25 kg**, Isp **1631.5459407646854 s**.
+- Visually inspected zh_CN/light at 980x640 with source parameters expanded and en_US/dark at
+  1280x820 with them folded. The source selector and result table share the original right panel;
+  parameters scroll vertically and labels wrap; compact metric labels have complete tooltips.
+
+New tests in `tests/unit/test_source_analysis.py` and the source-result additions to
+`tests/integration/test_theory_overlay.py` cover physical conversions, timestamp-weighted metrics,
+multi-temperature input, same-file/same-name reference isolation, absent/zero/negative/changed
+source mass, source polarity and actual registered compensation, current primary processed input,
+independent/custom intervals, unchanged display shift/zero/reset metrics, NaN/empty/nonfinite data,
+unit conflicts, invalid windows, immutable arrays, independent calibration, dependency invalidation,
+draft/completed save/reopen and removal, recomputing instead of trusting saved result snapshots,
+and scoped optional-calculator failures during calculation/reopen. Project mass is deliberately
+present in the isolation test and is never borrowed by the theoretical Source.
+
+During development, a bad empty-window fixture initially selected valid offset timestamps; it was
+corrected. The integration test also exposed an existing deferred preview callback surviving
+window destruction; the callback now belongs to a window-owned timer. Calculator errors now stay
+in the affected Source result panel and do not discard an otherwise valid Project. These are
+included in the final complete run above; remaining failures/blockers: **none**.
+
+The single scratch root retains the compact complete test log, real GUI script/summary, its small
+CSV and two updated screenshots (`thrust_source.png`, `chamber_pressure.png`). Generated fixture
+trees/caches and editing scripts are removed after verification. Earlier screenshots are replaced
+by these latest result-panel views. No user data or unrelated task directories are cleaned.
+
+Not run: packaging/PyInstaller, portable executable acceptance, push/tag/Release/publication,
+numerical-comparison features and manual acceptance with user files. Packaging/publication remain
+deferred as requested; comparison remains outside this release scope. No parameter or permission
+blocker remains for source development.

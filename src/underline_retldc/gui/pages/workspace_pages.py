@@ -34,6 +34,7 @@ from underline_retldc.core.units import (
     Quantity_Dimension,
     Unit_AreConvertible,
     Unit_ConvertValue,
+    Unit_DisplayUnitResolve,
     Unit_ValueFormat,
     UnitDisplayMode,
     UnitDisplayMode_Normalize,
@@ -49,6 +50,7 @@ from underline_retldc.gui.pages.import_page import ImportPage
 from underline_retldc.gui.pages.process_page import ProcessPage
 from underline_retldc.gui.pages.setup_page import SetupPage
 from underline_retldc.gui.primary_channels_widget import PrimaryChannelsWidget
+from underline_retldc.gui.source_analysis_widget import SourceAnalysisWidget
 from underline_retldc.gui.test_interval_widget import TestIntervalEditor
 from underline_retldc.gui.theory_overlay_widget import TheoryOverlayWidget
 from underline_retldc.gui.widgets import StandardComboBox
@@ -197,6 +199,7 @@ class MeasurementWorkspacePage(QWidget):
     regions_changed = Signal(object)
     analysis_state_changed = Signal(bool)
     reference_pressure_changed = Signal(float, bool)
+    source_calculate_requested = Signal(object)
 
     def __init__(
         self,
@@ -384,15 +387,21 @@ class MeasurementWorkspacePage(QWidget):
         self.statistics_group = self.results_panel
         self.metrics_table = self.results_panel.table
         self.calculate_button: QPushButton | None = None
+        workspace_id = {
+            "pressure": "chamber_pressure", "temperature": "temperature",
+        }.get(self._metric_mode, "data_explorer")
+        self.source_analysis = SourceAnalysisWidget(translations, workspace_id, dimension)
+        self.source_analysis.view_changed.connect(self._results_refresh)
         self.diagnostics_group: AnalysisDiagnosticsPanel | None = None
         self.diagnostics_list: QListWidget | None = None
         results_widget: QWidget = self.results_panel
-        if self._metric_mode in {"pressure", "temperature"}:
+        if self._metric_mode in {"pressure", "temperature", "generic"}:
             self.calculate_button = QPushButton()
             self.calculate_button.setObjectName("primaryButton")
             self.calculate_button.clicked.connect(self._analysis_calculate)
             results_widget = QWidget()
             results_layout = QVBoxLayout(results_widget)
+            results_layout.addWidget(self.source_analysis)
             self.diagnostics_group = AnalysisDiagnosticsPanel(translations)
             self.diagnostics_list = self.diagnostics_group.list
             results_layout.addWidget(self.calculate_button)
@@ -415,6 +424,7 @@ class MeasurementWorkspacePage(QWidget):
 
     def retranslate(self) -> None:
         translate = self._translations.translate
+        self.source_analysis.retranslate()
         self.theory_overlay.retranslate()
         self.channel_group.setTitle(
             translate(
@@ -925,7 +935,9 @@ class MeasurementWorkspacePage(QWidget):
         self._results_refresh()
         self._segmentation_status_refresh()
         if self.calculate_button is not None:
-            self.calculate_button.setEnabled(bool(selected))
+            self.calculate_button.setEnabled(
+                bool(selected) or self.source_analysis.source_id() is not None
+            )
 
     def set_theory_curves(self, project: ProjectData, curves: tuple[DisplayCurve, ...]) -> None:
         self.theory_overlay.set_curves(project, curves)
@@ -970,6 +982,13 @@ class MeasurementWorkspacePage(QWidget):
         return statistics, unit
 
     def _results_refresh(self) -> None:
+        if self.calculate_button is not None:
+            self.calculate_button.setEnabled(
+                bool(self._selected_series()) or self.source_analysis.source_id() is not None
+            )
+        if self.source_analysis.source_id() is not None:
+            self._source_results_refresh()
+            return
         if self.diagnostics_group is not None:
             selected = self._selected_series()
             datasets = {id(item.dataset): item.dataset for item in selected}
@@ -1075,9 +1094,43 @@ class MeasurementWorkspacePage(QWidget):
             self.analysis_state_changed.emit(updated)
 
     def _analysis_calculate(self) -> None:
+        if self.source_analysis.source_id() is not None:
+            self.source_calculate_requested.emit(self.source_analysis.config())
+            return
         if not self._selected_series():
             return
         self.set_analysis_complete(True)
+
+    def _source_results_refresh(self) -> None:
+        state = self.source_analysis.selected_state()
+        self.source_analysis._notice_refresh()
+        rows: list[tuple[str, str]] = []
+        diagnostics = []
+        if state and state.completed:
+            for result in state.results.values():
+                metadata = result.metadata
+                quantity = str(metadata["input_quantity"])
+                si_unit = str(metadata["input_data_unit"])
+                unit = Unit_DisplayUnitResolve(
+                    quantity, si_unit, override=metadata.get("source_display_unit"),
+                    preferences=self._display_preferences, display_mode=self._display_mode,
+                )
+                for key, value in result.metrics.items():
+                    metric_unit = str(metadata["metric_units"][key])
+                    displayed = value
+                    if value is not None and metric_unit != "s":
+                        displayed = Unit_ConvertValue(float(value), metric_unit, unit)
+                        metric_unit = unit
+                    label = self._translations.translate(f"workspace.statistic.{key}")
+                    if len(state.results) > 1:
+                        label += f" — {metadata['label']}"
+                    rows.append((label, self._value_format(displayed, metric_unit)))
+                diagnostics.extend(result.diagnostics)
+        self.results_panel.set_rows(tuple(rows))
+        if self.diagnostics_group is not None:
+            self.diagnostics_group.set_diagnostics(diagnostics)
+        if self.calculate_button is not None:
+            self.calculate_button.setEnabled(True)
 
     def _analysis_invalidate(self) -> None:
         if (

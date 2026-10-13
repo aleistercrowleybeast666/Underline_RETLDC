@@ -18,6 +18,7 @@ from underline_retldc.core.project_data import (
     SourceDisplayTransform,
     SourceKind,
 )
+from underline_retldc.core.source_analysis import SourceAnalysisDocument
 
 PROJECT_SCHEMA = "underline-retldc-project/2"
 PROJECT_LEGACY_SCHEMAS = ("underline-retldc-project/1",)
@@ -227,6 +228,8 @@ class ProjectDocument:
     locale: str = "zh_CN"
     diagnostics: tuple[Diagnostic, ...] = field(default_factory=tuple)
     software_version: str = __version__
+    source_analyses: Mapping[str, SourceAnalysisDocument] = field(default_factory=dict)
+    calibrated_stream_ids: tuple[str, ...] | None = None
 
     def __post_init__(self) -> None:
         regions = dict(self.regions)
@@ -252,6 +255,11 @@ class ProjectDocument:
             source = {"path": self.source_path, "sha256": self.source_hash}
         return {
             "schema": PROJECT_SCHEMA,
+            "source_analyses": {
+                key: value.to_dict() for key, value in self.source_analyses.items()
+            },
+            **({"calibrated_stream_ids": list(self.calibrated_stream_ids)}
+               if self.calibrated_stream_ids is not None else {}),
             "software_version": self.software_version,
             "source": source,
             "sources": [item.to_dict() for item in self.sources],
@@ -285,6 +293,17 @@ class ProjectDocument:
     def from_dict(cls, payload: Mapping[str, Any]) -> ProjectDocument:
         if payload.get("schema") not in (PROJECT_SCHEMA, *PROJECT_LEGACY_SCHEMAS):
             raise ValueError(f"Unsupported project schema: {payload.get('schema')!r}")
+        analyses_payload = payload.get("source_analyses", {})
+        if not isinstance(analyses_payload, Mapping):
+            raise ValueError("Project source_analyses must be an object")
+        source_analyses: dict[str, SourceAnalysisDocument] = {}
+        for key, value in analyses_payload.items():
+            if not isinstance(value, Mapping):
+                raise ValueError("Source analysis entries must be objects")
+            document = SourceAnalysisDocument.from_dict(value)
+            if str(key) != document.config.key:
+                raise ValueError("Source analysis key does not match its Source/workspace")
+            source_analyses[str(key)] = document
         source = payload.get("source")
         if source is not None and not isinstance(source, Mapping):
             raise ValueError("Project source must be an object or null")
@@ -300,6 +319,15 @@ class ProjectDocument:
             raise ValueError("Every Project Stream must be an object")
         sources = tuple(ProjectSourceState.from_dict(item) for item in sources_payload)
         streams = tuple(ProjectStreamState.from_dict(item) for item in streams_payload)
+        calibrated_ids_payload = payload.get("calibrated_stream_ids")
+        if calibrated_ids_payload is not None and (
+            not isinstance(calibrated_ids_payload, (tuple, list))
+            or any(not isinstance(item, str) for item in calibrated_ids_payload)
+        ):
+            raise ValueError("calibrated_stream_ids must be an array of Stream IDs")
+        calibrated_stream_ids = (
+            tuple(calibrated_ids_payload) if calibrated_ids_payload is not None else None
+        )
         source_ids = {item.source_id for item in sources}
         if len(source_ids) != len(sources):
             raise ValueError("Project Source IDs must be unique")
@@ -308,6 +336,12 @@ class ProjectDocument:
             raise ValueError("Project Stream IDs must be unique")
         if any(item.source_id not in source_ids for item in streams):
             raise ValueError("Project Stream refers to an unknown Source")
+        if calibrated_stream_ids is not None and any(
+            item not in stream_ids for item in calibrated_stream_ids
+        ):
+            raise ValueError("Calibration stage refers to an unknown Stream")
+        if any(item.config.source_id not in source_ids for item in source_analyses.values()):
+            raise ValueError("Source analysis refers to an unknown Source")
         regions_payload = payload.get("regions", {})
         if not isinstance(regions_payload, Mapping):
             raise ValueError("Project regions must be an object")
@@ -468,6 +502,8 @@ class ProjectDocument:
                 Diagnostic.from_dict(item) for item in payload.get("diagnostics", [])
             ),
             software_version=str(payload.get("software_version", "unknown")),
+            source_analyses=source_analyses,
+            calibrated_stream_ids=calibrated_stream_ids,
         )
 
 

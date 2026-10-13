@@ -1276,7 +1276,11 @@ Data Explorer time curves overlay compatible theory, expose visibility, use dist
 dashed theoretical legends, and validate Quantity plus Unit before converting display values.
 Source view transforms support signed shifts, first-valid-source-start zeroing, original-timing
 reset, and Project save/reopen. Preserve sampling and NaN gaps without interpolation or resampling.
-Theory never supplies experimental Primary Channels, segmentation, compensation, analysis, or
-formal export values. Theory source additions/removals and display changes preserve completed
+Theory never supplies experimental Primary Channels, segmentation, compensation, primary analysis,
+or formal export values. Both origins support independent source calculations in the existing
+result area: thrust impulse/Isp, pressure/temperature metrics and applicable Data Explorer
+statistics reuse existing scientific calculators. Source parameters, mass, intervals and results
+are saved independently; display alignment never changes calculation times. Theory source
+additions/removals and display changes preserve completed
 experiment results. Residuals, fitting, LLM analysis, and motor optimization are excluded.
 See docs/Theoretical_Curves.md for persistence and operator semantics.

@@ -1,4 +1,4 @@
-# Theoretical curve overlays in 0.1.0
+# Source curves and calculations in 0.1.0
 
 Theoretical and experimental data use the same registered Parsers and explicit mappings. No
 software name or header vocabulary determines origin. Choose **New sources → Theoretical** before
@@ -30,10 +30,51 @@ parses each Source's own mapping even when its path and SHA-256 match another So
    interval. Save Project and Open Project retain origin, visibility, and source alignment.
 
 With no experimental primary selected, a compatible theoretical curve can still be inspected.
-Calculation and automatic segmentation remain unavailable until experimental inputs are selected.
+Select that Source in the result area's **Metric source** to calculate independently.
+Automatic Project segmentation still requires an experimental reference.
 Data Explorer uses the selected experimental quantity as its overlay target; without one, its
 alignment selector chooses the theoretical quantity to inspect. Auxiliary/Other Channels with
-known compatible physical quantities can be inspected through Data Explorer.
+known compatible physical quantities can be inspected and calculated through Data Explorer.
+
+## Independent calculations in the same result area
+
+Thrust, Chamber Pressure, Temperature and Data Explorer keep their existing result table location.
+The calculation-source selector defaults to **Current primary experiment results**, retaining the
+original workflow. Choosing a specific Experimental or Theoretical Source shows its own results.
+Expand **Source calculation parameters** to select the engineering Channel (multiple Temperature
+Channels are supported), full record or custom scientific Project-time interval. Calculate uses
+the same thrust Analyzer or measurement-statistics implementation as the existing workflow.
+
+For thrust, the source defaults to polarity +1 and correction None. Optional motor-weight
+compensation uses registered Processor schemas and explicit source PRE/POST intervals. A source
+containing the current primary processed thrust may explicitly choose that curve instead.
+Changing the Project's processed input then invalidates that dependent calculation; independently
+configured source calculations keep their own intervals and correction. Neither selection creates
+an experimental Primary binding for a theoretical Source.
+
+Enter propellant mass specifically for this Source to enable Isp. It starts unspecified even if
+the Project's motor metadata contains mass. Unspecified, zero or negative mass yields unavailable
+Isp with a Diagnostic while impulse and other computable metrics remain available. The same
+`g0 = 9.80665 m/s²` and actual-timestamp trapezoidal integration apply. No total-motor mass or
+baseline-derived mass estimate is substituted.
+
+Pressure retains start/mean/maximum/time-to-maximum/minimum; Temperature retains start, interval
+maximum, full-record maximum and recorded time; Data Explorer retains its existing applicable
+minimum/mean/maximum statistics. Physical values are calculated in canonical units and rendered
+with current Display Units. Unit/Quantity conflicts, empty/all-invalid records, invalid intervals
+or unsupported inputs show a scoped unavailable reason, without clearing another Source's result.
+Finite-sample integration follows existing calculator behavior (including integration across
+retained finite points around NaNs), with a Diagnostic; plotted gaps and raw samples are preserved.
+No endpoint interpolation, sorting or resampling is added for calculation.
+
+Source results and configuration use full Source/Stream/Channel references, so two origins of one
+file or equal local Channel names do not share caches. Calculation uses `dataset.project_time`:
+manual display shifts, source-start zeroing, visibility and restoring timing affect only plots.
+The source calculation interval is separate from the Project's experimental Test Segmentation;
+existing experimental markers remain unchanged. Saving stores independent parameters, calculator
+provenance, results and completion. Reopen verifies source hashes and recomputes completed profiles
+from saved scientific input; uncalculated drafts stay uncalculated. Removing a Source drops its
+profiles only. Formal export readiness continues to follow the original experimental workflow.
 
 ## Data and unit contract
 

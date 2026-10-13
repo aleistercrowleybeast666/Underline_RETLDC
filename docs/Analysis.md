@@ -221,3 +221,15 @@ Source display alignment never moves experimental markers or affects motor-weigh
 thrust polarity, statistics, impulse, Isp, or formal exports. Existing completed experiment results
 survive theoretical import/removal/calibration and display edits. Overlay sample gaps remain gaps.
 See Theoretical_Curves.md; no residual, fitting, optimization, or LLM calculation is introduced.
+
+## Independent Source results
+
+The existing result panels now select either the original primary experiment result or an
+individual Experimental/Theoretical Source. Source calculations reuse the above Analyzer and
+measurement statistics, retaining actual Project timestamps and physical Unit validation.
+Each Source/workspace stores its own Channel references, full-record/custom interval, thrust
+polarity, optional registered correction with PRE/POST windows, and explicit propellant mass.
+Unknown/nonpositive mass disables Isp only; no Project motor mass is borrowed. Display alignment
+does not affect impulse, durations or recorded peak times. Source calculation results never
+replace primary experiment results, segmentation or export readiness. See Theoretical_Curves.md
+for operator controls, NaN behavior and independent saved completion/draft state.
