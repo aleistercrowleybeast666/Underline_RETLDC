@@ -423,3 +423,12 @@ inside the worker. Automatic preview/parse and deferred layout callbacks use own
 so a destroyed page/window cannot receive a stale single-shot callback. Test teardown also waits
 for cancellation before deleting windows; a timed-out test must not leave a worker using the next
 test's Qt lifecycle. No global GC setting is changed.
+
+Import-page entries also carry transient UUIDs, separate from persistent Source IDs. Rebuilding
+the list preserves entry identity and emits only the final selection. Pending parser/configuration
+drafts belong to that identity. Asynchronous import work captures its session, selection revision,
+entry IDs and input snapshot; stale completions cannot modify the current editor or Project.
+Appending sources retains committed Sources/Streams/calibration and valid Primary bindings.
+Explicit reparse replaces only the selected source after parsing and identity calibration succeed;
+removed/changed primary inputs invalidate dependent workflow results. No persistent schema or
+Plugin API change is required for this UI lifecycle state.

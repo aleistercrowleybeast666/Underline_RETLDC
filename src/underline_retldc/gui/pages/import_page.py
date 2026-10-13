@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import (
@@ -50,6 +51,7 @@ class ImportPage(QWidget):
     SOURCE_ID_ROLE = int(Qt.ItemDataRole.UserRole) + 2
     OFFSET_ROLE = int(Qt.ItemDataRole.UserRole) + 3
     PARSED_ROLE = int(Qt.ItemDataRole.UserRole) + 4
+    ENTRY_ID_ROLE = int(Qt.ItemDataRole.UserRole) + 5
 
     def __init__(
         self,
@@ -344,11 +346,14 @@ class ImportPage(QWidget):
         self,
         entries: tuple[tuple[Path, float] | tuple[Path, float, SourceKind], ...]
         | list[tuple[Path, float] | tuple[Path, float, SourceKind]],
+        *,
+        selected_index: int = 0,
     ) -> None:
         previous = {
             (str(Path(item.data(Qt.ItemDataRole.UserRole)).resolve()),
              SourceKind(item.data(self.KIND_ROLE))): (
-                item.data(self.SOURCE_ID_ROLE), item.data(self.PARSED_ROLE)
+                item.data(self.SOURCE_ID_ROLE), item.data(self.PARSED_ROLE),
+                item.data(self.ENTRY_ID_ROLE), item.text(),
             )
             for index in range(self.source_list.count())
             if (item := self.source_list.item(index)) is not None
@@ -371,14 +376,20 @@ class ImportPage(QWidget):
             item.setData(Qt.ItemDataRole.UserRole, resolved_text)
             item.setData(self.KIND_ROLE, kind.value)
             item.setData(self.OFFSET_ROLE, float(offset))
-            source_id, parsed = previous.get((str(path.resolve()), kind), (None, False))
+            source_id, parsed, entry_id, label = previous.get(
+                (str(path.resolve()), kind), (None, False, uuid4().hex, None)
+            )
             item.setData(self.SOURCE_ID_ROLE, source_id)
             item.setData(self.PARSED_ROLE, parsed)
+            item.setData(self.ENTRY_ID_ROLE, entry_id)
+            if label is not None:
+                item.setText(label)
             self.source_list.addItem(item)
+        if self.source_list.count():
+            self.source_list.setCurrentRow(selected_index)
         self.source_list.blockSignals(False)
         if self.source_list.count():
-            self.source_list.setCurrentRow(0)
-            self._source_selected(0)
+            self._source_selected(selected_index)
         else:
             self.source_edit.clear()
             self.time_offset_edit.setValue(0.0)
@@ -386,6 +397,7 @@ class ImportPage(QWidget):
     def add_source_paths(self, sources: tuple[Path, ...] | list[Path]) -> None:
         entries = list(self.source_import_entries())
         existing = {(str(path.resolve()), kind) for path, _offset, kind in entries}
+        original_count = len(entries)
         kind = SourceKind(self.new_kind_combo.currentData())
         for source in sources:
             path = Path(source)
@@ -393,9 +405,17 @@ class ImportPage(QWidget):
             if resolved not in existing:
                 entries.append((path, 0.0, kind))
                 existing.add(resolved)
-        self.set_source_entries(entries)
-        if self.source_list.count():
-            self.source_list.setCurrentRow(self.source_list.count() - 1)
+        if len(entries) != original_count:
+            self.set_source_entries(entries, selected_index=len(entries) - 1)
+
+    def selected_entry_id(self) -> str:
+        """UI identity survives selection/rebuilds, but never removal and re-addition."""
+        item = self.source_list.currentItem()
+        return str(item.data(self.ENTRY_ID_ROLE)) if item else ""
+
+    def entry_ids(self) -> tuple[str, ...]:
+        return tuple(str(self.source_list.item(i).data(self.ENTRY_ID_ROLE))
+                     for i in range(self.source_list.count()))
 
     def set_source_details(
         self,
@@ -494,6 +514,7 @@ class ImportPage(QWidget):
             item.setData(self.KIND_ROLE, kind.value)
             item.setText(f"[{self._translations.translate(f'source.{kind.value}')}] {path.name}")
             self._source_kind_controls_refresh()
+            self._source_selected(row)
 
     def _source_kind_controls_refresh(self) -> None:
         item = self.source_list.currentItem()
@@ -530,7 +551,11 @@ class ImportPage(QWidget):
         row = self.source_list.currentRow()
         if row < 0:
             return
+        self.source_list.blockSignals(True)
         item = self.source_list.takeItem(row)
+        self.source_list.setCurrentRow(min(row, self.source_list.count() - 1))
+        self.source_list.blockSignals(False)
+        self.source_edit.clear()
         path_text = str(item.data(Qt.ItemDataRole.UserRole))
         self.source_removed.emit(path_text)
         self.source_entry_removed.emit(
@@ -540,9 +565,7 @@ class ImportPage(QWidget):
             self.source_edit.clear()
             self.time_offset_edit.setValue(0.0)
         else:
-            self.source_list.setCurrentRow(
-                min(row, self.source_list.count() - 1)
-            )
+            self._source_selected(self.source_list.currentRow())
 
     def parser_config(self) -> dict[str, Any]:
         if not self.tabular_mapping_editor.isHidden():

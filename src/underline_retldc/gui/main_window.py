@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Mapping
+from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -62,6 +63,7 @@ from underline_retldc.core.pipeline import (
 from underline_retldc.core.primary_channels import (
     PrimaryChannels_AutoBind,
     PrimaryChannels_Candidates,
+    PrimaryChannels_ReferenceIsValid,
     PrimaryChannels_Validate,
 )
 from underline_retldc.core.project import (
@@ -214,13 +216,21 @@ class MainWindow(QMainWindow):
         self._active_failure: Callable[[BaseException], None] | None = None
         self._active_task_indeterminate = False
         self._closing = False
+        self._import_revision = 0
+        self._import_editor_entry = ""
+        self._import_drafts: dict[str, tuple[str | None, dict[str, Any]]] = {}
+        self._active_valid: Callable[[], bool] | None = None
+        self._detect_timer = QTimer(self)
+        self._detect_timer.setSingleShot(True)
+        self._detect_timer.timeout.connect(self._parser_detect)
         self._tabular_auto_parse_pending = False
+        self._auto_parse_valid: Callable[[], bool] | None = None
         self._auto_preview_timer = QTimer(self)
         self._auto_preview_timer.setSingleShot(True)
         self._auto_preview_timer.timeout.connect(self._tabular_auto_preview)
         self._auto_parse_timer = QTimer(self)
         self._auto_parse_timer.setSingleShot(True)
-        self._auto_parse_timer.timeout.connect(self._source_parse)
+        self._auto_parse_timer.timeout.connect(self._tabular_auto_parse)
         self._source_preview_timer = QTimer(self)
         self._source_preview_timer.setSingleShot(True)
         self._source_preview_timer.timeout.connect(
@@ -1279,6 +1289,7 @@ class MainWindow(QMainWindow):
         *,
         indeterminate: bool = False,
         failure: Callable[[BaseException], None] | None = None,
+        valid: Callable[[], bool] | None = None,
     ) -> TaskHandle[Any] | None:
         if self._closing:
             return None
@@ -1288,6 +1299,7 @@ class MainWindow(QMainWindow):
             return None
         self._active_success = success
         self._active_failure = failure
+        self._active_valid = valid
         self._active_task = self.task_manager.submit(name, operation)
         self._active_task_indeterminate = indeterminate
         if indeterminate:
@@ -1325,11 +1337,15 @@ class MainWindow(QMainWindow):
         self.cancel_button.hide()
         callback = self._active_success
         failure_callback = self._active_failure
+        valid = self._active_valid
+        self._active_valid = None
         self._active_task = None
         self._active_success = None
         self._active_failure = None
         self._active_task_indeterminate = False
         self.progress_bar.setRange(0, 1000)
+        if valid is not None and not valid():
+            return
         if handle.state is TaskResult.SUCCESS:
             try:
                 if callback is not None:
@@ -1415,6 +1431,9 @@ class MainWindow(QMainWindow):
         self.settings.set_last_directory(path if path.is_dir() else path.parent)
 
     def _project_new(self) -> None:
+        self._import_pending_invalidate()
+        self._import_drafts.clear()
+        self._import_editor_entry = ""
         self.session = AnalysisSession()
         self._project_title = None
         self._recommendations.clear()
@@ -1456,10 +1475,11 @@ class MainWindow(QMainWindow):
         )
         if sources:
             paths = [Path(source) for source in sources]
-            self._project_new()
+            previous_entries = self.import_page.entry_ids()
             self.import_page.add_source_paths(paths)
             self._last_directory_store(paths[0])
-            if FACTORY_DEFAULTS.parser_auto_probe:
+            if (FACTORY_DEFAULTS.parser_auto_probe
+                    and previous_entries != self.import_page.entry_ids()):
                 self._parser_detect()
 
     def _source_browse(self) -> None:
@@ -1472,16 +1492,25 @@ class MainWindow(QMainWindow):
         )
         if sources:
             paths = [Path(source) for source in sources]
+            previous_entries = self.import_page.entry_ids()
             self.import_page.add_source_paths(paths)
             self._last_directory_store(paths[0])
-            if FACTORY_DEFAULTS.parser_auto_probe:
+            if (FACTORY_DEFAULTS.parser_auto_probe
+                    and previous_entries != self.import_page.entry_ids()):
                 self._parser_detect()
 
     def _source_selection_changed(
         self, path_text: str, source_id: str = "", source_kind: str | None = None
     ) -> None:
-        if not self.session.project_data.streams:
-            return
+        self._import_pending_invalidate()
+        entry_id = self.import_page.selected_entry_id()
+        if self._import_editor_entry in self.import_page.entry_ids():
+            self._import_drafts[self._import_editor_entry] = (
+                self.import_page.selected_parser_id(), deepcopy(self.import_page.parser_config())
+            )
+        self._import_drafts = {key: value for key, value in self._import_drafts.items()
+                               if key in self.import_page.entry_ids()}
+        self._import_editor_entry = entry_id
         try:
             selected_path = Path(path_text).resolve()
         except OSError:
@@ -1502,6 +1531,14 @@ class MainWindow(QMainWindow):
             None,
         )
         if stream is None:
+            plugin_id, config = self._import_drafts.get(
+                entry_id, (self.import_page.selected_parser_id(), None)
+            )
+            self.import_page.clear_results()
+            self.import_page.set_parser_id(plugin_id)
+            self._parser_selection_changed(plugin_id)
+            if config is not None:
+                self.import_page.set_parser_config(config)
             return
         self.session.active_stream_id = stream.id
         source = self.session.project_data.sources[stream.source_id]
@@ -1515,6 +1552,7 @@ class MainWindow(QMainWindow):
             self.session.channel_calibrations = self._active_channel_calibrations()
         if source.parser_id is not None:
             self.import_page.set_parser_id(source.parser_id)
+            self._parser_selection_changed(source.parser_id)
             self.import_page.set_parser_config(dict(source.parser_config))
         report = Dataset_QualityInspect(stream.dataset)
         if source.source_kind == SourceKind.EXPERIMENTAL:
@@ -1539,7 +1577,35 @@ class MainWindow(QMainWindow):
                     state.plugin_id, dict(state.config)
                 )
         if self.import_page.uses_tabular_mapping():
+            self._auto_preview_timer.stop()
             self._source_preview_timer.start(0)
+
+    def _import_pending_invalidate(self) -> None:
+        self._import_revision += 1
+        self._detect_timer.stop()
+        self._auto_preview_timer.stop()
+        self._auto_parse_timer.stop()
+        self._source_preview_timer.stop()
+        self._tabular_auto_parse_pending = False
+        self._auto_parse_valid = None
+
+    def _import_request_guard(self) -> Callable[[], bool]:
+        """Bind asynchronous UI work to the exact source, selection and mapping draft."""
+        revision = self._import_revision
+        session = self.session
+        entry_ids = self.import_page.entry_ids()
+        entries = self.import_page.source_import_entries()
+        entry = self.import_page.selected_entry_id()
+        parser_id = self.import_page.selected_parser_id()
+        config = deepcopy(self.import_page.parser_config())
+        return lambda: (
+            not self._closing and session is self.session and revision == self._import_revision
+            and entry_ids == self.import_page.entry_ids()
+            and entries == self.import_page.source_import_entries()
+            and entry == self.import_page.selected_entry_id()
+            and parser_id == self.import_page.selected_parser_id()
+            and config == self.import_page.parser_config()
+        )
 
     @staticmethod
     def _path_matches(left: Path, right: Path) -> bool:
@@ -1551,6 +1617,8 @@ class MainWindow(QMainWindow):
     def _source_removed(
         self, path_text: str, source_id: str = "", source_kind: str | None = None
     ) -> None:
+        self._import_pending_invalidate()
+        self._import_editor_entry = ""
         removed_path = Path(path_text)
         removed_source_ids = {
             candidate_id
@@ -1567,7 +1635,8 @@ class MainWindow(QMainWindow):
                 self._recommendations.clear()
                 self._recommendation_source = None
                 self.import_page.clear_results()
-                self.import_page.tabular_mapping_editor.set_parser("", "", "")
+                self.import_page.set_parser_id(None)
+                self._parser_selection_changed(None)
             return
 
         removed_stream_ids = {
@@ -1675,6 +1744,7 @@ class MainWindow(QMainWindow):
             self.session.calibration_id = None
             self.session.calibration_config.clear()
             self.import_page.clear_results()
+            self.import_page.set_parser_id(None)
             self.import_page.set_parser_schema(
                 {"type": "object", "properties": {}}
             )
@@ -1701,8 +1771,7 @@ class MainWindow(QMainWindow):
         self._measurement_workspaces_update()
         self._segmentation_views_sync()
         self._export_availability_update()
-        if active_stream_id is not None:
-            self._source_selection_changed(str(sources[streams[active_stream_id].source_id].path))
+        # ImportPage restores the surviving selected row after this removal transaction.
 
     def _parser_selection_changed(self, plugin_id: str | None) -> None:
         if plugin_id is None:
@@ -1794,6 +1863,8 @@ class MainWindow(QMainWindow):
     def _tabular_auto_preview(self) -> None:
         # Parser/source restoration can queue the same read-only preview more than once.
         if self._active_task is not None:
+            if not self._closing:
+                self._auto_preview_timer.start(50)
             return
         if (
             not self.import_page.uses_tabular_mapping()
@@ -1851,6 +1922,7 @@ class MainWindow(QMainWindow):
             editor.set_auto_detection_result(detection)
             editor.set_advanced_expanded(not detection.can_parse)
             if detection.can_parse:
+                self._auto_parse_valid = self._import_request_guard()
                 self._tabular_auto_parse_pending = True
                 self._auto_parse_timer.start(0)
 
@@ -1858,10 +1930,24 @@ class MainWindow(QMainWindow):
             self.translations.translate("tabular.auto_detecting"),
             operation,
             success,
+            valid=self._import_request_guard(),
         )
+
+    def _tabular_auto_parse(self) -> None:
+        if self._auto_parse_valid is None or not self._auto_parse_valid():
+            self._tabular_auto_parse_pending = False
+            self._auto_parse_valid = None
+            return
+        if self._active_task is not None:
+            self._auto_parse_timer.start(50)
+            return
+        self._auto_parse_valid = None
+        self._source_parse()
 
     def _tabular_preview_refresh(self, force_suggestion: bool = False) -> None:
         if not force_suggestion and self._active_task is not None:
+            if not self._closing:
+                self._source_preview_timer.start(50)
             return
         if not self.import_page.uses_tabular_mapping():
             return
@@ -1903,6 +1989,7 @@ class MainWindow(QMainWindow):
             self.translations.translate("tabular.preview"),
             operation,
             success,
+            valid=self._import_request_guard(),
         )
 
     def _tabular_preset_select(self, path_text: str) -> None:
@@ -2052,6 +2139,10 @@ class MainWindow(QMainWindow):
             self._error_show(exc)
 
     def _parser_detect(self) -> None:
+        if self._active_task is not None:
+            if not self._closing:
+                self._detect_timer.start(50)
+            return
         try:
             source = self.import_page.source_path()
         except (ValueError, OSError) as exc:
@@ -2091,7 +2182,8 @@ class MainWindow(QMainWindow):
                 self.import_page.clear_parser_ambiguity()
                 self.import_page.set_parser_id(None)
 
-        self._task_start(self.translations.translate("import.detect"), operation, success)
+        self._task_start(self.translations.translate("import.detect"), operation, success,
+                         valid=self._import_request_guard())
 
     def _source_parse(self) -> None:
         if self._active_task is not None:
@@ -2115,20 +2207,20 @@ class MainWindow(QMainWindow):
             (str(source.path.resolve()), source.source_kind): source
             for source in self.session.project_data.sources.values()
         }
-        pending_entries = tuple(
-            entry for entry in source_entries
-            if (str(entry[0].resolve()), entry[2]) not in existing_by_key
-        )
-        theory_addition = bool(existing_by_key) and bool(pending_entries) and all(
-            kind == SourceKind.THEORETICAL for _path, _offset, kind in pending_entries
-        )
-        if theory_addition:
-            source_entries = pending_entries
-        elif not pending_entries and existing_by_key and self.import_page.source_kind(
-            self.import_page.source_path()
-        ) == SourceKind.THEORETICAL:
-            self._measurement_workspaces_update()
-            return
+        incremental = bool(existing_by_key)
+        if self.import_page.uses_tabular_mapping() or incremental:
+            # The visible mapping belongs only to the selected file. Other pending tables
+            # need their own detection or explicit mapping before they can be imported.
+            selected_path = self.import_page.source_path().resolve()
+            selected_kind = self.import_page.source_kind(selected_path)
+            source_entries = tuple(entry for entry in source_entries
+                                   if entry[0].resolve() == selected_path
+                                   and entry[2] == selected_kind)
+        changed_source_ids = {
+            existing_by_key[(str(path.resolve()), kind)].id
+            for path, _offset, kind in source_entries
+            if (str(path.resolve()), kind) in existing_by_key
+        }
         parsers = self.registry.plugins(PluginType.PARSER)
 
         def operation(context: TaskContext) -> list[tuple[Any, ...]]:
@@ -2142,9 +2234,6 @@ class MainWindow(QMainWindow):
                     key=lambda item: item[1].confidence, reverse=True
                 )
                 parser_id = selected_id
-                previous_source = existing_by_key.get((str(source.resolve()), kind))
-                if pending_entries and previous_source is not None:
-                    parser_id = previous_source.parser_id
                 if parser_id is None:
                     decision = ParserSelection_Decide(
                         recommendations,
@@ -2174,11 +2263,7 @@ class MainWindow(QMainWindow):
                 }
                 effective_config = {
                     **defaults,
-                    **(
-                        previous_source.parser_config
-                        if pending_entries and previous_source is not None
-                        else parser_config
-                    ),
+                    **parser_config,
                 }
                 parse_result = parser.parse(source, effective_config, context)
                 results.append(
@@ -2199,21 +2284,18 @@ class MainWindow(QMainWindow):
             return results
 
         def success(payload: list[tuple[Any, ...]]) -> None:
-            if not theory_addition:
-                self._source_analysis_invalidate()
-                self.session.reset_after_parse()
             sources: dict[str, Source] = (
-                dict(self.session.project_data.sources) if theory_addition else {}
+                dict(self.session.project_data.sources) if incremental else {}
             )
             streams: dict[str, Stream] = (
-                dict(self.session.project_data.streams) if theory_addition else {}
+                dict(self.session.project_data.streams) if incremental else {}
             )
             calibrated_streams: dict[str, Any] = (
-                dict(self.session.calibrated_streams) if theory_addition else {}
+                dict(self.session.calibrated_streams) if incremental else {}
             )
             outputs_by_stream: dict[str, dict[str, str]] = {}
             stream_calibration_states: dict[str, ChannelCalibrationState] = (
-                dict(self.session.stream_channel_calibrations) if theory_addition else {}
+                dict(self.session.stream_channel_calibrations) if incremental else {}
             )
             identity = self.registry.get(DEFAULT_CALIBRATION_ID)
             reserved_source_ids = {source.id for source in existing_by_key.values()}
@@ -2229,6 +2311,10 @@ class MainWindow(QMainWindow):
                 if previous_source is not None and previous_stream is not None:
                     source_id = previous_source.id
                     stream_id = previous_stream.id
+                    stream_calibration_states = {
+                        key: state for key, state in stream_calibration_states.items()
+                        if not key.startswith(f"{source_id}/{stream_id}/")
+                    }
                 else:
                     number = index + 1
                     while (
@@ -2293,12 +2379,52 @@ class MainWindow(QMainWindow):
                         source_id, stream_id, channel_id
                     )
                     stream_calibration_states[key] = state
-            if theory_addition:
-                self.session.project_data = ProjectData(
-                    sources, streams, self.session.project_data.primary_channels
+            if incremental:
+                bindings = self.session.project_data.primary_channels
+                bound_source_ids = {
+                    reference.source_id for reference in (
+                        bindings.thrust, bindings.chamber_pressure, *bindings.temperature_channels
+                    ) if reference is not None
+                }
+                project_data = ProjectData(sources, streams)
+                recommendations = PrimaryChannels_AutoBind(project_data)
+
+                def retained(reference: ChannelReference | None, dimension: str,
+                             suggested: ChannelReference | None) -> ChannelReference | None:
+                    if reference is not None:
+                        return reference if PrimaryChannels_ReferenceIsValid(
+                            project_data, reference, dimension=dimension
+                        ) else None
+                    # Fill a newly introduced measurement family; preserve an explicit None
+                    # when the previous project already offered candidates in that family.
+                    return suggested if not PrimaryChannels_Candidates(
+                        self.session.project_data, dimension=dimension
+                    ) else None
+
+                updated_bindings = PrimaryChannelBindings(
+                    retained(bindings.thrust, "force", recommendations.thrust),
+                    retained(bindings.chamber_pressure, "pressure",
+                             recommendations.chamber_pressure),
+                    tuple(reference for reference in bindings.temperature_channels
+                          if PrimaryChannels_ReferenceIsValid(
+                              project_data, reference, dimension="temperature"
+                          )) if PrimaryChannels_Candidates(
+                              self.session.project_data, dimension="temperature"
+                          ) else recommendations.temperature_channels,
                 )
+                self.session.project_data = project_data.with_primary_channels(updated_bindings)
+                if changed_source_ids & bound_source_ids:
+                    self._source_analysis_invalidate()
+                    self.session.reset_after_calibration()
+                    self.analyze_page.clear_result()
+                self.session.source_analyses = {
+                    key: state for key, state in self.session.source_analyses.items()
+                    if state.config.source_id not in changed_source_ids
+                }
                 self.session.calibrated_streams = calibrated_streams
                 self.session.stream_channel_calibrations = stream_calibration_states
+                if updated_bindings.thrust is not None:
+                    self.session.primary_stream_id = updated_bindings.thrust.stream_id
                 for stream_id in outputs_by_stream:
                     stream = streams[stream_id]
                     source = sources[stream.source_id]
@@ -2308,12 +2434,17 @@ class MainWindow(QMainWindow):
                         status=self.translations.translate("import.status_parsed"),
                         source_kind=source.source_kind, source_id=source.id,
                     )
-                self._measurement_workspaces_update()
                 self._source_selection_changed(
                     str(self.import_page.source_path()), self.import_page.selected_source_id(),
                     self.import_page.source_kind(self.import_page.source_path()).value,
                 )
+                self._primary_channels_update()
+                self._measurement_workspaces_update()
+                self._segmentation_views_sync()
+                self._export_availability_update()
                 return
+            self._source_analysis_invalidate()
+            self.session.reset_after_parse()
             project_data = ProjectData(sources, streams)
             project_data = project_data.with_primary_channels(
                 PrimaryChannels_AutoBind(project_data)
@@ -2434,6 +2565,7 @@ class MainWindow(QMainWindow):
             operation,
             success,
             failure=failure,
+            valid=self._import_request_guard(),
         )
 
     def _calibration_apply(self) -> None:
@@ -4750,6 +4882,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self._closing = True
+        self._detect_timer.stop()
         self._source_preview_timer.stop()
         self._auto_preview_timer.stop()
         self._auto_parse_timer.stop()

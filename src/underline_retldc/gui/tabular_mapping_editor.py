@@ -401,6 +401,10 @@ class TabularMappingEditor(QWidget):
         self._parser_version = str(parser_version)
         self._reader_kind = str(reader_kind)
         self._preview = None
+        for combo in (self.sheet_combo, self.time_column_combo):
+            combo.blockSignals(True)
+            combo.clear()
+            combo.blockSignals(False)
         self._mapping_rows.clear()
         self.preview_table.clear()
         self.preview_table.setRowCount(0)
@@ -603,6 +607,8 @@ class TabularMappingEditor(QWidget):
                 self.sheet_combo.clear()
                 for name in self._preview.sheet_names:
                     self.sheet_combo.addItem(name, name)
+            elif sheet_name and self.sheet_combo.findData(sheet_name) < 0:
+                self.sheet_combo.addItem(sheet_name, sheet_name)
             _combo_value_set(self.sheet_combo, sheet_name)
         elif self._reader_kind == "delimited":
             delimiter = str(config.get("delimiter", "auto"))
@@ -970,6 +976,11 @@ class TabularMappingEditor(QWidget):
             )
             self.time_column_combo.addItem(label, column)
         index = self.time_column_combo.findData(selected_value)
+        if index < 0 and selected_value is not None:
+            # A saved index remains authoritative before preview (and when out of range).
+            # Parsing validates it; never silently turn it into None or the first column.
+            self.time_column_combo.addItem(Tabular_ColumnLabel(selected_value), selected_value)
+            index = self.time_column_combo.count() - 1
         self.time_column_combo.setCurrentIndex(max(0, index))
         self.time_column_combo.blockSignals(False)
 

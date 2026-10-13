@@ -1,5 +1,8 @@
 # 0.1.0 本地便携候选验收（2026-10-13）
 
+后续导入状态修复与新候选验收见 [Import_Acceptance_0_1_0.md](Import_Acceptance_0_1_0.md)。
+以下保留原阶段记录。
+
 以下是上一候选包的历史验收记录。新增共享滑条、双源起点对齐及生命周期验证见
 [Alignment_Acceptance_0_1_0.md](Alignment_Acceptance_0_1_0.md)。
 

@@ -12,6 +12,27 @@ and its own saved mapping, calibration and display state. No file copy is needed
 removing one origin targets its stable Source ID and does not select/remove the other. Reopen
 parses each Source's own mapping even when its path and SHA-256 match another Source.
 
+## Import state and mappings
+
+Toolbar Import and Project Add Sources both append to the current Project. New Project is an
+explicit separate action. Canceling the file picker or adding the same path/origin again leaves
+selection, mappings and scientific state unchanged. Appending another Experimental source keeps
+existing Primary bindings and completed results; ambiguous alternatives remain explicit choices.
+
+Each pending entry has its own parser/mapping draft. A new table starts with empty mapping columns
+and is detected independently, even when it uses the same parser as the preceding file. The visible
+tabular mapping imports only its selected file; other pending tables require their own selection
+and mapping. Saved source mappings are never overwritten by another file's preview. Switching
+back to a parsed source restores its saved mapping; switching between pending entries retains
+manual drafts. Removing and re-adding a file starts a new pending entry.
+
+Probe, preview and parse callbacks are accepted only for their original session, source entry,
+origin, selection, offsets and parser configuration. Removal, input changes, New Project or closing
+make old callbacks ineligible. Failed parsing leaves the committed Project unchanged. Removing
+one entry restores the surviving selection only after removal completes; removing the last entry
+resets both the parser selector and mapping editor. Two-column raw TXT parser ambiguity still
+requires an explicit parser choice; no registry-order fallback is introduced.
+
 ## Operator workflow
 
 1. Import experimental data normally and confirm its Primary Channels.
@@ -44,12 +65,13 @@ Thrust, Chamber Pressure, Temperature and Data Explorer keep their existing resu
 The calculation-source selector contains exactly **Experimental** and **Theoretical**. Experimental
 uses the existing primary workflow, parameters and results; Theoretical uses its independently
 saved source parameters and results. It does not create duplicate experimental choices. If more
-than one theory file supplies this measurement, the folded parameters contain a Theory file
+than one theory file supplies this measurement, the parameters contain a Theory file
 selector. Channels, including multiple Temperature Channels, still come from the original mapping.
 Historical independent experimental profiles remain in saved Projects without replacing the
 primary workflow.
-Expand **Source calculation parameters** to select the engineering Channel (multiple Temperature
-Channels are supported), full record or custom scientific Project-time interval. Calculate uses
+Selecting **Theoretical** shows its parameters directly, with no extra foldout button or empty
+button row. Select the engineering Channel (multiple Temperature Channels are supported), full
+record or custom scientific Project-time interval. Calculate uses
 the same thrust Analyzer or measurement-statistics implementation as the existing workflow.
 
 For thrust, the source defaults to polarity +1 and correction None. Optional motor-weight

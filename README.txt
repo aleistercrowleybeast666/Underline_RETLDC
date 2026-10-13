@@ -11,7 +11,7 @@ Underline RETLDC 0.1.0 使用说明
 一、第一次使用
 --------------
 
-便携包用户：完整解压 Underline_RETLDC_0_1_0_Windows_Portable.zip，在解压得到的
+便携包用户：完整解压 Underline_RETLDC_0_1_0_ImportFix_Windows_Portable.zip，在解压得到的
 Underline_RETLDC 文件夹中双击 Underline_RETLDC.exe；无需安装 Python。保留整个文件夹，
 不要单独移动 EXE。以下 Python 步骤仅用于从源码运行。
 
@@ -561,8 +561,8 @@ samples and does not invent boundary samples; formal export endpoint interpolati
    全部理论曲线共享对齐，实验曲线不移动。保存/重开工程保留类型、偏移、区间和可见性。
 
 5. 各页原有结果区的“指标来源”只显示“实验”和“理论”，分别保留各自参数和结果。
-   多个理论文件时，可在折叠参数中选择文件，不限制原有多通道映射。
-   展开“来源计算参数”，选择该来源通道和全记录/自定义计算区间，再点击计算。
+   多个理论文件时，可在参数区选择文件，不限制原有多通道映射。
+   选择“理论”后直接显示参数区，选择该来源通道和全记录/自定义计算区间后计算。
    推力复用现有总冲、比冲等指标；室压、温度及数据浏览器复用已有适用统计。
 6. 推力来源分别保存方向、可选自重补偿及 PRE/POST 区间、药柱质量。质量默认未指定，
    不借用工程或其他来源的质量；未指定或非正质量时比冲不可用，其他可计算指标保留。
@@ -589,3 +589,13 @@ samples and does not invent boundary samples; formal export endpoint interpolati
 docs/Portable_Acceptance_0_1_0.md。
 
 共享滑条、双来源起点对齐和本轮候选验证的最新说明见 docs/Alignment_Acceptance_0_1_0.md。
+
+导入状态修正（0.1.0 候选）
+-------------------------
+顶部导入和工程页添加来源都会追加文件；只有明确选择新建工程才清空当前工程。
+取消文件选择或重复选择相同路径、相同来源类型，不会清空既有主通道和计算结果。
+每个新表格独立识别时间列，不能沿用上一文件的列位置；批量添加表格后，逐项确认各自
+映射并导入。已保存来源的映射属于该来源，删除后重新添加会重新开始识别。
+第二个文件误选实验类型，也会保留已有实验主通道；需要更换主通道时请明确选择。
+两列原始 TXT 若出现多个兼容解析器，仍需明确选择 TR_F、TR_P 或 TR_T。
+详细修复和验证记录：docs/Import_Acceptance_0_1_0.md。

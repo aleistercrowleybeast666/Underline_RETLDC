@@ -14,7 +14,6 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QScrollArea,
     QSizePolicy,
-    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -29,7 +28,7 @@ from underline_retldc.i18n.service import TranslationService
 
 
 class SourceAnalysisWidget(QWidget):
-    """Source selection and foldable parameters in the existing result-panel footprint."""
+    """Source selection and parameters in the existing result-panel footprint."""
 
     view_changed = Signal()
     config_changed = Signal(object)
@@ -54,11 +53,6 @@ class SourceAnalysisWidget(QWidget):
         self.source_label = QLabel()
         self.source_combo = StandardComboBox()
         self.source_combo.currentIndexChanged.connect(self._source_selected)
-        self.parameter_button = QToolButton()
-        self.parameter_button.setCheckable(True)
-        self.parameter_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self.parameter_button.setArrowType(Qt.ArrowType.RightArrow)
-        self.parameter_button.toggled.connect(self._expand)
         self.notice = QLabel()
         self.notice.setWordWrap(True)
         self.parameter_scroll = QScrollArea()
@@ -138,7 +132,6 @@ class SourceAnalysisWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.source_label)
         layout.addWidget(self.source_combo)
-        layout.addWidget(self.parameter_button)
         layout.addWidget(self.parameter_scroll)
         layout.addWidget(self.notice)
         self.retranslate()
@@ -166,7 +159,6 @@ class SourceAnalysisWidget(QWidget):
         ):
             label.setText(t(key))
             label.setWordWrap(True)
-        self.parameter_button.setText(t("source_analysis.parameters"))
         self.mass_known.setText(t("source_analysis.mass_known"))
         self.interval_combo.setItemText(0, t("source_analysis.full_record"))
         self.interval_combo.setItemText(1, t("source_analysis.custom"))
@@ -179,13 +171,6 @@ class SourceAnalysisWidget(QWidget):
             self.source_combo.setItemText(0, t("source_analysis.experimental"))
             self.source_combo.setItemText(1, t("source_analysis.theoretical"))
         self._notice_refresh()
-
-    def _expand(self, expanded: bool) -> None:
-        self.parameter_scroll.setVisible(expanded and self.source_id() is not None)
-        self.parameter_button.setArrowType(
-            Qt.ArrowType.DownArrow if expanded else Qt.ArrowType.RightArrow
-        )
-        self.updateGeometry()
 
     def source_id(self) -> str | None:
         return self.source_combo.currentData()
@@ -320,7 +305,6 @@ class SourceAnalysisWidget(QWidget):
             for spin, value in zip(self.baseline_spins[key], interval or bounds, strict=True):
                 spin.setValue(value)
         self._syncing = False
-        self.parameter_button.setVisible(self.source_id() is not None)
         self._visibility_refresh()
         self._notice_refresh()
 
@@ -404,7 +388,8 @@ class SourceAnalysisWidget(QWidget):
         active = self.source_id() is not None
         self.record_label.setVisible(active and self.record_combo.count() > 1)
         self.record_combo.setVisible(active and self.record_combo.count() > 1)
-        self._expand(self.parameter_button.isChecked())
+        self.parameter_scroll.setVisible(active)
+        self.updateGeometry()
         for control in (self.start_spin, self.end_spin):
             control.setEnabled(self.interval_combo.currentData() == "custom")
         force = self.workspace_id == "thrust_analysis"

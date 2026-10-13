@@ -61,8 +61,10 @@ def _wait(window: MainWindow, errors: list[str], timeout: float = 30.0) -> None:
     raise TimeoutError("Release smoke task did not finish")
 
 
-def _xlsx_write(destination: Path) -> None:
+def _xlsx_write(destination: Path, *, time_last: bool = False) -> None:
     headers = ("Time (s)", "Pc (MPa)", "F (N)", "e (mm)", "Ab (mm²)", "Kn", "TC1 (K)")
+    if time_last:
+        headers = (*headers[1:], headers[0])
     data = []
     for index, timestamp in enumerate(np.linspace(0.0, 10.0, 4001), start=2):
         activity = max(0.0, 1.0 - abs(float(timestamp) - 5.0) / 3.0)
@@ -75,6 +77,8 @@ def _xlsx_write(destination: Path) -> None:
             3.0,
             300.0 + activity * 100.0,
         )
+        if time_last:
+            row = (*row[1:], row[0])
         cells = "".join(
             f'<c r="{chr(65 + column)}{index}"><v>{value}</v></c>'
             for column, value in enumerate(row)
@@ -108,6 +112,76 @@ def _xlsx_write(destination: Path) -> None:
             f'<worksheet xmlns="{namespace}/spreadsheetml/2006/main"><sheetData>'
             f'<row r="1">{header}</row>{"".join(data)}</sheetData></worksheet>',
         )
+
+
+def _import_lifecycle_check(
+    window: MainWindow, output: Path, errors: list[str], check: Callable[[str, bool], None],
+) -> None:
+    """Native/portable import acceptance with separately generated TXT and XLSX inputs."""
+    page = window.import_page
+    for extension in ("txt", "xlsx"):
+        paths = [output / f"import_{index}.{extension}" for index in range(2)]
+        for index, path in enumerate(paths):
+            if extension == "txt":
+                path.write_text("0,0\n1,10\n2,0\n", encoding="utf-8")
+            else:
+                _xlsx_write(path, time_last=bool(index))
+        for kind in (SourceKind.EXPERIMENTAL, SourceKind.THEORETICAL):
+            window._project_new()
+            page.new_kind_combo.setCurrentIndex(0)
+            prefix = f"import_{extension}_{kind.value}"
+
+            def browse(path: Path, *, toolbar: bool = False,
+                       raw_text: bool = extension == "txt") -> None:
+                with _temporary_attribute(
+                    QFileDialog, "getOpenFileNames", lambda *a, **k: ([str(path)], "")
+                ):
+                    if toolbar:
+                        window._source_open_dialog()
+                    else:
+                        page.browse_button.click()
+                    _wait(window, errors)
+                if raw_text:
+                    page.set_parser_id("builtin.parser.tr_f")
+                    page.parse_button.click()
+                    _wait(window, errors)
+
+            browse(paths[0])
+            first = window.session.project_data
+            check(f"{prefix}_first", len(first.sources) == 1)
+            page.new_kind_combo.setCurrentIndex(page.new_kind_combo.findData(kind.value))
+            browse(paths[1], toolbar=True)
+            check(f"{prefix}_append", len(window.session.project_data.sources) == 2)
+            check(f"{prefix}_bindings", window.session.project_data.primary_channels
+                  == first.primary_channels)
+            if extension == "xlsx":
+                check(f"{prefix}_own_time_column", page.parser_config()["time"]["column"] == 6)
+            before = window.session.project_data
+            selected = page.selected_entry_id()
+            with _temporary_attribute(QFileDialog, "getOpenFileNames", lambda *a, **k: ([], "")):
+                window._source_open_dialog()
+            check(f"{prefix}_cancel", window.session.project_data is before
+                  and page.selected_entry_id() == selected)
+            with _temporary_attribute(
+                QFileDialog, "getOpenFileNames", lambda *a, path=paths[1], **k: ([str(path)], "")
+            ):
+                window._source_browse()
+                _wait(window, errors)
+            check(f"{prefix}_duplicate", window.session.project_data is before
+                  and page.selected_entry_id() == selected)
+            page.remove_source_button.click()
+            _wait(window, errors)
+            check(f"{prefix}_remove", len(window.session.project_data.sources) == 1)
+            browse(paths[1])
+            check(f"{prefix}_reimport", len(window.session.project_data.sources) == 2)
+            while page.source_list.count():
+                page.remove_source_button.click()
+                _wait(window, errors)
+            browse(paths[1])
+            check(f"{prefix}_reimport_after_empty", len(window.session.project_data.sources) == 1)
+            if extension == "xlsx":
+                check(f"{prefix}_time_after_empty", page.parser_config()["time"]["column"] == 6)
+    window._project_new()
 
 
 def _plugin_zip_write(destination: Path) -> str:
@@ -178,7 +252,8 @@ def _source_workflow_check(
             == ["Experimental", "Theoretical"]
         ))
         controls.source_combo.setCurrentIndex(controls.source_combo.findData(theory.id))
-        controls.parameter_button.setChecked(True)
+        check(f"source_parameters_visible_{controls.workspace_id}",
+              not controls.parameter_scroll.isHidden())
         if controls.workspace_id == "data_explorer":
             reference = next(item.reference.stable_id for item in controls._available()
                              if item.dataset.channel(item.channel_id).semantic_role == "thrust")
@@ -194,7 +269,6 @@ def _source_workflow_check(
         }
         check(f"source_result_table_{controls.workspace_id}",
               result_page.metrics_table.rowCount() > 0)
-        controls.parameter_button.setChecked(False)
         window._workspace_select(controls.workspace_id)
         _wait(window, errors)
         if controls.workspace_id in {"thrust_analysis", "chamber_pressure"}:
@@ -540,6 +614,7 @@ def ReleaseSmoke_Run(window: MainWindow, output: Path) -> ReleaseSmokeResult:
                 and window.session.analysis_result is None
                 and not window.chamber_pressure_page.analysis_plot._series,
             )
+            _import_lifecycle_check(window, output, errors, check)
             report["passed"] = True
     except Exception:
         report["error"] = traceback.format_exc()

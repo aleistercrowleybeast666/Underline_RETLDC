@@ -1,5 +1,8 @@
 # 0.1.0 交付前复核
 
+后续导入状态修复与新候选验收见 [Import_Acceptance_0_1_0.md](Import_Acceptance_0_1_0.md)。
+以下保留原阶段记录。
+
 最新的共享时间偏移和起点对齐验收见
 [Alignment_Acceptance_0_1_0.md](Alignment_Acceptance_0_1_0.md)；下方保留之前的复核历史。
 
