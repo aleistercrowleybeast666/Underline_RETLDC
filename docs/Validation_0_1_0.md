@@ -133,3 +133,8 @@ Not run: packaging/PyInstaller, portable executable acceptance, push/tag/Release
 numerical-comparison features and manual acceptance with user files. Packaging/publication remain
 deferred as requested; comparison remains outside this release scope. No parameter or permission
 blocker remains for source development.
+# Latest portable acceptance
+
+The separately authorized 2026-10-13 portable-candidate checks and user-file materialization
+blocker are recorded in [Portable_Acceptance_0_1_0.md](Portable_Acceptance_0_1_0.md).
+That report supersedes the historical packaging-deferred status above.

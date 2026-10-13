@@ -11,6 +11,10 @@ Underline RETLDC 0.1.0 使用说明
 一、第一次使用
 --------------
 
+便携包用户：完整解压 Underline_RETLDC_0_1_0_Windows_Portable.zip，在解压得到的
+Underline_RETLDC 文件夹中双击 Underline_RETLDC.exe；无需安装 Python。保留整个文件夹，
+不要单独移动 EXE。以下 Python 步骤仅用于从源码运行。
+
 1. 安装 Python 3.11 或更高版本。
    Windows 用户安装 Python 时建议勾选“Add Python to PATH”。
 
@@ -576,3 +580,6 @@ samples and does not invent boundary samples; formal export endpoint interpolati
 同一个物理文件也可分别作为实验和理论来源导入，不需要复制文件：切换“新增数据来源”后
 再次选择该文件。两种来源保有独立 Source ID、映射和显示状态；只删除选中的那一种来源。
 同一文件、同一来源类型仍去重。复核说明及明早的最短验收步骤见 docs/Delivery_Review_0_1_0.md。
+
+0.1.0 便携包的实际验证范围、尚未完成的用户文件验收及最短操作步骤见
+docs/Portable_Acceptance_0_1_0.md。

@@ -6,7 +6,7 @@ import json
 import time
 import traceback
 import zipfile
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from enum import IntEnum
 from pathlib import Path
@@ -14,11 +14,12 @@ from typing import Any
 from xml.sax.saxutils import escape
 
 import numpy as np
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QFileDialog, QInputDialog, QMessageBox
 
 from underline_retldc.core.project import Project_Load
+from underline_retldc.core.project_data import SourceKind
 from underline_retldc.core.registry import PluginLoadResult
 from underline_retldc.gui.main_window import MainWindow
 from underline_retldc.gui.plugin_install_dialog import PluginInstallPreviewDialog
@@ -131,6 +132,155 @@ def _plugin_zip_write(destination: Path) -> str:
     return plugin_id
 
 
+def _source_workflow_check(
+    window: MainWindow,
+    output: Path,
+    source: Path,
+    errors: list[str],
+    report: dict[str, Any],
+    check: Callable[[str, bool], None],
+) -> None:
+    """Exercise v0.1 Source controls with the generated fixture, also inside the EXE."""
+    original_bytes = source.read_bytes()
+    experimental_metrics = dict(window.session.analysis_result.metrics)
+    bindings = window.session.project_data.primary_channels
+    regions = dict(window.session.regions)
+    processing = window.session.processing_result
+    exports = window.export_dialog.selected_exporter_ids()
+    page = window.import_page
+    page.new_kind_combo.setCurrentIndex(page.new_kind_combo.findData("theoretical"))
+    with _temporary_attribute(
+        QFileDialog, "getOpenFileNames", lambda *a, **k: ([str(source)], "")
+    ):
+        page.browse_button.click()
+        _wait(window, errors)
+    if len(window.session.project_data.sources) != 2:
+        page.parse_button.click()
+        _wait(window, errors)
+    check("source_dual_origin_import", len(window.session.project_data.sources) == 2)
+    theory = next(item for item in window.session.project_data.sources.values()
+                  if item.source_kind == SourceKind.THEORETICAL)
+    profiles: dict[str, dict[str, Any]] = {}
+    window._locale_select("en_US")
+    window.resize(1280, 820)
+    for result_page in (window.analyze_page, *window._measurement_pages()):
+        controls = result_page.source_analysis
+        controls.source_combo.setCurrentIndex(controls.source_combo.findData(theory.id))
+        controls.parameter_button.setChecked(True)
+        if controls.workspace_id == "data_explorer":
+            reference = next(item.reference.stable_id for item in controls._available()
+                             if item.dataset.channel(item.channel_id).semantic_role == "thrust")
+            controls.channel_combo.setCurrentIndex(controls.channel_combo.findData(reference))
+        check(f"source_own_mass_{controls.workspace_id}",
+              controls.config().propellant_mass_kg is None)
+        result_page.calculate_button.click()
+        _wait(window, errors)
+        state = controls.selected_state()
+        check(f"source_calculated_{controls.workspace_id}", state is not None and state.completed)
+        profiles[controls.workspace_id] = {
+            key: dict(value.metrics) for key, value in state.results.items()
+        }
+        check(f"source_result_table_{controls.workspace_id}",
+              result_page.metrics_table.rowCount() > 0)
+        controls.parameter_button.setChecked(False)
+        window._workspace_select(controls.workspace_id)
+        _wait(window, errors)
+        if controls.workspace_id in {"thrust_analysis", "chamber_pressure"}:
+            filename = f"source_{controls.workspace_id}.png"
+            window.grab().save(str(output / filename))
+            report["screenshots"].append({"file": filename, "actual_size": [1280, 820]})
+    thrust_metrics = next(iter(profiles["thrust_analysis"].values()))
+    check("source_full_record_impulse", np.isclose(thrust_metrics["total_impulse_ns"], 6000.0))
+    check("source_missing_mass_isp_unavailable", thrust_metrics["specific_impulse_s"] is None)
+    check("source_import_preserves_processing", window.session.processing_result is processing)
+    overlay = window.process_page.theory_overlay
+    for shift in (-0.375, 1.25):
+        overlay.shift_spin.setValue(shift)
+        _wait(window, errors)
+        check(f"source_shift_{shift}", np.isclose(
+            window.session.project_data.sources[theory.id].display_transform.shift_s, shift
+        ))
+    overlay.zero_button.click()
+    check("source_zero_start",
+          window.session.project_data.sources[theory.id].display_transform.zero_start)
+    overlay.shift_spin.setValue(.5)
+    overlay.curve_list.item(0).setCheckState(Qt.CheckState.Unchecked)
+    check("source_hidden", bool(
+        window.session.project_data.sources[theory.id].display_transform.hidden_curve_ids
+    ))
+    overlay.curve_list.item(0).setCheckState(Qt.CheckState.Checked)
+    check("source_visible", not (
+        window.session.project_data.sources[theory.id].display_transform.hidden_curve_ids
+    ))
+    for workspace_id, expected in profiles.items():
+        state = window.session.source_analyses[f"{theory.id}/{workspace_id}"]
+        check(f"source_display_preserves_{workspace_id}", {
+            key: dict(value.metrics) for key, value in state.results.items()
+        } == expected)
+    check("source_experiment_isolation", (
+        window.session.project_data.primary_channels == bindings
+        and window.session.regions == regions
+        and dict(window.session.analysis_result.metrics) == experimental_metrics
+        and window.export_dialog.selected_exporter_ids() == exports
+    ))
+    project = output / "source_workflow.json"
+    window._project_save_path(project)
+    _wait(window, errors)
+    window._project_new()
+    with _temporary_attribute(
+        QFileDialog, "getOpenFileName", lambda *a, **k: (str(project), "")
+    ):
+        window._project_open_dialog()
+        _wait(window, errors)
+    check("source_reopen_display", (
+        window.session.project_data.sources[theory.id].display_transform.zero_start
+        and window.session.project_data.sources[theory.id].display_transform.shift_s == .5
+    ))
+    for workspace_id, expected in profiles.items():
+        state = window.session.source_analyses[f"{theory.id}/{workspace_id}"]
+        check(f"source_reopened_{workspace_id}", state.completed and {
+            key: dict(value.metrics) for key, value in state.results.items()
+        } == expected)
+    window.process_page.theory_overlay.reset_button.click()
+    check("source_reset_timing", not (
+        window.session.project_data.sources[theory.id].display_transform.zero_start
+        or window.session.project_data.sources[theory.id].display_transform.shift_s
+    ))
+    row = next(index for index in range(page.source_list.count())
+               if page.source_list.item(index).data(page.SOURCE_ID_ROLE) == theory.id)
+    page.source_list.setCurrentRow(row)
+    page.remove_source_button.click()
+    _wait(window, errors)
+    check("source_precise_removal", (
+        len(window.session.project_data.sources) == 1
+        and theory.id not in window.session.project_data.sources
+        and not window.session.source_analyses
+        and dict(window.session.analysis_result.metrics) == experimental_metrics
+        and window.session.project_data.primary_channels == bindings
+    ))
+    window._project_save_path(project)
+    _wait(window, errors)
+    window._project_new()
+    with _temporary_attribute(
+        QFileDialog, "getOpenFileName", lambda *a, **k: (str(project), "")
+    ):
+        window._project_open_dialog()
+        _wait(window, errors)
+    check("source_removal_reopened", (
+        len(window.session.project_data.sources) == 1
+        and not window.session.source_analyses
+        and dict(window.session.analysis_result.metrics) == experimental_metrics
+    ))
+    check("source_original_bytes_preserved", source.read_bytes() == original_bytes)
+    report["source_workflow"] = {
+        "fixture": "generated_4001.xlsx; generated synthetic data, not supplied Library files",
+        "scientific_stubs": False,
+        "automatic_preview_enabled": True,
+        "profiles": profiles,
+        "propellant_mass_supplied": False,
+    }
+
+
 def ReleaseSmoke_Run(window: MainWindow, output: Path) -> ReleaseSmokeResult:
     """Write a report and screenshots; never touch user sources or saved settings."""
     output.mkdir(parents=True, exist_ok=True)
@@ -198,6 +348,7 @@ def ReleaseSmoke_Run(window: MainWindow, output: Path) -> ReleaseSmokeResult:
             window.chamber_pressure_page.calculate_button.click()
             window.temperature_page.calculate_button.click()
             _wait(window, errors)
+            _source_workflow_check(window, output, source, errors, report, check)
             reference = window.chamber_pressure_page
             check("reference_default", np.isclose(reference.reference_pressure_pa, 101325.0))
             reference.reference_spin.setValue(0.2)

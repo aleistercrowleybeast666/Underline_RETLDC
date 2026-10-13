@@ -543,6 +543,41 @@ def test_processed_source_result_invalidation_and_own_source_error_isolation(
     assert window.session.source_analyses[config.key] is completed
 
 
+def test_portable_source_workflow_uses_real_gui_and_generated_fixture(
+    window: MainWindow, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from underline_retldc.app.release_smoke import _source_workflow_check, _xlsx_write
+
+    monkeypatch.setattr(
+        window, "_tabular_preview_refresh", MainWindow._tabular_preview_refresh.__get__(window),
+    )
+    source = tmp_path / "generated_4001.xlsx"
+    _xlsx_write(source)
+    window.import_page.add_source_paths([source])
+    window._parser_detect()
+    _wait(window)
+    assert not window._test_errors
+    assert window.session.raw_dataset.sample_count == 4001
+    window._regions_store({"pre": [0, 1], "active_test": [2, 8], "post": [9, 10]})
+    window.process_page.apply_button.click()
+    _wait(window)
+    window.analyze_page.calculate_button.click()
+    _wait(window)
+    window.chamber_pressure_page.calculate_button.click()
+    window.temperature_page.calculate_button.click()
+    report = {"checks": [], "screenshots": []}
+
+    def check(name: str, passed: bool) -> None:
+        assert passed, name
+        report["checks"].append(name)
+
+    _source_workflow_check(window, tmp_path, source, window._test_errors, report, check)
+    assert not window._test_errors
+    assert not report["source_workflow"]["scientific_stubs"]
+    assert report["source_workflow"]["automatic_preview_enabled"]
+    assert not report["source_workflow"]["propellant_mass_supplied"]
+
+
 def _metric_cells(window: MainWindow) -> tuple[tuple[str, ...], ...]:
     return tuple(
         tuple(table.item(row, column).text()

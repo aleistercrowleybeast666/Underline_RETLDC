@@ -38,6 +38,8 @@ QSettings `ui/theme` without changing any science or Project schema version.
 - Shared Parsers, same-page theory overlays, visibility, distinct colors and dashed legends.
 - Compatible Quantity/Unit conversions and source-only signed shifts, start zeroing and reset.
 - Persistent origin, alignment and visibility; experimental results survive theory operations.
+- Independent Source calculations in the existing result panels, with separate intervals,
+  processing parameters, explicit propellant mass and reproducible completion state.
 - Original sampling and NaN gaps preserved. No residuals, fitting or motor optimization.
 - Current visible window title is Underline RETLDC — 0.1.0. Plugin API and schemas stay unchanged.
 
