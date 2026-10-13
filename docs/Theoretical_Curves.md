@@ -74,18 +74,27 @@ button row. Select the engineering Channel (multiple Temperature Channels are su
 record or custom scientific Project-time interval. Calculate uses
 the same thrust Analyzer or measurement-statistics implementation as the existing workflow.
 
-For thrust, the source defaults to polarity +1 and correction None. Optional motor-weight
-compensation uses registered Processor schemas and explicit source PRE/POST intervals. A source
-containing the current primary processed thrust may explicitly choose that curve instead.
-Changing the Project's processed input then invalidates that dependent calculation; independently
-configured source calculations keep their own intervals and correction. Neither selection creates
-an experimental Primary binding for a theoretical Source.
+New thrust calculations use the current engineering Channel, polarity +1 and correction None.
+The result area contains only the Source, Channel and interval controls, calculation action and
+results. Input stage, polarity, Processor/PRE/POST and mass controls are no longer duplicated here.
+Experimental correction and segmentation never become theoretical calculation inputs implicitly.
+Existing Display Unit settings are shared by both origins.
 
-Enter propellant mass specifically for this Source to enable Isp. It starts unspecified even if
-the Project's motor metadata contains mass. Unspecified, zero or negative mass yields unavailable
-Isp with a Diagnostic while impulse and other computable metrics remain available. The same
-`g0 = 9.80665 m/s²` and actual-timestamp trapezoidal integration apply. No total-motor mass or
-baseline-derived mass estimate is substituted.
+Enter propellant mass once in Project Setup. New theoretical thrust calculations explicitly use
+this common value (`mass_source=project`). Changing it makes primary experimental and shared
+source thrust results pending; press Calculate for each source to recompute. It does not change
+processing, segmentation, Channel arrays or source clocks. Unspecified, zero or negative mass
+yields unavailable Isp with a Diagnostic while impulse and other computable metrics remain
+available. The same `g0 = 9.80665 m/s²` and actual-timestamp trapezoidal integration apply. No
+total-motor mass or baseline-derived mass estimate is substituted.
+
+Legacy source profiles without mass provenance keep their saved independent mass
+(`mass_source=source`), stage, polarity, correction and PRE/POST windows. They are not rewritten
+when choosing a source or editing public mass. A conflicting saved independent mass or a
+nondefault processing configuration produces one nonblocking status message on Project load.
+Completed profiles are recomputed from their saved configuration; no silent migration changes
+their numerical result. A saved profile dependent on primary processed thrust continues to be
+invalidated when that processed input changes.
 
 Pressure retains start/mean/maximum/time-to-maximum/minimum; Temperature retains start, interval
 maximum, full-record maximum and recorded time; Data Explorer retains its existing applicable

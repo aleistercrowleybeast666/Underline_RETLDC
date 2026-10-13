@@ -390,11 +390,14 @@ def test_independent_source_results_params_display_reopen_and_removal(
     theory_profile = _source_result_calculate(window, window.analyze_page, theory.id)
     result = next(iter(theory_profile.results.values()))
     assert result.metrics["total_impulse_ns"] == 8000
-    assert result.metrics["specific_impulse_s"] is None
+    assert result.metrics["specific_impulse_s"] == 8000 / (.1 * 9.80665)
+    assert theory_profile.config.mass_source == "project"
     assert window.setup_page.motor_metadata()["propellant_mass_kg"] == .1
     control = window.analyze_page.source_analysis
-    control.mass_known.setChecked(True)
-    control.mass_spin.setValue(.25)
+    window._source_analysis_config_changed(replace(
+        theory_profile.config, mass_source="source", propellant_mass_kg=.25,
+    ))
+    window._source_analysis_views_sync()
     assert not window.session.source_analyses[theory_profile.config.key].completed
     window.analyze_page.calculate_button.click()
     _wait(window)
@@ -435,6 +438,7 @@ def test_independent_source_results_params_display_reopen_and_removal(
     window._project_save_path(project_path)
     _wait(window)
     saved = json.loads(project_path.read_text(encoding="utf-8"))
+    saved["source_analyses"][theory_profile.config.key]["config"].pop("mass_source")
     snapshot = saved["source_analyses"][theory_profile.config.key]["results"]
     next(iter(snapshot.values()))["metrics"]["total_impulse_ns"] = -999
     project_path.write_text(json.dumps(saved), encoding="utf-8")
@@ -447,6 +451,10 @@ def test_independent_source_results_params_display_reopen_and_removal(
     assert dict(next(iter(loaded[theory_profile.config.key].results.values())).metrics) == metrics
     assert not loaded[pressure_key].completed
     assert loaded[pressure_key].config.interval == (1, 3)
+    assert loaded[theory_profile.config.key].config.mass_source == "source"
+    assert window.statusBar().currentMessage() == window.translations.translate(
+        "source_analysis.legacy_parameters_kept",
+    )
     assert loaded[experiment_profile.config.key].completed
     assert dict(window.session.analysis_result.metrics) == dict(legacy_analysis.metrics)
     row = next(index for index in range(window.import_page.source_list.count())
@@ -522,6 +530,158 @@ def test_theory_only_calculation_reopen_preserves_independent_calibration_stage(
     assert not window._test_errors
     assert len(window.session.project_data.sources) == 1
     assert "failure fixture" in window.session.source_analyses[profile.config.key].error
+
+
+def test_shared_mass_updates_both_results_without_changing_inputs(
+    window: MainWindow, tmp_path: Path, monkeypatch,
+) -> None:
+    path = tmp_path / "shared-mass.csv"
+    _experimental_import(window, path)
+    window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+    window._processing_apply()
+    _wait(window)
+    window.import_page.new_kind_combo.setCurrentIndex(1)
+    window.import_page.add_source_paths([path])
+    _configure_theory_mapping(window, path)
+    window._source_parse()
+    _wait(window)
+    theory = next(source for source in window.session.project_data.sources.values()
+                  if source.source_kind == SourceKind.THEORETICAL)
+    control = window.analyze_page.source_analysis
+    binding = window.session.project_data.primary_channels
+    processing = window.session.processing_result
+    regions = dict(window.session.regions)
+    raw = window.session.project_data.streams[binding.thrust.stream_id].dataset
+    original = raw.channel("f").values.copy()
+    for mass in (.1, .2, None, 0):
+        window.setup_page.motor_edits["propellant_mass_kg"].setText(
+            "" if mass is None else str(mass),
+        )
+        assert window.session.analysis_result is None
+        key = f"{theory.id}/thrust_analysis"
+        if key in window.session.source_analyses:
+            assert not window.session.source_analyses[key].completed
+        control.source_combo.setCurrentIndex(0)
+        window.analyze_page.calculate_button.click()
+        _wait(window)
+        state = _source_result_calculate(window, window.analyze_page, theory.id)
+        assert state.config.mass_source == "project"
+        assert state.config.propellant_mass_kg == mass
+        assert state.config.input_stage == "calibrated"
+        assert state.config.polarity == 1 and state.config.processor is None
+        for result in (window.session.analysis_result, *state.results.values()):
+            impulse = result.metrics["total_impulse_ns"]
+            expected = impulse / (mass * 9.80665) if mass else None
+            assert result.metrics["specific_impulse_s"] == expected
+        assert window.session.processing_result is processing
+        assert window.session.project_data.primary_channels == binding
+        assert window.session.regions == regions
+        np.testing.assert_array_equal(raw.channel("f").values, original)
+    # Explicit shared provenance and the effective value survive save/reopen.
+    project = tmp_path / "shared-mass.json"
+    window._project_save_path(project)
+    _wait(window)
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    loaded = window.session.source_analyses[key]
+    assert loaded.completed and loaded.config.mass_source == "project"
+    assert loaded.config.propellant_mass_kg == 0
+    assert not window._source_analysis_has_legacy_parameters()
+    assert not window._test_errors
+
+
+def test_compact_source_controls_preserve_hidden_legacy_config_and_switching(
+    window: MainWindow, tmp_path: Path, monkeypatch,
+) -> None:
+    path = tmp_path / "legacy-config.csv"
+    _experimental_import(window, path)
+    window.import_page.new_kind_combo.setCurrentIndex(1)
+    window.import_page.add_source_paths([path])
+    _configure_theory_mapping(window, path)
+    window._source_parse()
+    _wait(window)
+    theory = next(source for source in window.session.project_data.sources.values()
+                  if source.source_kind == SourceKind.THEORETICAL)
+    window._thrust_polarity_changed(-1)
+    window.process_page.set_processing_config("builtin.processor.vertical_linear_baseline", {})
+    state = _source_result_calculate(window, window.analyze_page, theory.id)
+    assert state.config.polarity == 1 and state.config.processor is None
+    legacy = replace(
+        state.config, mass_source="source", propellant_mass_kg=.25, polarity=-1,
+        pre=(0, 1), post=(3, 4), interval=(1, 3),
+        processor=window._plugin_reference_create(
+            "builtin.processor.vertical_linear_baseline", {},
+        ).to_dict(),
+    )
+    window._source_analysis_calculate(legacy)
+    _wait(window)
+    state = window.session.source_analyses[legacy.key]
+    assert state.completed, state.error
+    window.setup_page.motor_edits["propellant_mass_kg"].setText(".1")
+    assert window.session.source_analyses[legacy.key] is state
+    control = window.analyze_page.source_analysis
+    for page in (window.analyze_page, *window._measurement_pages()):
+        widget = page.source_analysis
+        for name in ("mass_spin", "mass_known", "stage_combo", "polarity_combo",
+                     "processor_combo", "processor_form", "baseline_spins"):
+            assert not hasattr(widget, name)
+        widget.source_combo.setCurrentIndex(1)
+        assert widget.notice.isHidden()
+        assert widget._form.rowCount() == 6
+        assert not widget._form.isRowVisible(widget.record_combo)
+    for _ in range(2):
+        control.source_combo.setCurrentIndex(0)
+        assert control.parameter_scroll.isHidden() and control.notice.isHidden()
+        control.source_combo.setCurrentIndex(1)
+        assert control.config() == legacy
+    assert control._form.isRowVisible(control.start_spin)
+    assert control._form.isRowVisible(control.end_spin)
+    assert window._source_analysis_has_legacy_parameters()
+    project = tmp_path / "legacy-config.json"
+    window._project_save_path(project)
+    _wait(window)
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    restored = window.session.source_analyses[legacy.key]
+    assert restored.config == legacy and restored.completed
+    assert [dict(item.metrics) for item in restored.results.values()] == [
+        dict(item.metrics) for item in state.results.values()
+    ]
+    assert not window._test_errors
+
+
+def test_mass_changed_during_analysis_does_not_restore_stale_results(
+    window: MainWindow, tmp_path: Path, monkeypatch,
+) -> None:
+    from underline_retldc.plugin_api.common import TaskContext
+
+    _experimental_import(window, tmp_path / "mass-task.csv")
+    window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+    window._processing_apply()
+    _wait(window)
+    window.setup_page.motor_edits["propellant_mass_kg"].setText(".1")
+    pending = []
+    monkeypatch.setattr(window, "_task_start", lambda label, op, done: pending.append((op, done)))
+    window._analysis_calculate()
+    operation, success = pending.pop()
+    result = operation(TaskContext())
+    window.setup_page.motor_edits["propellant_mass_kg"].setText(".2")
+    success(result)
+    assert window.session.analysis_result is None
+    assert window.session.motor_metadata["propellant_mass_kg"] == .2
+    ref = window.session.project_data.primary_channels.thrust
+    config = SourceAnalysisConfig(ref.source_id, "thrust_analysis", (ref,), mass_source="project")
+    window._source_analysis_calculate(config)
+    operation, success = pending.pop()
+    state = operation(TaskContext())
+    window.setup_page.motor_edits["propellant_mass_kg"].setText(".3")
+    success(state)
+    assert not window.session.source_analyses[config.key].completed
+    assert window.session.source_analyses[config.key].config.propellant_mass_kg == .3
 
 
 def test_processed_source_result_invalidation_and_own_source_error_isolation(

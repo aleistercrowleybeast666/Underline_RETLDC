@@ -267,12 +267,18 @@ Source ID, not path, determines selection/removal and Dataset reuse during reope
 can match without making their interpretations, channels, or display state interchangeable.
 
 Project `/2` also adds `source_analyses`, keyed by `<source_id>/<workspace_id>`. Each value stores
-`config` (full Channel references, scientific `interval` or null for full record, source-specific
-`propellant_mass_kg`, input stage, polarity, Processor reference/config, PRE/POST), `completed`,
+`config` (full Channel references, scientific `interval` or null for full record, effective
+`propellant_mass_kg`, `mass_source`, input stage, polarity, Processor reference/config, PRE/POST),
+`completed`,
 `calculator` (stable ID/version/API for plugins or the generic statistics version) and `results`.
 Result metadata records source/reference, scientific interval/clock and no applied display
-transform. The source mass is never inherited from `motor_metadata`. Missing source profiles mean
-none. Missing or invalid mass preserves other metrics while Isp stays unavailable.
+transform. `mass_source` is `project` for new GUI profiles using the public Project mass, or
+`source` for explicitly independent saved mass. Missing provenance defaults to `source` for
+backward compatibility; unknown values are rejected. `propellant_mass_kg` remains the effective
+snapshot used for calculation and completed-profile reopen. Public mass edits update and invalidate
+shared thrust profiles; legacy independent values and processing settings are preserved. Missing
+source profiles mean none. Missing/nonpositive mass preserves other metrics while Isp stays
+unavailable; nonfinite stored mass is rejected.
 
 `calibrated_stream_ids` records independently completed stream calibrations; absence retains
 legacy global workflow-stage interpretation. This permits a calibrated theoretical Source with

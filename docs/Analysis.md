@@ -227,9 +227,11 @@ See Theoretical_Curves.md; no residual, fitting, optimization, or LLM calculatio
 The existing result panels now select either the original primary experiment result or an
 individual Experimental/Theoretical Source. Source calculations reuse the above Analyzer and
 measurement statistics, retaining actual Project timestamps and physical Unit validation.
-Each Source/workspace stores its own Channel references, full-record/custom interval, thrust
-polarity, optional registered correction with PRE/POST windows, and explicit propellant mass.
-Unknown/nonpositive mass disables Isp only; no Project motor mass is borrowed. Display alignment
+Each Source/workspace stores its own Channel references, full-record/custom interval and results.
+New GUI thrust profiles explicitly share Project propellant mass and use engineering input, +1
+polarity and no correction. Public mass edits invalidate primary and shared-source thrust results
+only; Calculate recomputes each. Legacy independent mass and processing configs remain unchanged.
+Unknown/nonpositive effective mass disables Isp only. Display alignment
 does not affect impulse, durations or recorded peak times. Source calculation results never
 replace primary experiment results, segmentation or export readiness. See Theoretical_Curves.md
 for operator controls, NaN behavior and independent saved completion/draft state.

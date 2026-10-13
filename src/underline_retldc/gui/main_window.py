@@ -468,6 +468,9 @@ class MainWindow(QMainWindow):
         for page in (self.analyze_page, *self._measurement_pages()):
             page.source_calculate_requested.connect(self._source_analysis_calculate)
             page.source_analysis.config_changed.connect(self._source_analysis_config_changed)
+        self.setup_page.motor_edits["propellant_mass_kg"].textChanged.connect(
+            self._shared_mass_changed,
+        )
         for page in (self.process_page, *self._measurement_pages()):
             page.theory_overlay.display_changed.connect(self._source_display_changed)
             page.theory_overlay.align_requested.connect(self._theory_align)
@@ -968,8 +971,49 @@ class MainWindow(QMainWindow):
             page.source_analysis.set_context(
                 self.session.project_data, inputs, self.session.source_analyses,
                 processors, processed_reference,
+                project_mass=self._project_mass_value(),
             )
             page._results_refresh()
+
+    def _project_mass_value(self) -> float | None:
+        text = self.setup_page.motor_edits["propellant_mass_kg"].text().strip()
+        try:
+            mass = float(text)
+        except ValueError:
+            return None
+        return mass if np.isfinite(mass) else None
+
+    def _shared_mass_changed(self) -> None:
+        mass = self._project_mass_value()
+        if mass is None:
+            self.session.motor_metadata.pop("propellant_mass_kg", None)
+        else:
+            self.session.motor_metadata["propellant_mass_kg"] = mass
+        for key, state in tuple(self.session.source_analyses.items()):
+            if (state.config.mass_source == "project"
+                    and state.config.workspace_id == "thrust_analysis"
+                    and state.config.propellant_mass_kg != mass):
+                self.session.source_analyses[key] = SourceAnalysisState(
+                    replace(state.config, propellant_mass_kg=mass),
+                )
+        if (self.session.analysis_result is not None
+                and self.session.analyzer_config.get("propellant_mass_kg") != mass):
+            self.session.analyzer_id = None
+            self.session.analyzer_config.clear()
+            self.session.analysis_result = None
+            self.analyze_page.clear_result()
+        self._source_analysis_views_sync()
+        self._export_availability_update()
+
+    def _source_analysis_has_legacy_parameters(self) -> bool:
+        mass = self._project_mass_value()
+        return any(
+            (config.mass_source == "source" and config.propellant_mass_kg != mass)
+            or config.input_stage != "calibrated" or config.polarity != 1
+            or config.processor is not None or config.pre is not None or config.post is not None
+            for state in self.session.source_analyses.values()
+            for config in (state.config,)
+        )
 
     def _source_analysis_config_changed(self, config: object) -> None:
         if not isinstance(config, SourceAnalysisConfig):
@@ -1011,6 +1055,8 @@ class MainWindow(QMainWindow):
     def _source_analysis_calculate(self, config: object) -> None:
         if not isinstance(config, SourceAnalysisConfig) or self._active_task is not None:
             return
+        if config.mass_source == "project":
+            config = replace(config, propellant_mass_kg=self._project_mass_value())
         self._source_analysis_config_changed(config)
         pending_state = self.session.source_analyses[config.key]
         inputs_by_id = {item.reference.stable_id: item for item in self._source_analysis_inputs()}
@@ -3085,6 +3131,8 @@ class MainWindow(QMainWindow):
             return analyzer.analyze(processing.dataset, config, context)
 
         def success(result: AnalysisResult) -> None:
+            if self._project_mass_value() != config["propellant_mass_kg"]:
+                return
             self.session.analyzer_id = plugin_id
             self.session.analyzer_config = config
             self.session.analysis_result = result
@@ -3651,7 +3699,12 @@ class MainWindow(QMainWindow):
                         self.setup_page.set_calibration_config(
                             channel_state.plugin_id, dict(channel_state.config)
                         )
-            self.setup_page.set_motor_metadata(dict(document.motor_metadata))
+            mass_edit = self.setup_page.motor_edits["propellant_mass_kg"]
+            was_blocked = mass_edit.blockSignals(True)
+            try:
+                self.setup_page.set_motor_metadata(dict(document.motor_metadata))
+            finally:
+                mass_edit.blockSignals(was_blocked)
             self.process_page.clear_state()
             self.process_page.set_thrust_polarity(document.thrust_polarity)
             self._primary_channels_update()
@@ -3735,6 +3788,10 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(
                 self.translations.translate("status.project_loaded"), 5000
             )
+            if self._source_analysis_has_legacy_parameters():
+                self.statusBar().showMessage(
+                    self.translations.translate("source_analysis.legacy_parameters_kept"), 20000,
+                )
 
         self._task_start(self.translations.translate("export.open_project"), operation, success)
 

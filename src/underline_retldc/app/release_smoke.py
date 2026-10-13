@@ -258,8 +258,12 @@ def _source_workflow_check(
             reference = next(item.reference.stable_id for item in controls._available()
                              if item.dataset.channel(item.channel_id).semantic_role == "thrust")
             controls.channel_combo.setCurrentIndex(controls.channel_combo.findData(reference))
-        check(f"source_own_mass_{controls.workspace_id}",
-              controls.config().propellant_mass_kg is None)
+        check(f"source_project_mass_{controls.workspace_id}",
+              controls.config().propellant_mass_kg is None
+              and controls.config().mass_source == "project")
+        check(f"source_compact_controls_{controls.workspace_id}",
+              not hasattr(controls, "mass_spin") and not hasattr(controls, "stage_combo")
+              and not hasattr(controls, "processor_combo") and controls.notice.isHidden())
         result_page.calculate_button.click()
         _wait(window, errors)
         state = controls.selected_state()
@@ -355,6 +359,36 @@ def _source_workflow_check(
         window.session.project_data.sources[theory.id].display_transform.zero_start
         or window.session.project_data.sources[theory.id].display_transform.shift_s
     ))
+    shared_processing = window.session.processing_result
+    controls = window.analyze_page.source_analysis
+    for mass in (.1, .2, None):
+        window.setup_page.motor_edits["propellant_mass_kg"].setText(
+            str(mass) if mass is not None else "",
+        )
+        key = f"{theory.id}/thrust_analysis"
+        check(f"shared_mass_invalidates_{mass}", window.session.analysis_result is None
+              and not window.session.source_analyses[key].completed)
+        controls.source_combo.setCurrentIndex(0)
+        window.analyze_page.calculate_button.click()
+        _wait(window, errors)
+        controls.source_combo.setCurrentIndex(controls.source_combo.findData(theory.id))
+        window.analyze_page.calculate_button.click()
+        _wait(window, errors)
+        state = controls.selected_state()
+        check(f"shared_mass_calculated_{mass}", state is not None and state.completed)
+        for origin, result in (
+            ("experimental", window.session.analysis_result),
+            ("theoretical", next(iter(state.results.values()))),
+        ):
+            impulse = result.metrics["total_impulse_ns"]
+            isp = result.metrics["specific_impulse_s"]
+            check(f"shared_mass_isp_{origin}_{mass}",
+                  isp is None if mass is None else np.isclose(isp, impulse / (mass * 9.80665)))
+        check(f"shared_mass_preserves_inputs_{mass}", (
+            window.session.processing_result is shared_processing
+            and window.session.project_data.primary_channels == bindings
+            and window.session.regions == regions
+        ))
     row = next(index for index in range(page.source_list.count())
                if page.source_list.item(index).data(page.SOURCE_ID_ROLE) == theory.id)
     page.source_list.setCurrentRow(row)

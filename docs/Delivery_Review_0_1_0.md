@@ -1,5 +1,7 @@
 # 0.1.0 交付前复核
 
+后续公共质量与精简布局验收见 `Shared_Parameters_Acceptance_0_1_0.md`；以下保留本轮历史证据。
+
 后续导入状态修复与新候选验收见 [Import_Acceptance_0_1_0.md](Import_Acceptance_0_1_0.md)。
 以下保留原阶段记录。
 

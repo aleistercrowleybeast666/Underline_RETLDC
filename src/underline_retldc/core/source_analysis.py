@@ -23,6 +23,7 @@ class SourceAnalysisConfig:
     processor: Mapping[str, Any] | None = None
     pre: tuple[float, float] | None = None
     post: tuple[float, float] | None = None
+    mass_source: str = "source"  # Legacy/configured source value; new GUI drafts use "project".
 
     def __post_init__(self) -> None:
         if not self.source_id or not self.workspace_id:
@@ -39,6 +40,8 @@ class SourceAnalysisConfig:
         object.__setattr__(self, "channels", channels)
         if self.input_stage not in {"calibrated", "project_processed"}:
             raise ValueError("Unsupported source analysis input stage")
+        if self.mass_source not in {"source", "project"}:
+            raise ValueError("Source analysis mass_source must be source or project")
         if isinstance(self.polarity, bool) or self.polarity not in {-1, 1}:
             raise ValueError("Source analysis polarity must be +1 or -1")
         for key in ("interval", "pre", "post"):
@@ -86,6 +89,7 @@ class SourceAnalysisConfig:
             "processor": dict(self.processor) if self.processor is not None else None,
             "pre": list(self.pre) if self.pre is not None else None,
             "post": list(self.post) if self.post is not None else None,
+            "mass_source": self.mass_source,
         }
 
     @classmethod
@@ -108,6 +112,7 @@ class SourceAnalysisConfig:
             processor=payload.get("processor"),
             pre=payload.get("pre"),
             post=payload.get("post"),
+            mass_source=str(payload.get("mass_source", "source")),
         )
 
 

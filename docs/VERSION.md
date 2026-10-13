@@ -39,7 +39,9 @@ QSettings `ui/theme` without changing any science or Project schema version.
 - Compatible Quantity/Unit conversions and source-only signed shifts, start zeroing and reset.
 - Persistent origin, alignment and visibility; experimental results survive theory operations.
 - Independent Source calculations in the existing result panels, with separate intervals,
-  processing parameters, explicit propellant mass and reproducible completion state.
+  processing parameters, explicit mass provenance and reproducible completion state. New GUI
+   theory calculations share the single Project mass input; legacy source values remain intact.
+   The result area retains only source/channel/interval controls, calculation and results.
 - Original sampling and NaN gaps preserved. No residuals, fitting or motor optimization.
 - Current visible window title is Underline RETLDC — 0.1.0. Plugin API and schemas stay unchanged.
 

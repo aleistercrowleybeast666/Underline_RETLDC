@@ -157,3 +157,14 @@ def test_source_project_documents_preserve_completed_draft_and_independent_calib
     for kwargs in ({"interval": (0, np.inf)}, {"propellant_mass_kg": np.nan}):
         with pytest.raises(ValueError, match="finite"):
             replace(completed.config, **kwargs)
+
+
+def test_source_mass_provenance_preserves_legacy_values():
+    config = SourceAnalysisConfig("theory", "thrust_analysis", propellant_mass_kg=.25)
+    payload = config.to_dict()
+    payload.pop("mass_source")
+    assert SourceAnalysisConfig.from_dict(payload) == config
+    shared = replace(config, mass_source="project")
+    assert SourceAnalysisConfig.from_dict(shared.to_dict()) == shared
+    with pytest.raises(ValueError, match="mass_source"):
+        replace(config, mass_source="automatic")

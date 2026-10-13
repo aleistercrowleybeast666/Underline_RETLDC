@@ -266,11 +266,16 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 - Theory overlays belong in existing time-curve workspaces. Validate Quantity and physical Unit;
   preserve original samples and gaps. Both origins support independent Source calculations in
   the same result panels using existing analyzers/statistics. Store full Channel references,
-  source-specific interval, processing parameters, explicit propellant mass, completion and
-  results separately from the experimental primary workflow. Never borrow unrelated Project
-  propellant mass or experimental segmentation/correction implicitly. Do not add residual metrics,
-  fitting, LLM analysis, or
-  motor optimization for this release.
+  source-specific interval, processing parameters, mass provenance, completion and results
+  separately from the experimental primary workflow. New GUI source calculations explicitly
+  share the single Project propellant-mass input (`mass_source=project`) and existing Display
+  Units; they use engineering Channels, +1 polarity and no correction. Do not inherit experimental
+  segmentation/correction. Keep only Source/Channel/interval controls in the result area, without
+  duplicate mass/stage/polarity/Processor/PRE/POST controls or explanatory filler. Legacy explicit
+  source mass/processing remains unchanged (`mass_source=source` when absent); conflicting saved
+  settings get one nonblocking load notice. Public mass edits invalidate related completed thrust
+  results without changing arrays, processing or segmentation. Do not add residual metrics,
+  fitting, LLM analysis or motor optimization for this release.
 - Source display alignment and visibility are persisted view state, separate from Stream
   scientific time offsets. All time-curve pages share one theory display shift. Align Test Starts
   uses the current experimental start (including manual edits) and an independently detected
@@ -279,7 +284,7 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 - Theory source import/removal/calibration and view edits must not invalidate experimental
   primary bindings, segmentation, compensation, analysis, or export readiness.
 - Source calculations use scientific Project timestamps, never display alignment. Missing or
-  invalid source propellant mass leaves Isp unavailable while other computable metrics remain
+  invalid effective propellant mass leaves Isp unavailable while other computable metrics remain
   available. Reopening restores drafts without advancing them and recomputes completed source
   calculations from verified files and saved plugin/configuration references.
 

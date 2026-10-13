@@ -496,5 +496,6 @@
   "source_analysis.theory_file": "理论文件",
   "theory.shifted": "当前共享偏移 {offset} s；可继续微调或重新对齐。",
   "source_analysis.experimental": "实验",
-  "source_analysis.theoretical": "理论"
+  "source_analysis.theoretical": "理论",
+  "source_analysis.legacy_parameters_kept": "工程已载入。已保留旧工程的来源独立质量或处理配置；工程公共质量仅用于已标记为共用的计算。"
 }
