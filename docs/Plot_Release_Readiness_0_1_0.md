@@ -46,8 +46,21 @@ Boolean 参数连接用弱集合去重。没有系统进程枚举、后台 UI �
 ## 验证记录
 
 生命周期专项 4 项通过；GUI 线程边界回归通过。完整 pytest 313 项通过、0 失败，
-333.44 秒；Ruff 通过。冻结 EXE 完成后补记。
+333.44 秒；Ruff 通过。
 源代码中文/深色、英文/浅色各一次冷启动及语言/右键导出/关闭检查通过，退出码 0；
 阶段日志记录 GUI 单线程，原生栈文件为空。这些通过不代表首次根因已消除。
+冻结版中文/深色、英文/浅色各一次同样有界检查，退出码均为 0；完整 EXE 功能验收
+186 项通过，退出码 0。阶段日志均完整到关闭，原生栈文件为空。总计四个短检查及一个
+完整冻结功能检查，不作长循环/压力测试。未复现原生故障不能证明最初故障已解决。
 旧候选与用户窗口/文件保留，不永久清理，不 push/tag/发布。
 过程和证据继续位于 `D:\Temp\Underline_RETLDC_v010_validation\plot-chinese-work`。
+
+## 独立最终候选
+
+代码提交 `c8ca8ad0f88850bc0e47e808f0bfb93297d61f72`，版本 `0.1.0`。
+EXE：`dist/Underline_RETLDC_0_1_0_PlotReady/Underline_RETLDC.exe`。
+ZIP：`dist/Underline_RETLDC_0_1_0_PlotReady_Windows_Portable.zip`。
+EXE SHA-256：`2ea4e80470f1a9a9950fdd7961afc762c472b9ff7b0ecc4d334e6a4ec1b0547a`。
+最终 ZIP 大小/哈希在 `.zip.sha256` 与任务 `readiness-package-summary.json`；代码/文档
+提交及源码哈希见 `BUILD_INFO.json`。运行文件必须与已测解压目录逐项相同后交付。
+保留阻碍：首次访问冲突根因未定位；本环境 SVG 坐标解析仍失败，不宣称修复或发布。
