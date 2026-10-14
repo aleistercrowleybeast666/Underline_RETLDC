@@ -31,6 +31,7 @@ from underline_retldc.core.units import (
     UnitDisplayMode,
     UnitDisplayMode_Normalize,
 )
+from underline_retldc.gui.plot_ui_i18n import PlotQtTranslations_Ensure, PlotUiLocalizer
 from underline_retldc.i18n.service import TranslationService
 
 
@@ -114,6 +115,7 @@ class AnalysisPlotWidget(QWidget):
         self._series: list[Any] = []
         self._series_data: list[tuple[np.ndarray, np.ndarray]] = []
         self._horizontal_references: dict[str, dict[str, Any]] = {}
+        PlotQtTranslations_Ensure(translations)
         self.bottom_axis = DisplayAxisItem("bottom")
         self.left_axis = DisplayAxisItem("left")
         self.plot_widget = pg.PlotWidget(
@@ -123,6 +125,7 @@ class AnalysisPlotWidget(QWidget):
             }
         )
         self.plot_widget.setObjectName("analysisPlot")
+        self._plot_ui_localizer = PlotUiLocalizer(self.plot_widget, translations, self)
         self.plot_widget.showGrid(x=True, y=True, alpha=0.22)
         self.plot_widget.setDownsampling(auto=True, mode="peak")
         self.plot_widget.setClipToView(True)

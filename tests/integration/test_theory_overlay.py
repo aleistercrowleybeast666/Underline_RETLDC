@@ -1382,3 +1382,62 @@ def test_legacy_missing_view_uses_default_after_another_project_zoom(
         bounds = plot.plot_widget.getViewBox().viewRange()[0]
         assert bounds[0] <= 1 <= bounds[1], (key, bounds)
     assert not window._test_errors
+
+
+
+def test_plot_language_keeps_science_and_saved_viewports(
+    window: MainWindow, tmp_path: Path, monkeypatch,
+) -> None:
+    path = tmp_path / "plot-locale.csv"
+    _experimental_import(window, path)
+    window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+    window._processing_apply()
+    _wait(window)
+    window.setup_page.motor_edits["propellant_mass_kg"].setText(".1")
+    window._analysis_calculate()
+    _wait(window)
+    window.import_page.new_kind_combo.setCurrentIndex(1)
+    window.import_page.add_source_paths([path])
+    _configure_theory_mapping(window, path)
+    window._source_parse()
+    _wait(window)
+    theory = next(source for source in window.session.project_data.sources.values()
+                  if source.source_kind == SourceKind.THEORETICAL)
+    profile = _source_result_calculate(window, window.analyze_page, theory.id)
+    window.process_page.theory_overlay.shift_spin.setValue(1.25)
+    processing = window.session.processing_result
+    analysis = window.session.analysis_result
+    bindings = window.session.project_data.primary_channels
+    regions = dict(window.session.regions)
+    for plot in window._plot_widgets().values():
+        plot.plot_widget.getViewBox().setRange(xRange=(-2, 8), yRange=(-10, 2500), padding=0)
+    before = window._plot_views_capture()
+    for locale in ("zh_CN", "en_US", "zh_CN"):
+        window._locale_select(locale)
+        QApplication.processEvents()
+        for plot in window._plot_widgets().values():
+            item = plot.plot_widget.getPlotItem()
+            assert item.ctrlMenu.title() == ("绘图选项" if locale == "zh_CN" else "Plot Options")
+            assert item.vb.menu.viewAll.text() == (
+                "适应全部数据" if locale == "zh_CN" else "View All"
+            )
+        assert window._plot_views_capture() == before
+        assert window.session.processing_result is processing
+        assert window.session.analysis_result is analysis
+        assert window.session.source_analyses[profile.config.key] is profile
+        assert window.session.project_data.primary_channels == bindings
+        assert window.session.regions == regions
+        assert window.session.motor_parameters.propellant_mass_kg == .1
+    project = tmp_path / "plot-locale.json"
+    window._project_save_path(project)
+    _wait(window)
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    assert window._plot_views_capture() == before
+    assert window.process_page.theory_overlay.shift_spin.value() == 1.25
+    assert window.session.source_analyses[profile.config.key].completed
+    assert window.session.source_analyses[profile.config.key].config == profile.config
+    assert window.session.analysis_result.metrics == analysis.metrics
+    assert not window._test_errors

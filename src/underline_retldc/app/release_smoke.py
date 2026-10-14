@@ -14,6 +14,7 @@ from typing import Any
 from xml.sax.saxutils import escape
 
 import numpy as np
+from pyqtgraph.exporters import CSVExporter, ImageExporter
 from PySide6.QtCore import QPoint, Qt, QTimer
 from PySide6.QtGui import QShowEvent
 from PySide6.QtTest import QTest
@@ -212,6 +213,59 @@ def _plugin_zip_write(destination: Path) -> str:
         archive.writestr("wrapper/parser/plugin.json", json.dumps(manifest))
         archive.writestr("wrapper/parser/plugin.py", code)
     return plugin_id
+
+
+def _plot_language_check(
+    window: MainWindow, output: Path, check: Callable[[str, bool], None],
+) -> None:
+    locale = window.translations.locale
+    plot = window.process_page.analysis_plot.plot_widget
+    item = plot.getPlotItem()
+    dialog = plot.scene().exportDialog
+    dialog.updateItemList(select=item)
+    csv_row = next(index for index in range(dialog.ui.formatList.count())
+                   if dialog.ui.formatList.item(index).expClass == CSVExporter)
+    dialog.ui.formatList.setCurrentRow(csv_row)
+    exporter = dialog.currentExporter
+    parameters = exporter.parameters()
+    parameters["separator"] = "tab"
+    parameters["columnMode"] = "(x,y,y,y) for all plots"
+    science = (window.session.analysis_result, window.session.processing_result)
+    views = window._plot_views_capture()
+    for selected_locale in ("zh_CN", "en_US"):
+        window._locale_select(selected_locale)
+        QApplication.processEvents()
+        chinese = selected_locale == "zh_CN"
+        check(f"plot_menu_{selected_locale}", item.ctrlMenu.title()
+              == ("绘图选项" if chinese else "Plot Options"))
+        check(f"plot_axis_{selected_locale}", item.vb.menu.ctrl[0].autoRadio.text()
+              == ("自动" if chinese else "Auto"))
+        check(f"plot_export_{selected_locale}", dialog.ui.exportBtn.text()
+              == ("导出当前图" if chinese else "Export"))
+        check(f"plot_parameter_ids_{selected_locale}",
+              parameters["separator"] == "tab"
+              and parameters["columnMode"] == "(x,y,y,y) for all plots"
+              and dialog.currentExporter is exporter)
+        check(f"plot_state_{selected_locale}", window._plot_views_capture() == views
+              and window.session.analysis_result is science[0]
+              and window.session.processing_result is science[1])
+    first = output / "plot_shared_first.tsv"
+    second = output / "plot_shared_second.tsv"
+    exporter.export(str(first))
+    exporter.export(str(second))
+    check("plot_csv_repeat_keeps_x", first.read_bytes() == second.read_bytes())
+    check("plot_png_includes_theory", any(
+        window.translations.translate("theory.legend", curve="") in (curve.name() or "")
+        for curve in plot.listDataItems()
+    ))
+    dialog.selectBox.hide()
+    image = ImageExporter(item)
+    image.parameters()["width"] = 800
+    rendered = image.export(toBytes=True)
+    check("plot_png_export", not rendered.isNull() and rendered.width() == 800
+          and rendered.save(str(output / "plot_overlay.png")))
+    dialog.close()
+    window._locale_select(locale)
 
 
 def _source_workflow_check(
@@ -425,6 +479,7 @@ def _source_workflow_check(
             and window.session.project_data.primary_channels == bindings
             and window.session.regions == regions
         ))
+    _plot_language_check(window, output, check)
     row = next(index for index in range(page.source_list.count())
                if page.source_list.item(index).data(page.SOURCE_ID_ROLE) == theory.id)
     page.source_list.setCurrentRow(row)
