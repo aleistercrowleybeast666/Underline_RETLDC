@@ -274,15 +274,20 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   source-specific interval, processing parameters, mass provenance, completion and results
   separately from the experimental primary workflow. New GUI source calculations explicitly
   share the single Project propellant-mass input (`mass_source=project`) and existing Display
-  Units; they use engineering Channels, +1 polarity and no correction. Do not inherit experimental
+  Units; they use engineering Channels, +1 polarity and no correction. All theoretical calculations
+  resolve physical engine parameters through the experimental Project motor model. Legacy
+  conflicting theory values are retained in `legacy_physical_parameters` for traceability;
+  experimental values, including missing values, win. Never fill a missing parameter with zero.
+  Do not inherit experimental
   segmentation/correction. The result area contains one compact metric-source selector and results;
   the separate theory Channel/interval panel and its Calculate button are hidden. A single toolbar
   Calculate action dispatches both origins through existing calculators. Theory uses the existing
   selected theory curve and saved source Channel/interval configuration; new intervals mean full
   source record in scientific time. Missing inputs visibly remain unavailable. Do not create
   duplicate mass/stage/polarity/Processor/PRE/POST controls or explanatory filler. Legacy explicit
-  source mass/processing remains unchanged (`mass_source=source` when absent); conflicting saved
-  settings get one nonblocking load notice. Public mass edits invalidate related completed thrust
+  source processing remains unchanged; experimental legacy independent source mass remains
+  read-compatible. Migrated theory mass uses `mass_source=project`; conflicting saved settings
+  get one nonblocking load notice. Public physical parameter edits invalidate related completed thrust
   results without changing arrays, processing or segmentation. Do not add residual metrics,
   fitting, LLM analysis or motor optimization for this release.
 - Source display alignment and visibility are persisted view state, separate from Stream
@@ -296,6 +301,9 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   invalid effective propellant mass leaves Isp unavailable while other computable metrics remain
   available. Reopening restores drafts without advancing them and recomputes completed source
   calculations from verified files and saved plugin/configuration references.
+- Project plot view state stores stable plot/axis IDs, displayed X/Y ranges and auto-range flags.
+  Shared/linked axes deduplicate ranges. Restore only after curves/display transforms, without
+  shifting saved display coordinates again or changing scientific timestamps/intervals.
 
 ## Process-file lifecycle and storage
 

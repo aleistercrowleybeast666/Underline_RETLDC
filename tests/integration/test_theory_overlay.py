@@ -5,6 +5,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
+import pyqtgraph as pg
 import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
@@ -26,6 +27,7 @@ from underline_retldc.core.project_data import (
 from underline_retldc.core.source_analysis import SourceAnalysisConfig
 from underline_retldc.core.units import UnitDisplayMode
 from underline_retldc.gui.main_window import MainWindow
+from underline_retldc.gui.plot_view import PlotViews_Capture, PlotViews_Restore
 from underline_retldc.i18n.service import TranslationService
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -557,7 +559,8 @@ def test_independent_source_results_params_display_reopen_and_removal(
     _wait(window)
     theory_profile = window.session.source_analyses[theory_profile.config.key]
     metrics = dict(next(iter(theory_profile.results.values())).metrics)
-    assert metrics["specific_impulse_s"] == 8000 / (.25 * 9.80665)
+    assert metrics["specific_impulse_s"] == 8000 / (.1 * 9.80665)
+    assert theory_profile.config.legacy_physical_parameters == {"propellant_mass_kg": .25}
     states = {}
     for page in window._measurement_pages():
         state = _source_result_calculate(window, page, theory.id)
@@ -605,7 +608,10 @@ def test_independent_source_results_params_display_reopen_and_removal(
     assert dict(next(iter(loaded[theory_profile.config.key].results.values())).metrics) == metrics
     assert not loaded[pressure_key].completed
     assert loaded[pressure_key].config.interval == (1, 3)
-    assert loaded[theory_profile.config.key].config.mass_source == "source"
+    assert loaded[theory_profile.config.key].config.mass_source == "project"
+    assert loaded[theory_profile.config.key].config.legacy_physical_parameters == {
+        "propellant_mass_kg": .25,
+    }
     assert window.statusBar().currentMessage() == window.translations.translate(
         "source_analysis.legacy_parameters_kept",
     )
@@ -774,7 +780,13 @@ def test_compact_source_controls_preserve_hidden_legacy_config_and_switching(
     state = window.session.source_analyses[legacy.key]
     assert state.completed, state.error
     window.setup_page.motor_edits["propellant_mass_kg"].setText(".1")
-    assert window.session.source_analyses[legacy.key] is state
+    assert not window.session.source_analyses[legacy.key].completed
+    window._source_analysis_calculate(window.session.source_analyses[legacy.key].config)
+    _wait(window)
+    state = window.session.source_analyses[legacy.key]
+    effective = replace(legacy, mass_source="project", propellant_mass_kg=.1,
+                        legacy_physical_parameters={"propellant_mass_kg": .25})
+    assert state.config == effective
     control = window.analyze_page.source_analysis
     for page in (window.analyze_page, *window._measurement_pages()):
         widget = page.source_analysis
@@ -789,7 +801,7 @@ def test_compact_source_controls_preserve_hidden_legacy_config_and_switching(
         control.source_combo.setCurrentIndex(0)
         assert control.parameter_scroll.isHidden() and control.notice.isHidden()
         control.source_combo.setCurrentIndex(1)
-        assert control.config() == legacy
+        assert control.config() == effective
     assert control._form.isRowVisible(control.start_spin)
     assert control._form.isRowVisible(control.end_spin)
     assert window._source_analysis_has_legacy_parameters()
@@ -801,7 +813,7 @@ def test_compact_source_controls_preserve_hidden_legacy_config_and_switching(
     window._project_open_dialog()
     _wait(window)
     restored = window.session.source_analyses[legacy.key]
-    assert restored.config == legacy and restored.completed
+    assert restored.config == effective and restored.completed
     assert [dict(item.metrics) for item in restored.results.values()] == [
         dict(item.metrics) for item in state.results.values()
     ]
@@ -1165,3 +1177,179 @@ def test_one_physical_file_two_origins_with_real_compensation_and_reopen(
         assert len(window.process_page.analysis_plot._series_data) == 1
     assert source.read_bytes() == original_bytes
     assert "Traceback" not in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("shift", [-8.5, 4.25])
+def test_plot_view_reopen_after_shift_and_page_switch(
+    window: MainWindow, tmp_path: Path, monkeypatch, shift: float,
+) -> None:
+    path = tmp_path / "view.csv"
+    _experimental_import(window, path)
+    window.import_page.new_kind_combo.setCurrentIndex(1)
+    window.import_page.add_source_paths([path])
+    _configure_theory_mapping(window, path)
+    window._source_parse()
+    _wait(window)
+    window.process_page.theory_overlay.shift_spin.setValue(shift)
+    raw_times = {key: stream.dataset.time.copy()
+                 for key, stream in window.session.project_data.streams.items()}
+    expected = {}
+    for index, (key, plot) in enumerate(window._plot_widgets().items()):
+        view = plot.plot_widget.getViewBox()
+        view.setRange(xRange=(-2.25 + index, 2.75 + index),
+                      yRange=(-10 - index, 10 + index), padding=0)
+        if key == "temperature":
+            view.enableAutoRange(axis=1, enable=.8)
+        expected[key] = tuple(tuple(pair) for pair in view.viewRange())
+    saved = window._plot_views_capture()
+    project = tmp_path / "view.json"
+    window._project_save_path(project)
+    _wait(window)
+    assert Project_Load(project).plot_views == saved
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    for _ in range(2):
+        for key, plot in window._plot_widgets().items():
+            window._workspace_select(key)
+            QApplication.processEvents()
+            view = plot.plot_widget.getViewBox()
+            np.testing.assert_allclose(view.viewRange()[0], expected[key][0])
+            if key != "temperature":
+                np.testing.assert_allclose(view.viewRange()[1], expected[key][1])
+                assert view.autoRangeEnabled() == [False, False]
+            else:
+                assert view.autoRangeEnabled() == [False, .8]
+    for key, original in raw_times.items():
+        np.testing.assert_array_equal(
+            window.session.project_data.streams[key].dataset.time, original,
+        )
+    assert window.process_page.theory_overlay.shift_spin.value() == shift
+    assert not window._test_errors
+
+
+def test_linked_and_multiple_plot_axes_store_one_range(window: MainWindow) -> None:
+    plots = window._plot_widgets()
+    thrust = plots["thrust_analysis"].plot_widget.getViewBox()
+    pressure = plots["chamber_pressure"].plot_widget.getViewBox()
+    pressure.setXLink(thrust)
+    plot = plots["temperature"].plot_widget.getPlotItem()
+    right = pg.ViewBox()
+    plot.scene().addItem(right)
+    plot.showAxis("right")
+    plot.getAxis("right").linkToView(right)
+    right.setXLink(plot.vb)
+    right.setRange(yRange=(100, 200), padding=0)
+    thrust.setRange(xRange=(-5, 12), yRange=(-2, 2), padding=0)
+    states = PlotViews_Capture(plots)
+    assert states["chamber_pressure"]["x"].range is None
+    assert states["chamber_pressure"]["x"].linked_to == "thrust_analysis/x"
+    assert states["temperature"]["right:x"].linked_to == "temperature/x"
+    assert states["temperature"]["right:y"].range == (100, 200)
+    thrust.setRange(xRange=(0, 1), padding=0)
+    right.setRange(yRange=(0, 1), padding=0)
+    PlotViews_Restore(plots, states)
+    np.testing.assert_allclose(thrust.viewRange()[0], [-5, 12])
+    np.testing.assert_allclose(right.viewRange()[1], [100, 200])
+    assert pressure.linkedView(0) is thrust
+    assert right.linkedView(0) is plot.vb
+    plot.scene().removeItem(right)
+
+
+def test_shared_dimensions_invalidate_and_reach_both_calculators(
+    window: MainWindow, tmp_path: Path,
+) -> None:
+    path = tmp_path / "dimensions.csv"
+    _experimental_import(window, path)
+    window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+    window._processing_apply()
+    _wait(window)
+    window.setup_page.set_motor_metadata({
+        "propellant_mass_kg": .1, "total_motor_mass_kg": .8,
+        "diameter_mm": 30, "length_mm": 120,
+    })
+    window._analysis_calculate()
+    _wait(window)
+    window.import_page.new_kind_combo.setCurrentIndex(1)
+    window.import_page.add_source_paths([path])
+    _configure_theory_mapping(window, path)
+    window._source_parse()
+    _wait(window)
+    theory = next(source for source in window.session.project_data.sources.values()
+                  if source.source_kind == SourceKind.THEORETICAL)
+    state = _source_result_calculate(window, window.analyze_page, theory.id)
+    original_config = state.config
+    processing = window.session.processing_result
+    regions = dict(window.session.regions)
+    for name, value in (("total_motor_mass_kg", "1.2"), ("diameter_mm", "40"),
+                        ("length_mm", "160"), ("propellant_mass_kg", "")):
+        window.setup_page.motor_edits[name].setText(value)
+        assert window.session.analysis_result is None
+        assert not window.session.source_analyses[state.config.key].completed
+        window._analysis_calculate()
+        _wait(window)
+        state = _source_result_calculate(window, window.analyze_page, theory.id)
+        shared = window.session.motor_parameters.to_dict()
+        for result in (window.session.analysis_result, *state.results.values()):
+            assert result.metadata["motor_parameters"] == shared
+            mass = shared["propellant_mass_kg"]
+            expected = result.metrics["total_impulse_ns"] / (mass * 9.80665) if mass else None
+            assert result.metrics["specific_impulse_s"] == expected
+        assert state.config.channels == original_config.channels
+        assert state.config.interval == original_config.interval
+        assert window.session.processing_result is processing
+        assert window.session.regions == regions
+    assert shared["propellant_mass_kg"] is None
+    assert not window._test_errors
+
+
+
+def test_legacy_theory_conflicts_reopen_with_missing_experimental_mass(
+    window: MainWindow, tmp_path: Path, monkeypatch,
+) -> None:
+    path = tmp_path / "legacy-conflict.csv"
+    _experimental_import(window, path)
+    window.setup_page.set_motor_metadata({"total_motor_mass_kg": .8})
+    window.import_page.new_kind_combo.setCurrentIndex(1)
+    window.import_page.add_source_paths([path])
+    _configure_theory_mapping(window, path)
+    window._source_parse()
+    _wait(window)
+    theory = next(source for source in window.session.project_data.sources.values()
+                  if source.source_kind == SourceKind.THEORETICAL)
+    state = _source_result_calculate(window, window.analyze_page, theory.id)
+    project = tmp_path / "legacy-conflict.json"
+    window._project_save_path(project)
+    _wait(window)
+    payload = json.loads(project.read_text(encoding="utf-8"))
+    config = payload["source_analyses"][state.config.key]["config"]
+    config.pop("mass_source")
+    config.update(propellant_mass_kg=.25, total_motor_mass_kg=9,
+                  diameter_mm=90, length_mm=900)
+    project.write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    restored = window.session.source_analyses[state.config.key]
+    assert restored.completed and restored.config.mass_source == "project"
+    assert restored.config.propellant_mass_kg is None
+    assert restored.config.legacy_physical_parameters == {
+        "propellant_mass_kg": .25, "total_motor_mass_kg": 9,
+        "diameter_mm": 90, "length_mm": 900,
+    }
+    result = next(iter(restored.results.values()))
+    assert result.metrics["specific_impulse_s"] is None
+    assert result.metrics["total_impulse_ns"] == 8000
+    assert result.metadata["motor_parameters"] == {
+        "propellant_mass_kg": None, "total_motor_mass_kg": .8,
+        "diameter_mm": None, "length_mm": None,
+    }
+    assert window.statusBar().currentMessage() == window.translations.translate(
+        "source_analysis.legacy_parameters_kept",
+    )
+    window._project_save_path(project)
+    _wait(window)
+    assert Project_Load(project).source_analyses[state.config.key].config == restored.config
+    assert not window._test_errors

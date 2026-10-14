@@ -84,20 +84,25 @@ action. Input stage, polarity, Processor/PRE/POST and mass controls are not dupl
 Experimental correction and segmentation never become theoretical calculation inputs implicitly.
 Existing Display Unit settings are shared by both origins.
 
-Enter propellant mass once in Project Setup. New theoretical thrust calculations explicitly use
-this common value (`mass_source=project`). Changing it makes primary experimental and shared
+Enter engine physical parameters once in Project Setup. Theory reads the experimental engine's
+`MotorPhysicalParameters`: propellant mass, total motor mass, diameter and length. These are the
+same resolved values passed to both origins' thrust calculators and recorded in result metadata.
+Only propellant mass enters Isp; total mass and dimensions remain shared provenance for the
+existing calculator, which does not define additional formulas using them. Changing a shared
+physical parameter makes primary experimental and shared
 source thrust results pending; press Calculate for each source to recompute. It does not change
 processing, segmentation, Channel arrays or source clocks. Unspecified, zero or negative mass
 yields unavailable Isp with a Diagnostic while impulse and other computable metrics remain
 available. The same `g0 = 9.80665 m/s²` and actual-timestamp trapezoidal integration apply. No
 total-motor mass or baseline-derived mass estimate is substituted.
 
-Legacy source profiles without mass provenance keep their saved independent mass
-(`mass_source=source`), stage, polarity, correction and PRE/POST windows. They are not rewritten
-when choosing a source or editing public mass. A conflicting saved independent mass or a
-nondefault processing configuration produces one nonblocking status message on Project load.
-Completed profiles are recomputed from their saved configuration; no silent migration changes
-their numerical result. A saved profile dependent on primary processed thrust continues to be
+Legacy theory profiles now use experimental engine parameters (`mass_source=project`), including
+an unspecified experimental mass. Conflicting former values remain in
+`legacy_physical_parameters`, including old total mass/dimensions if present, for traceability.
+A nonblocking load notice explains this migration. Completed theory profiles recompute with the
+resolved shared model; drafts remain pending. The migration preserves their Channel references,
+interval, stage, polarity, correction and PRE/POST windows. Experimental independent source
+profiles retain their explicit legacy mass. A saved profile dependent on primary processed thrust continues to be
 invalidated when that processed input changes.
 
 Pressure retains start/mean/maximum/time-to-maximum/minimum; Temperature retains start, interval
@@ -117,6 +122,21 @@ existing experimental markers remain unchanged. Saving stores independent parame
 provenance, results and completion. Reopen verifies source hashes and recomputes completed profiles
 from saved scientific input; uncalculated drafts stay uncalculated. Removing a Source drops its
 profiles only. Formal export readiness continues to follow the original experimental workflow.
+
+## Plot viewport persistence
+
+Project `/2` has an optional `plot_views` view-state object, keyed by stable workspace plot IDs
+(`thrust_analysis`, `chamber_pressure`, `temperature`, `data_explorer`) and actual axis IDs (`x`,
+`y`, or an attached axis such as `right:y`). Each independent axis stores its displayed finite
+range and auto-range boolean/fraction. Shared ViewBox axes are recorded once; linked axes store
+`linked_to` rather than another range. Additional unknown plot/axis records survive a save.
+Older files without this field retain the normal default view. Invalid ranges/flags are rejected.
+
+Reopen restores viewports after verified data, scientific state, theory shifts, curves and locale
+initialization, with one deferred guarded restoration for queued layout refreshes. Stored ranges
+are already display coordinates: the theory shift is never applied again. Manual ranges and
+auto-range settings survive page changes. Reset Chart still deliberately fits all visible data.
+View state does not change samples, scientific timestamps, calculation intervals or exports.
 
 ## Data and unit contract
 

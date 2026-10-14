@@ -8,9 +8,11 @@ import numpy as np
 
 from underline_retldc.core.diagnostics import Diagnostic, DiagnosticSeverity
 from underline_retldc.core.measurement_statistics import MeasurementStatistics_Calculate
+from underline_retldc.core.motor_parameters import MotorPhysicalParameters
 from underline_retldc.core.pipeline import Processing_Passthrough, ThrustPolarity_Apply
 from underline_retldc.core.regions import RegionSelection
 from underline_retldc.core.source_analysis import (
+    SourceAnalysis_UseSharedMotor,
     SourceAnalysisConfig,
     SourceAnalysisDocument,
     SourceAnalysisInput,
@@ -50,8 +52,11 @@ def SourceAnalysis_Calculate(
     *,
     analyzer: AnalyzerPlugin | None = None,
     processor: ProcessorPlugin | None = None,
+    motor_parameters: MotorPhysicalParameters | None = None,
 ) -> SourceAnalysisState:
     """Orchestrate existing calculators on one Source's scientific clock/parameters."""
+    if motor_parameters is not None:
+        config = SourceAnalysis_UseSharedMotor(config, motor_parameters)
     if not inputs or tuple(item.reference for item in inputs) != config.channels:
         raise ValueError("Select the calculation Channels for this Source")
     single = config.workspace_id != "temperature"
@@ -152,6 +157,7 @@ def SourceAnalysis_Calculate(
             result = analyzer.analyze(
                 dataset,
                 {
+                    **(motor_parameters.to_dict() if motor_parameters is not None else {}),
                     "channel_id": channel_id,
                     "ignition": start,
                     "burnout": end,
@@ -233,6 +239,8 @@ def SourceAnalysis_Calculate(
                 raise ValueError("Calculation produced a nonfinite metric")
         metadata = {
             **result.metadata,
+            **({"motor_parameters": motor_parameters.to_dict(), "mass_source": "project"}
+               if motor_parameters is not None else {}),
             "source_id": config.source_id,
             "source_display_unit": channel.display_unit,
             "reference": item.reference.to_dict(),

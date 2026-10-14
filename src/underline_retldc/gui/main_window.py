@@ -47,6 +47,7 @@ from underline_retldc.core.curve_display import DisplayCurve
 from underline_retldc.core.data_quality import Dataset_QualityInspect
 from underline_retldc.core.dataset import Dataset
 from underline_retldc.core.defaults import FACTORY_DEFAULTS
+from underline_retldc.core.motor_parameters import MOTOR_PHYSICAL_FIELDS, MotorPhysicalParameters
 from underline_retldc.core.parser_selection import (
     ParserSelection_Decide,
     ParserSelectionResult,
@@ -99,7 +100,11 @@ from underline_retldc.core.segmentation import (
     Segmentation_SelectReferenceForRole,
 )
 from underline_retldc.core.source_alignment import SourceAlignment_Detect, SourceAlignment_Offset
-from underline_retldc.core.source_analysis import SourceAnalysisConfig, SourceAnalysisInput
+from underline_retldc.core.source_analysis import (
+    SourceAnalysis_UseSharedMotor,
+    SourceAnalysisConfig,
+    SourceAnalysisInput,
+)
 from underline_retldc.core.tabular import (
     Tabular_MappingSuggest,
     TabularPreset,
@@ -125,6 +130,7 @@ from underline_retldc.gui.pages.workspace_pages import (
     ThrustAnalysisWorkspacePage,
     WorkspaceSeries,
 )
+from underline_retldc.gui.plot_view import PlotViews_Capture, PlotViews_Restore
 from underline_retldc.gui.plugin_install_dialog import PluginInstallPreviewDialog
 from underline_retldc.gui.theme import Theme_Apply, Theme_DarkBarApply
 from underline_retldc.gui.widgets import StandardComboBox
@@ -482,9 +488,8 @@ class MainWindow(QMainWindow):
             display_page.theory_overlay.curve_selected.connect(
                 result_page.source_analysis.select_reference,
             )
-        self.setup_page.motor_edits["propellant_mass_kg"].textChanged.connect(
-            self._shared_mass_changed,
-        )
+        for name in MOTOR_PHYSICAL_FIELDS:
+            self.setup_page.motor_edits[name].textChanged.connect(self._shared_mass_changed)
         for page in (self.process_page, *self._measurement_pages()):
             page.theory_overlay.display_changed.connect(self._source_display_changed)
             page.theory_overlay.align_requested.connect(self._theory_align)
@@ -1051,21 +1056,36 @@ class MainWindow(QMainWindow):
             return None
         return mass if np.isfinite(mass) else None
 
+    def _motor_parameters_sync(self) -> MotorPhysicalParameters:
+        for name in MOTOR_PHYSICAL_FIELDS:
+            try:
+                value = float(self.setup_page.motor_edits[name].text().strip())
+            except ValueError:
+                value = None
+            if value is None or not np.isfinite(value):
+                self.session.motor_metadata.pop(name, None)
+            else:
+                self.session.motor_metadata[name] = value
+        return self.session.motor_parameters
+
+    def _source_uses_shared_motor(self, config: SourceAnalysisConfig) -> bool:
+        source = self.session.project_data.sources.get(config.source_id)
+        return config.mass_source == "project" or (
+            source is not None and source.source_kind == SourceKind.THEORETICAL
+        )
+
     def _shared_mass_changed(self) -> None:
-        mass = self._project_mass_value()
-        if mass is None:
-            self.session.motor_metadata.pop("propellant_mass_kg", None)
-        else:
-            self.session.motor_metadata["propellant_mass_kg"] = mass
+        previous = self.session.motor_parameters
+        parameters = self._motor_parameters_sync()
         for key, state in tuple(self.session.source_analyses.items()):
-            if (state.config.mass_source == "project"
+            if (self._source_uses_shared_motor(state.config)
                     and state.config.workspace_id == "thrust_analysis"
-                    and state.config.propellant_mass_kg != mass):
+                    and (previous != parameters or state.config.mass_source != "project")):
                 self.session.source_analyses[key] = SourceAnalysisState(
-                    replace(state.config, propellant_mass_kg=mass),
+                    SourceAnalysis_UseSharedMotor(state.config, parameters),
                 )
         if (self.session.analysis_result is not None
-                and self.session.analyzer_config.get("propellant_mass_kg") != mass):
+                and previous != parameters):
             self.session.analyzer_id = None
             self.session.analyzer_config.clear()
             self.session.analysis_result = None
@@ -1076,7 +1096,8 @@ class MainWindow(QMainWindow):
     def _source_analysis_has_legacy_parameters(self) -> bool:
         mass = self._project_mass_value()
         return any(
-            (config.mass_source == "source" and config.propellant_mass_kg != mass)
+            bool(config.legacy_physical_parameters)
+            or (config.mass_source == "source" and config.propellant_mass_kg != mass)
             or config.input_stage != "calibrated" or config.polarity != 1
             or config.processor is not None or config.pre is not None or config.post is not None
             for state in self.session.source_analyses.values()
@@ -1086,6 +1107,8 @@ class MainWindow(QMainWindow):
     def _source_analysis_config_changed(self, config: object) -> None:
         if not isinstance(config, SourceAnalysisConfig):
             return
+        if self._source_uses_shared_motor(config):
+            config = SourceAnalysis_UseSharedMotor(config, self.session.motor_parameters)
         previous = self.session.source_analyses.get(config.key)
         if previous is None or previous.config != config:
             self.session.source_analyses[config.key] = SourceAnalysisState(config)
@@ -1123,8 +1146,11 @@ class MainWindow(QMainWindow):
     def _source_analysis_calculate(self, config: object) -> None:
         if not isinstance(config, SourceAnalysisConfig) or self._active_task is not None:
             return
-        if config.mass_source == "project":
-            config = replace(config, propellant_mass_kg=self._project_mass_value())
+        parameters = (
+            self._motor_parameters_sync() if self._source_uses_shared_motor(config) else None
+        )
+        if parameters is not None:
+            config = SourceAnalysis_UseSharedMotor(config, parameters)
         self._source_analysis_config_changed(config)
         pending_state = self.session.source_analyses[config.key]
         inputs_by_id = {item.reference.stable_id: item for item in self._source_analysis_inputs()}
@@ -1159,6 +1185,7 @@ class MainWindow(QMainWindow):
             try:
                 return SourceAnalysis_Calculate(
                     config, inputs, context, analyzer=analyzer, processor=processor,
+                    motor_parameters=parameters,
                 )
             except (KeyError, ValueError) as exc:
                 return SourceAnalysisState(config, error=str(exc))
@@ -3183,9 +3210,11 @@ class MainWindow(QMainWindow):
         try:
             regions = self._regions_normalize(self.session.regions)
             metadata = self.setup_page.motor_metadata()
+            parameters = MotorPhysicalParameters.from_metadata(metadata)
             plugin_id = THRUST_ANALYZER_ID
             analyzer = self.registry.get(plugin_id)
             config: dict[str, Any] = {
+                **parameters.to_dict(),
                 "channel_id": "thrust_processed",
                 "ignition": regions["active_test"][0],
                 "burnout": regions["active_test"][1],
@@ -3199,10 +3228,14 @@ class MainWindow(QMainWindow):
             return
 
         def operation(context: TaskContext) -> AnalysisResult:
-            return analyzer.analyze(processing.dataset, config, context)
+            result = analyzer.analyze(processing.dataset, config, context)
+            return replace(result, metadata={
+                **result.metadata, "motor_parameters": parameters.to_dict(),
+                "mass_source": "project",
+            })
 
         def success(result: AnalysisResult) -> None:
-            if self._project_mass_value() != config["propellant_mass_kg"]:
+            if self.session.motor_parameters != parameters:
                 return
             self.session.analyzer_id = plugin_id
             self.session.analyzer_config = config
@@ -3443,6 +3476,7 @@ class MainWindow(QMainWindow):
                 self.session.analyzer_id, self.session.analyzer_config
             ),
             motor_metadata=self.setup_page.motor_metadata(),
+            plot_views=self._plot_views_capture(),
             export_settings=export_settings,
             workflow_state={
                 "parsed": self.session.raw_dataset is not None,
@@ -3457,6 +3491,30 @@ class MainWindow(QMainWindow):
             locale=self.translations.locale,
             diagnostics=diagnostics,
         )
+
+    def _plot_widgets(self) -> dict[str, Any]:
+        return {
+            "thrust_analysis": self.process_page.analysis_plot,
+            **{page.source_analysis.workspace_id: page.analysis_plot
+               for page in self._measurement_pages()},
+        }
+
+    def _plot_views_capture(self) -> dict:
+        views = {key: dict(axes) for key, axes in self.session.plot_views.items()}
+        for key, axes in PlotViews_Capture(self._plot_widgets()).items():
+            views.setdefault(key, {}).update(axes)
+        self.session.plot_views = views
+        return views
+
+    def _plot_views_restore(self) -> None:
+        session = self.session
+        PlotViews_Restore(self._plot_widgets(), session.plot_views)
+
+        def deferred_restore() -> None:
+            if self.session is session:
+                PlotViews_Restore(self._plot_widgets(), session.plot_views)
+
+        QTimer.singleShot(0, deferred_restore)
 
     def _project_save(self) -> None:
         if self.session.project_path is None:
@@ -3613,6 +3671,7 @@ class MainWindow(QMainWindow):
             if primary_stream_id is not None and calibrated is not None:
                 calibrated_streams[primary_stream_id] = calibrated
             self.session = AnalysisSession(
+                plot_views={key: dict(axes) for key, axes in document.plot_views.items()},
                 source_analyses=dict(self._recomputed_source_analyses),
                 project_path=project_path,
                 source_path=raw_source.resolve() if raw_source is not None else None,
@@ -3770,12 +3829,13 @@ class MainWindow(QMainWindow):
                         self.setup_page.set_calibration_config(
                             channel_state.plugin_id, dict(channel_state.config)
                         )
-            mass_edit = self.setup_page.motor_edits["propellant_mass_kg"]
-            was_blocked = mass_edit.blockSignals(True)
+            blocked = [(edit, edit.blockSignals(True)) for name, edit
+                       in self.setup_page.motor_edits.items() if name in MOTOR_PHYSICAL_FIELDS]
             try:
                 self.setup_page.set_motor_metadata(dict(document.motor_metadata))
             finally:
-                mass_edit.blockSignals(was_blocked)
+                for edit, was_blocked in blocked:
+                    edit.blockSignals(was_blocked)
             self.process_page.clear_state()
             self.process_page.set_thrust_polarity(document.thrust_polarity)
             self._primary_channels_update()
@@ -3856,6 +3916,7 @@ class MainWindow(QMainWindow):
             self._project_title = project_path.name
             self._retranslate()
             self._workspace_select("project")
+            self._plot_views_restore()
             self.statusBar().showMessage(
                 self.translations.translate("status.project_loaded"), 5000
             )
@@ -4037,6 +4098,8 @@ class MainWindow(QMainWindow):
         ProcessingResult | None, AnalysisResult | None,
     ]:
         payload = self._project_pipeline_recompute(document, context, raw_source=raw_source)
+        document = payload[0]
+        parameters = MotorPhysicalParameters.from_metadata(document.motor_metadata)
         project = self._recomputed_project_data
         calibrated_streams = self._recomputed_calibrated_streams
         inputs_by_id: dict[str, SourceAnalysisInput] = {}
@@ -4068,6 +4131,12 @@ class MainWindow(QMainWindow):
         self._recomputed_source_analyses = {}
         for key, saved in document.source_analyses.items():
             config = saved.config
+            source = project.sources.get(config.source_id)
+            shared = config.mass_source == "project" or (
+                source is not None and source.source_kind == SourceKind.THEORETICAL
+            )
+            if shared:
+                config = SourceAnalysis_UseSharedMotor(config, parameters)
             state = SourceAnalysisState(config)
             if saved.completed:
                 try:
@@ -4093,6 +4162,7 @@ class MainWindow(QMainWindow):
                     )
                     state = SourceAnalysis_Calculate(
                         config, inputs, context, analyzer=analyzer, processor=processor,
+                        motor_parameters=parameters if shared else None,
                     )
                 except TaskCancelledError:
                     raise
@@ -4101,7 +4171,10 @@ class MainWindow(QMainWindow):
                     state.error = str(exc)
                     LOGGER.warning("Source calculation %s could not reopen: %s", key, exc)
             self._recomputed_source_analyses[key] = state
-        return payload
+        document = replace(document, source_analyses={
+            key: state.document() for key, state in self._recomputed_source_analyses.items()
+        })
+        return (document, *payload[1:])
 
     def _project_pipeline_recompute(
         self,
@@ -4302,9 +4375,15 @@ class MainWindow(QMainWindow):
         ):
             return document, raw_source, parse_result, calibrated, processing_result, None
         analyzer = self._plugin_reference_resolve(document.analyzer)
+        parameters = MotorPhysicalParameters.from_metadata(document.motor_metadata)
+        analyzer_config = {**document.analyzer.config, **parameters.to_dict()}
+        document = replace(document, analyzer=replace(document.analyzer, config=analyzer_config))
         analysis = analyzer.analyze(
-            processing_result.dataset, document.analyzer.config, context
+            processing_result.dataset, analyzer_config, context
         )
+        analysis = replace(analysis, metadata={
+            **analysis.metadata, "motor_parameters": parameters.to_dict(), "mass_source": "project",
+        })
         return (
             document,
             raw_source,

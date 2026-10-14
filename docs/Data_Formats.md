@@ -274,11 +274,15 @@ Project `/2` also adds `source_analyses`, keyed by `<source_id>/<workspace_id>`.
 `completed`,
 `calculator` (stable ID/version/API for plugins or the generic statistics version) and `results`.
 Result metadata records source/reference, scientific interval/clock and no applied display
-transform. `mass_source` is `project` for new GUI profiles using the public Project mass, or
-`source` for explicitly independent saved mass. Missing provenance defaults to `source` for
-backward compatibility; unknown values are rejected. `propellant_mass_kg` remains the effective
-snapshot used for calculation and completed-profile reopen. Public mass edits update and invalidate
-shared thrust profiles; legacy independent values and processing settings are preserved. Missing
+transform. `mass_source` is `project` for shared engine parameters, or `source` for an experimental
+profile's explicitly independent saved mass. Missing provenance is initially read as `source`;
+theory profiles then migrate to `project` using experimental `motor_metadata`, even if a value is
+missing. Unknown provenance is rejected. Conflicting former theory mass and saved total mass or
+dimensions are retained in `config.legacy_physical_parameters`. `propellant_mass_kg` remains the
+effective snapshot; completed theory reopen resolves the current shared model before calculation.
+Result metadata `motor_parameters` records propellant/total mass in kg and diameter/length in mm,
+including nulls. Public physical-parameter edits invalidate shared thrust profiles. Source
+intervals, calibrations and processing remain independent. Missing
 source profiles mean none. Missing/nonpositive mass preserves other metrics while Isp stays
 unavailable; nonfinite stored mass is rejected.
 
@@ -288,3 +292,12 @@ an unfinished experimental workflow without advancing the latter on reopen. Comp
 profiles are recomputed from hash-verified files/configuration; drafts remain pending. Profiles
 with unavailable saved calculators remain pending with their own error. Source removal prunes its
 profiles; scientific changes invalidate affected profiles. View transforms never invalidate them.
+
+
+`plot_views` is an optional Project `/2` view-state map: stable plot IDs contain axis IDs with
+`range` (two finite increasing display-coordinate bounds), `auto_range` (boolean or fraction in
+[0, 1]) and optional `linked_to` (`<plot_id>/<axis_id>`). A linked axis uses null `range` to avoid
+persisting another copy of its target's range. Main axes are `x`/`y`; attached ViewBoxes use axis
+names such as `right:x`/`right:y`. Shared actual axes are recorded once. Missing view state uses
+normal defaults; unknown UI axes remain stored. Restoration runs after curves, display transforms
+and initialization. No range is added to scientific timestamps or Source alignment.

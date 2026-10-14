@@ -339,6 +339,11 @@ def _source_workflow_check(
         and window.export_dialog.selected_exporter_ids() == exports
     ))
     project = output / "source_workflow.json"
+    for index, plot in enumerate(window._plot_widgets().values()):
+        plot.plot_widget.getViewBox().setRange(
+            xRange=(-2 + index, 4 + index), yRange=(-5 - index, 25 + index), padding=0,
+        )
+    saved_views = window._plot_views_capture()
     window._project_save_path(project)
     _wait(window, errors)
     window._project_new()
@@ -347,6 +352,15 @@ def _source_workflow_check(
     ):
         window._project_open_dialog()
         _wait(window, errors)
+    for workspace_id, axes in saved_views.items():
+        window._workspace_select(workspace_id)
+        QApplication.processEvents()
+        actual = window._plot_views_capture()[workspace_id]
+        check(f"plot_view_reopened_{workspace_id}", all(
+            actual[axis_id].auto_range == state.auto_range
+            and np.allclose(actual[axis_id].range, state.range)
+            for axis_id, state in axes.items()
+        ))
     check("source_reopen_display", (
         window.session.project_data.sources[theory.id].display_transform.detected_test is not None
         and window.session.project_data.sources[theory.id].display_transform.shift_s == .5
@@ -363,6 +377,9 @@ def _source_workflow_check(
     ))
     shared_processing = window.session.processing_result
     controls = window.analyze_page.source_analysis
+    for name, value in (("total_motor_mass_kg", ".8"), ("diameter_mm", "30"),
+                        ("length_mm", "120")):
+        window.setup_page.motor_edits[name].setText(value)
     for mass in (.1, .2, None):
         window.setup_page.motor_edits["propellant_mass_kg"].setText(
             str(mass) if mass is not None else "",
@@ -382,6 +399,8 @@ def _source_workflow_check(
             ("experimental", window.session.analysis_result),
             ("theoretical", next(iter(state.results.values()))),
         ):
+            check(f"shared_motor_model_{origin}_{mass}", result.metadata.get("motor_parameters")
+                  == window.session.motor_parameters.to_dict())
             impulse = result.metrics["total_impulse_ns"]
             isp = result.metrics["specific_impulse_s"]
             check(f"shared_mass_isp_{origin}_{mass}",

@@ -13,6 +13,7 @@ from typing import Any
 from underline_retldc.app.version import __version__
 from underline_retldc.core.diagnostics import Diagnostic
 from underline_retldc.core.pipeline import ThrustPolarity_Normalize
+from underline_retldc.core.plot_view import AxisViewState, PlotViews_FromDict
 from underline_retldc.core.project_data import (
     PrimaryChannelBindings,
     SourceDisplayTransform,
@@ -230,6 +231,7 @@ class ProjectDocument:
     software_version: str = __version__
     source_analyses: Mapping[str, SourceAnalysisDocument] = field(default_factory=dict)
     calibrated_stream_ids: tuple[str, ...] | None = None
+    plot_views: Mapping[str, Mapping[str, AxisViewState]] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         regions = dict(self.regions)
@@ -283,6 +285,10 @@ class ProjectDocument:
             "processing_metadata": dict(self.processing_metadata),
             "analyzer": self.analyzer.to_dict() if self.analyzer is not None else None,
             "motor_metadata": dict(self.motor_metadata),
+            "plot_views": {
+                plot_id: {axis_id: state.to_dict() for axis_id, state in axes.items()}
+                for plot_id, axes in self.plot_views.items()
+            },
             "export_settings": dict(self.export_settings),
             "workflow_state": dict(self.workflow_state),
             "locale": self.locale,
@@ -504,6 +510,7 @@ class ProjectDocument:
             software_version=str(payload.get("software_version", "unknown")),
             source_analyses=source_analyses,
             calibrated_stream_ids=calibrated_stream_ids,
+            plot_views=PlotViews_FromDict(payload.get("plot_views", {})),
         )
 
 

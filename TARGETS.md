@@ -1284,8 +1284,14 @@ reset, and Project save/reopen. Theory detection is internal; only experimental 
 Theory never supplies experimental Primary Channels, segmentation, compensation, primary analysis,
 or formal export values. Both origins support independent source calculations in the existing
 result area: thrust impulse/Isp, pressure/temperature metrics and applicable Data Explorer
-statistics reuse existing scientific calculators. Source parameters, mass, intervals and results
-are saved independently; display alignment never changes calculation times. Theory source
+statistics reuse existing scientific calculators. Source intervals, processing and results remain
+independent. Theory uses the experimental motor physical-parameter model; conflicting legacy
+theory values remain traceable while experimental values (including missing values) win.
+Display alignment never changes calculation times. Theory source
 additions/removals and display changes preserve completed
 experiment results. Residuals, fitting, LLM analysis, and motor optimization are excluded.
 See docs/Theoretical_Curves.md for persistence and operator semantics.
+
+Project view state persists displayed plot X/Y ranges and axis auto-range flags/fractions using
+stable plot/axis IDs, with shared/linked axes recorded once. Reopen restores after curves and
+display alignment without shifting saved viewport coordinates again. Old files retain defaults.

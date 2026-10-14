@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from underline_retldc.core.dataset import Dataset
+from underline_retldc.core.motor_parameters import MOTOR_PHYSICAL_FIELDS, MotorPhysicalParameters
 from underline_retldc.core.project_data import ChannelReference
 
 
@@ -24,6 +25,7 @@ class SourceAnalysisConfig:
     pre: tuple[float, float] | None = None
     post: tuple[float, float] | None = None
     mass_source: str = "source"  # Legacy/configured source value; new GUI drafts use "project".
+    legacy_physical_parameters: Mapping[str, float | None] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not self.source_id or not self.workspace_id:
@@ -42,6 +44,9 @@ class SourceAnalysisConfig:
             raise ValueError("Unsupported source analysis input stage")
         if self.mass_source not in {"source", "project"}:
             raise ValueError("Source analysis mass_source must be source or project")
+        if not isinstance(self.legacy_physical_parameters, Mapping):
+            raise ValueError("Legacy physical parameters must be an object")
+        MotorPhysicalParameters.from_metadata(self.legacy_physical_parameters)
         if isinstance(self.polarity, bool) or self.polarity not in {-1, 1}:
             raise ValueError("Source analysis polarity must be +1 or -1")
         for key in ("interval", "pre", "post"):
@@ -90,6 +95,7 @@ class SourceAnalysisConfig:
             "pre": list(self.pre) if self.pre is not None else None,
             "post": list(self.post) if self.post is not None else None,
             "mass_source": self.mass_source,
+            "legacy_physical_parameters": dict(self.legacy_physical_parameters),
         }
 
     @classmethod
@@ -101,6 +107,9 @@ class SourceAnalysisConfig:
             not isinstance(item, Mapping) for item in channels
         ):
             raise ValueError("Source analysis channels must be an array of references")
+        legacy = payload.get("legacy_physical_parameters", {})
+        if not isinstance(legacy, Mapping):
+            raise ValueError("Legacy physical parameters must be an object")
         return cls(
             source_id=str(payload["source_id"]),
             workspace_id=str(payload["workspace_id"]),
@@ -113,7 +122,26 @@ class SourceAnalysisConfig:
             pre=payload.get("pre"),
             post=payload.get("post"),
             mass_source=str(payload.get("mass_source", "source")),
+            legacy_physical_parameters={
+                **dict(legacy),
+                **{name: payload[name] for name in MOTOR_PHYSICAL_FIELDS
+                   if name != "propellant_mass_kg" and name in payload},
+            },
         )
+
+
+def SourceAnalysis_UseSharedMotor(
+    config: SourceAnalysisConfig, parameters: MotorPhysicalParameters,
+) -> SourceAnalysisConfig:
+    legacy = dict(config.legacy_physical_parameters)
+    if (config.mass_source == "source"
+            and config.propellant_mass_kg is not None
+            and config.propellant_mass_kg != parameters.propellant_mass_kg):
+        legacy.setdefault("propellant_mass_kg", config.propellant_mass_kg)
+    return replace(
+        config, mass_source="project", propellant_mass_kg=parameters.propellant_mass_kg,
+        legacy_physical_parameters=legacy,
+    )
 
 
 @dataclass(frozen=True, slots=True)

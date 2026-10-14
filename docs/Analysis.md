@@ -246,3 +246,18 @@ fine-tune it; repeated alignment does not accumulate shifts. Neither alignment n
 theory detection replaces source calculation parameters/results or alters timestamp integration.
 The result selector now exposes only Experimental/Theoretical roles; existing primary experiment
 and independent theory calculators remain separate.
+
+
+## Shared engine parameters and saved viewports
+
+Theory and primary experimental thrust orchestration pass the same `MotorPhysicalParameters`
+resolved from experimental Project Setup to the existing Analyzer. Its Isp formula consumes only
+propellant mass; total motor mass, diameter and length are shared input/provenance fields, without
+new scientific formulas. All four effective values, including nulls, are recorded in result
+metadata. Shared physical edits invalidate related completed thrust results while retaining arrays,
+calibration, processing, source intervals and experimental segmentation. Old conflicting theory
+values are archived; completed profiles recompute using experimental values, and drafts stay pending.
+
+Optional Project `plot_views` restores displayed axis ranges and auto-range flags after curve and
+alignment initialization. Linked/attached axes use stable axis references and deduplicate ranges.
+A saved viewport is never applied to scientific time, calculation intervals or formal export.

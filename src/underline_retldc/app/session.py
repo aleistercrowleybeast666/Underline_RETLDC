@@ -8,6 +8,8 @@ from underline_retldc.app.source_analysis import SourceAnalysisState
 from underline_retldc.core.calibration import CalibrationSelectionSource
 from underline_retldc.core.data_quality import DataQualityReport
 from underline_retldc.core.dataset import Dataset
+from underline_retldc.core.motor_parameters import MotorPhysicalParameters
+from underline_retldc.core.plot_view import AxisViewState
 from underline_retldc.core.project_data import ChannelReference, ProjectData
 from underline_retldc.core.regions import BurnCandidate
 from underline_retldc.plugin_api.common import AnalysisResult, ProcessingResult
@@ -58,6 +60,11 @@ class AnalysisSession:
     motor_metadata: dict[str, Any] = field(default_factory=dict)
     export_settings: dict[str, Any] = field(default_factory=dict)
     source_analyses: dict[str, SourceAnalysisState] = field(default_factory=dict)
+    plot_views: dict[str, dict[str, AxisViewState]] = field(default_factory=dict)
+
+    @property
+    def motor_parameters(self) -> MotorPhysicalParameters:
+        return MotorPhysicalParameters.from_metadata(self.motor_metadata)
 
     @property
     def processed_dataset(self) -> Dataset | None:
