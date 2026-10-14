@@ -69,14 +69,18 @@ than one theory file supplies this measurement, the parameters contain a Theory 
 selector. Channels, including multiple Temperature Channels, still come from the original mapping.
 Historical independent experimental profiles remain in saved Projects without replacing the
 primary workflow.
-Selecting **Theoretical** shows its parameters directly, with no extra foldout button or empty
-button row. Select the engineering Channel (multiple Temperature Channels are supported), full
-record or custom scientific Project-time interval. Calculate uses
-the same thrust Analyzer or measurement-statistics implementation as the existing workflow.
+The metric-source selector is one compact row inside the existing results group. There is no
+separate theory Channel/interval panel or Calculate button in that column. Use the single toolbar
+Calculate action for either origin. Theory uses the existing theory-curve selector in Display to
+identify its Source/Channel. Saved source intervals and Channel sets remain intact; a new profile
+uses its full scientific record, and Temperature keeps its saved multi-channel set or defaults to
+all Temperature Channels in that Source. Calculation uses the same Analyzer/statistics as before.
+Missing/unusable inputs show an unavailable reason and cannot fall back to experimental data.
 
 New thrust calculations use the current engineering Channel, polarity +1 and correction None.
-The result area contains only the Source, Channel and interval controls, calculation action and
-results. Input stage, polarity, Processor/PRE/POST and mass controls are no longer duplicated here.
+The result area keeps only the compact source switch and existing results. Source Channel and
+interval drafts remain internal scientific configuration; all calculation goes through one toolbar
+action. Input stage, polarity, Processor/PRE/POST and mass controls are not duplicated here.
 Experimental correction and segmentation never become theoretical calculation inputs implicitly.
 Existing Display Unit settings are shared by both origins.
 

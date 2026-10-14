@@ -9,6 +9,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QDoubleSpinBox,
     QFormLayout,
+    QHBoxLayout,
     QLabel,
     QListWidget,
     QListWidgetItem,
@@ -21,7 +22,7 @@ from PySide6.QtWidgets import (
 from underline_retldc.app.source_analysis import SourceAnalysisState
 from underline_retldc.core.project_data import ChannelReference, ProjectData, SourceKind
 from underline_retldc.core.source_analysis import SourceAnalysisConfig, SourceAnalysisInput
-from underline_retldc.core.units import Quantity_Dimension
+from underline_retldc.core.units import Quantity_Dimension, Unit_IsPhysicalForQuantity
 from underline_retldc.gui.widgets import StandardComboBox
 from underline_retldc.i18n.service import TranslationService
 
@@ -93,9 +94,10 @@ class SourceAnalysisWidget(QWidget):
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.source_label)
-        layout.addWidget(self.source_combo)
-        layout.addWidget(self.parameter_scroll)
+        selector = QHBoxLayout()
+        selector.addWidget(self.source_label)
+        selector.addWidget(self.source_combo, 1)
+        layout.addLayout(selector)
         layout.addWidget(self.notice)
         self.retranslate()
 
@@ -191,6 +193,39 @@ class SourceAnalysisWidget(QWidget):
         self._editor_populate()
         self.view_changed.emit()
 
+    def select_reference(self, reference: ChannelReference | None) -> None:
+        """Use the existing theory-curve selection without changing experimental bindings."""
+        if reference is None or not any(item.reference == reference for item in self._inputs):
+            return
+        active = self.source_combo.currentIndex() == 1
+        self._syncing = True
+        self.record_combo.setCurrentIndex(self.record_combo.findData(reference.source_id))
+        self.source_combo.setItemData(1, reference.source_id)
+        self._syncing = False
+        if not active:
+            return
+        self._editor_populate()
+        if self.workspace_id != "temperature":
+            was_blocked = self.channel_combo.blockSignals(True)
+            self.channel_combo.setCurrentIndex(self.channel_combo.findData(reference.stable_id))
+            self.channel_combo.blockSignals(was_blocked)
+        self.view_changed.emit()
+
+    def unavailable_reason(self) -> str:
+        if self.source_id() is None:
+            return ""
+        selected = {reference.stable_id for reference in self.config().channels}
+        inputs = tuple(item for item in self._available() if item.reference.stable_id in selected)
+        if not inputs:
+            return self._translations.translate("source_analysis.no_input")
+        for item in inputs:
+            channel = item.dataset.channel(item.channel_id)
+            finite = np.isfinite(item.dataset.project_time) & np.isfinite(channel.values)
+            if (np.count_nonzero(finite) < 2
+                    or not Unit_IsPhysicalForQuantity(channel.quantity, channel.data_unit)):
+                return self._translations.translate("source_analysis.no_input")
+        return ""
+
     def _editor_populate(self) -> None:
         self._syncing = True
         self.source_combo.setToolTip(self.source_combo.currentText())
@@ -275,7 +310,7 @@ class SourceAnalysisWidget(QWidget):
         active = self.source_id() is not None
         self._form.setRowVisible(self.record_combo, active and self.record_combo.count() > 1)
         self._form.setRowVisible(self.channel_list, self.workspace_id == "temperature")
-        self.parameter_scroll.setVisible(active)
+        self.parameter_scroll.hide()
         custom = self.interval_combo.currentData() == "custom"
         self._form.setRowVisible(self.start_spin, custom)
         self._form.setRowVisible(self.end_spin, custom)
@@ -286,7 +321,9 @@ class SourceAnalysisWidget(QWidget):
     def _notice_refresh(self) -> None:
         state = self.selected_state()
         error = state.error if state else ""
-        self.notice.setText(
+        message = (
             self._translations.translate("source_analysis.failed", error=error) if error else ""
         )
-        self.notice.setVisible(bool(error))
+        message = message or self.unavailable_reason()
+        self.notice.setText(message)
+        self.notice.setVisible(bool(message))

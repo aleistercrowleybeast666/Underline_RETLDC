@@ -275,7 +275,11 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   separately from the experimental primary workflow. New GUI source calculations explicitly
   share the single Project propellant-mass input (`mass_source=project`) and existing Display
   Units; they use engineering Channels, +1 polarity and no correction. Do not inherit experimental
-  segmentation/correction. Keep only Source/Channel/interval controls in the result area, without
+  segmentation/correction. The result area contains one compact metric-source selector and results;
+  the separate theory Channel/interval panel and its Calculate button are hidden. A single toolbar
+  Calculate action dispatches both origins through existing calculators. Theory uses the existing
+  selected theory curve and saved source Channel/interval configuration; new intervals mean full
+  source record in scientific time. Missing inputs visibly remain unavailable. Do not create
   duplicate mass/stage/polarity/Processor/PRE/POST controls or explanatory filler. Legacy explicit
   source mass/processing remains unchanged (`mass_source=source` when absent); conflicting saved
   settings get one nonblocking load notice. Public mass edits invalidate related completed thrust

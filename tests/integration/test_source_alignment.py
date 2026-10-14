@@ -166,15 +166,19 @@ def test_different_theory_files_share_one_offset_and_keep_channel_mapping(
     assert window.process_page.theory_overlay.shift_spin.value() == -4.25
     control = pressure.source_analysis
     control.source_combo.setCurrentIndex(1)
-    assert control.source_id() == theory_id
+    assert control.source_id() == source.id
     assert control.source_combo.count() == 2
     assert control.record_combo.count() == 2
-    control.record_combo.setCurrentIndex(control.record_combo.findData(source.id))
-    pressure.calculate_button.click()
+    window._workspace_select("chamber_pressure")
+    window.calculate_action.trigger()
     _wait(window)
     assert control.selected_state().config.source_id == source.id
-    control.record_combo.setCurrentIndex(control.record_combo.findData(theory_id))
-    pressure.calculate_button.click()
+    reference = next(curve.reference for curve in pressure.theory_overlay._curves
+                     if curve.reference.source_id == theory_id)
+    pressure.theory_overlay.curve_combo.setCurrentIndex(
+        pressure.theory_overlay.curve_combo.findData(reference.stable_id),
+    )
+    window.calculate_action.trigger()
     _wait(window)
     assert control.selected_state().config.source_id == theory_id
     assert not window._test_errors

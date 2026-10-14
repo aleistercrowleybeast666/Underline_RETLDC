@@ -396,15 +396,15 @@ class MeasurementWorkspacePage(QWidget):
         self.diagnostics_list: QListWidget | None = None
         results_widget: QWidget = self.results_panel
         if self._metric_mode in {"pressure", "temperature", "generic"}:
-            self.calculate_button = QPushButton()
+            self.calculate_button = QPushButton(self)
             self.calculate_button.setObjectName("primaryButton")
             self.calculate_button.clicked.connect(self._analysis_calculate)
             results_widget = QWidget()
             results_layout = QVBoxLayout(results_widget)
-            results_layout.addWidget(self.source_analysis)
+            self.results_panel.layout().insertWidget(0, self.source_analysis)
             self.diagnostics_group = AnalysisDiagnosticsPanel(translations)
             self.diagnostics_list = self.diagnostics_group.list
-            results_layout.addWidget(self.calculate_button)
+            self.calculate_button.hide()
             results_layout.addWidget(self.results_panel, 2)
             results_layout.addWidget(self.diagnostics_group, 1)
         self.results_widget = results_widget

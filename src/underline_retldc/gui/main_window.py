@@ -436,6 +436,9 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.export_action)
         self.toolbar.addAction(self.save_project_action)
         self.toolbar.addAction(self.open_project_action)
+        self.calculate_action = QAction(self)
+        self.calculate_action.triggered.connect(self._calculate_current_workspace)
+        self.toolbar.addAction(self.calculate_action)
         self.addToolBar(self.toolbar)
 
         self._project_title: str | None = None
@@ -468,6 +471,17 @@ class MainWindow(QMainWindow):
         for page in (self.analyze_page, *self._measurement_pages()):
             page.source_calculate_requested.connect(self._source_analysis_calculate)
             page.source_analysis.config_changed.connect(self._source_analysis_config_changed)
+            page.source_analysis.view_changed.connect(self._calculation_action_refresh)
+            page.source_analysis.source_combo.currentIndexChanged.connect(
+                lambda _index, target=page: self._calculation_source_select(target),
+            )
+        for display_page, result_page in (
+            (self.process_page, self.analyze_page),
+            *((page, page) for page in self._measurement_pages()),
+        ):
+            display_page.theory_overlay.curve_selected.connect(
+                result_page.source_analysis.select_reference,
+            )
         self.setup_page.motor_edits["propellant_mass_kg"].textChanged.connect(
             self._shared_mass_changed,
         )
@@ -590,6 +604,7 @@ class MainWindow(QMainWindow):
         self.save_project_as_action.setText(t("menu.project.save_as"))
         self.exit_action.setText(t("menu.project.exit"))
         self.export_action.setText(t("export.dialog_title"))
+        self.calculate_action.setText(t("analyze.calculate"))
         self.tools_menu.setTitle(t("menu.tools"))
         self.plugins_action.setText(t("page.plugins"))
         self.settings_action.setText(t("page.settings"))
@@ -671,6 +686,58 @@ class MainWindow(QMainWindow):
     def _page_selected(self, index: int) -> None:
         if 0 <= index < len(self.pages):
             self.stack.setCurrentIndex(index)
+            self._calculation_action_refresh()
+
+    def _current_calculation_page(self) -> Any | None:
+        current = self.stack.currentWidget()
+        if current is self.thrust_analysis_page:
+            return self.analyze_page
+        return current if current in self._measurement_pages() else None
+
+    def _calculation_action_refresh(self) -> None:
+        page = self._current_calculation_page()
+        self.calculate_action.setVisible(page is not None)
+        if page is None:
+            self.calculate_action.setEnabled(False)
+            return
+        reason = page.source_analysis.unavailable_reason()
+        ready = (
+            bool(page.source_analysis.config().channels)
+            if page.source_analysis.source_id() is not None
+            else (self.session.processing_result is not None if page is self.analyze_page
+                  else bool(page._selected_series()))
+        )
+        self.calculate_action.setEnabled(ready and not reason and self._active_task is None)
+        self.calculate_action.setToolTip(reason)
+
+    def _calculate_current_workspace(self) -> None:
+        page = self._current_calculation_page()
+        if page is None or self._active_task is not None:
+            return
+        if page.source_analysis.source_id() is not None:
+            display_page = self.process_page if page is self.analyze_page else page
+            page.source_analysis.select_reference(display_page.theory_overlay.selected_reference())
+        page.calculate_button.click()
+
+    def _calculation_source_select(self, page: Any) -> None:
+        if page.source_analysis._syncing:
+            return
+        if page.source_analysis.source_id() is None:
+            self._calculation_action_refresh()
+            return
+        display_page = self.process_page if page is self.analyze_page else page
+        overlay = display_page.theory_overlay
+        reference = overlay.selected_reference()
+        if reference is not None:
+            state = self.session.source_analyses.get(
+                f"{reference.source_id}/{page.source_analysis.workspace_id}",
+            )
+            if state and state.config.channels:
+                index = overlay.curve_combo.findData(state.config.channels[0].stable_id)
+                if index >= 0:
+                    overlay.curve_combo.setCurrentIndex(index)
+            page.source_analysis.select_reference(overlay.selected_reference())
+        self._calculation_action_refresh()
 
     def _workspace_select(self, workspace_id: str) -> None:
         for index, (candidate_id, _translation_key, _page) in enumerate(self.workspaces):
@@ -974,6 +1041,7 @@ class MainWindow(QMainWindow):
                 project_mass=self._project_mass_value(),
             )
             page._results_refresh()
+        self._calculation_action_refresh()
 
     def _project_mass_value(self) -> float | None:
         text = self.setup_page.motor_edits["propellant_mass_kg"].text().strip()
@@ -1326,6 +1394,7 @@ class MainWindow(QMainWindow):
         ):
             capabilities.add("physical_force")
         self.export_dialog.set_completed_capability_ids(tuple(sorted(capabilities)))
+        self._calculation_action_refresh()
 
     def _task_start(
         self,
@@ -1357,6 +1426,7 @@ class MainWindow(QMainWindow):
         self.cancel_button.show()
         self.statusBar().showMessage(name)
         self.task_timer.start()
+        self._calculation_action_refresh()
         return self._active_task
 
     def _task_poll(self) -> None:
@@ -1386,6 +1456,7 @@ class MainWindow(QMainWindow):
         valid = self._active_valid
         self._active_valid = None
         self._active_task = None
+        self._calculation_action_refresh()
         self._active_success = None
         self._active_failure = None
         self._active_task_indeterminate = False

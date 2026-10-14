@@ -253,8 +253,8 @@ def _source_workflow_check(
             == ["Experimental", "Theoretical"]
         ))
         controls.source_combo.setCurrentIndex(controls.source_combo.findData(theory.id))
-        check(f"source_parameters_visible_{controls.workspace_id}",
-              not controls.parameter_scroll.isHidden())
+        check(f"source_parameters_hidden_{controls.workspace_id}",
+              controls.parameter_scroll.isHidden() and result_page.calculate_button.isHidden())
         if controls.workspace_id == "data_explorer":
             reference = next(item.reference.stable_id for item in controls._available()
                              if item.dataset.channel(item.channel_id).semantic_role == "thrust")
@@ -265,7 +265,8 @@ def _source_workflow_check(
         check(f"source_compact_controls_{controls.workspace_id}",
               not hasattr(controls, "mass_spin") and not hasattr(controls, "stage_combo")
               and not hasattr(controls, "processor_combo") and controls.notice.isHidden())
-        result_page.calculate_button.click()
+        window._workspace_select(controls.workspace_id)
+        window.calculate_action.trigger()
         _wait(window, errors)
         state = controls.selected_state()
         check(f"source_calculated_{controls.workspace_id}", state is not None and state.completed)

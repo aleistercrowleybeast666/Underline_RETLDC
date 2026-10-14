@@ -1215,7 +1215,8 @@ Header language/theme fields and their detached popup views remain deep blue wit
 both themes; popup hover/selection uses the accent blue and never relies on an OS-native palette.
 The File menu command order is Import, Export, Save Project, Save Project As, Open Project, with
 no separator between Import/Export and Save Project or between Save Project As and Open Project.
-The toolbar order is Import, Export, Save Project, Open Project with no separator. Menu, toolbar,
+The toolbar order is Import, Export, Save Project, Open Project, then the shared Calculate action
+for time-curve workspaces, with no separator. Menu, toolbar,
 Header, and navigation blue surfaces touch without light seams. Simplified Chinese uses `工程`
 for this application-document concept and `语言` for the Header language selector.
 

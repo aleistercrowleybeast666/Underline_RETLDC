@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 
 from underline_retldc.core.channel import Channel
 from underline_retldc.core.curve_display import CurveDisplay_IsCompatible, DisplayCurve
-from underline_retldc.core.project_data import ProjectData, Source, SourceKind
+from underline_retldc.core.project_data import ChannelReference, ProjectData, Source, SourceKind
 from underline_retldc.core.units import Quantity_Dimension, UnitDisplayMode
 from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
 from underline_retldc.gui.widgets import StandardComboBox
@@ -33,6 +33,7 @@ class TheoryOverlayWidget(QWidget):
     display_changed = Signal(str, object)
     align_requested = Signal(str)
     view_changed = Signal()
+    curve_selected = Signal(object)
 
     def __init__(self, translations: TranslationService, dimension: str | None) -> None:
         super().__init__()
@@ -125,6 +126,10 @@ class TheoryOverlayWidget(QWidget):
         selected = self.curve_combo.currentData()
         return next((item for item in self._curves if item.reference.stable_id == selected), None)
 
+    def selected_reference(self) -> ChannelReference | None:
+        curve = self._selected_curve()
+        return curve.reference if curve is not None else None
+
     def _alignment_source(self) -> Source | None:
         curve = self._selected_curve()
         if curve is not None:
@@ -157,6 +162,7 @@ class TheoryOverlayWidget(QWidget):
 
     def _selection_changed(self) -> None:
         self._alignment_refresh()
+        self.curve_selected.emit(self.selected_reference())
         self.view_changed.emit()
 
     def _emit_transform(self, **changes: object) -> None:

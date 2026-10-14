@@ -358,6 +358,160 @@ def _source_result_calculate(window: MainWindow, page, source_id: str):
     return state
 
 
+def test_hidden_theory_panel_uses_shared_toolbar_action_and_saved_source_interval(
+    window: MainWindow, tmp_path: Path, monkeypatch,
+) -> None:
+    path = tmp_path / "compact-results.csv"
+    _experimental_import(window, path)
+    window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+    window._processing_apply()
+    _wait(window)
+    window.setup_page.set_motor_metadata({"propellant_mass_kg": .1})
+    window._workspace_select("thrust_analysis")
+    assert window.calculate_action.isEnabled()
+    window.calculate_action.trigger()
+    _wait(window)
+    experimental = window.session.analysis_result
+    processing = window.session.processing_result
+    bindings = window.session.project_data.primary_channels
+    window.import_page.new_kind_combo.setCurrentIndex(1)
+    window.import_page.add_source_paths([path])
+    _configure_theory_mapping(window, path)
+    window._source_parse()
+    _wait(window)
+    theory = next(source for source in window.session.project_data.sources.values()
+                  if source.source_kind == SourceKind.THEORETICAL)
+    control = window.analyze_page.source_analysis
+    control.source_combo.setCurrentIndex(1)
+    assert control.source_id() == theory.id
+    for page in (window.analyze_page, *window._measurement_pages()):
+        widget = page.source_analysis
+        widget.source_combo.setCurrentIndex(1)
+        assert widget.parameter_scroll.isHidden()
+        assert page.calculate_button.isHidden()
+        panel = page.metrics_group if page is window.analyze_page else page.results_panel
+        assert widget.parent() is panel
+    config = replace(control.config(), interval=(1, 3))
+    window._source_analysis_config_changed(config)
+    window._source_analysis_views_sync()
+    window.process_page.theory_overlay.shift_spin.setValue(100)
+    window.calculate_action.trigger()
+    _wait(window)
+    state = window.session.source_analyses[config.key]
+    assert state.completed, state.error
+    assert state.config.interval == (1, 3)
+    assert next(iter(state.results.values())).metrics["total_impulse_ns"] == 4000
+    assert window.session.analysis_result is experimental
+    assert window.session.processing_result is processing
+    assert window.session.project_data.primary_channels == bindings
+    control.source_combo.setCurrentIndex(0)
+    assert window.analyze_page._result is experimental
+    control.source_combo.setCurrentIndex(1)
+    assert control.selected_state() is state
+    project = tmp_path / "compact-results.json"
+    window._project_save_path(project)
+    _wait(window)
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    restored = window.session.source_analyses[config.key]
+    assert restored.completed and restored.config.interval == (1, 3)
+    window._workspace_select("thrust_analysis")
+    control.source_combo.setCurrentIndex(1)
+    window.calculate_action.trigger()
+    _wait(window)
+    assert window.session.source_analyses[config.key].completed
+    assert not window._test_errors
+
+
+def test_toolbar_calculation_uses_selected_theory_curve_and_reports_unavailable(
+    window: MainWindow, tmp_path: Path,
+) -> None:
+    path = tmp_path / "curve-choice.csv"
+    _experimental_import(window, path)
+    window.import_page.new_kind_combo.setCurrentIndex(1)
+    window.import_page.add_source_paths([path])
+    _configure_theory_mapping(window, path)
+    window._source_parse()
+    _wait(window)
+    for workspace_id, page in (("chamber_pressure", window.chamber_pressure_page),
+                               ("temperature", window.temperature_page),
+                               ("data_explorer", window.data_explorer_page)):
+        window._workspace_select(workspace_id)
+        page.source_analysis.source_combo.setCurrentIndex(1)
+        selected = page.theory_overlay.selected_reference()
+        assert page.source_analysis.source_id() == selected.source_id
+        assert window.calculate_action.isEnabled()
+        window.calculate_action.trigger()
+        _wait(window)
+        assert page.source_analysis.selected_state().completed
+    window._workspace_select("project")
+    assert not window.calculate_action.isVisible()
+    window._project_new()
+    window._workspace_select("thrust_analysis")
+    assert not window.calculate_action.isEnabled()
+    assert not window._test_errors
+
+
+def test_toolbar_switches_theory_sources_without_experimental_fallback(
+    window: MainWindow, tmp_path: Path,
+) -> None:
+    _experimental_import(window, tmp_path / "experiment.csv")
+    bindings = window.session.project_data.primary_channels
+    theory_ids = []
+    for index, peak in enumerate((10, 20)):
+        path = tmp_path / f"theory-{index}.csv"
+        path.write_text(f"time,f,p,t,web\n0,0,0,293,0\n1,{peak},1,294,1\n"
+                        "2,0,0,293,0\n", encoding="utf-8")
+        window.import_page.new_kind_combo.setCurrentIndex(1)
+        window.import_page.add_source_paths([path])
+        _configure_mapping(window, path, ["N", "Pa", "K", "m"])
+        window._source_parse()
+        _wait(window)
+        theory_ids.append(next(source.id for source in window.session.project_data.sources.values()
+                               if source.path == path))
+    window._workspace_select("thrust_analysis")
+    control = window.analyze_page.source_analysis
+    control.source_combo.setCurrentIndex(1)
+    overlay = window.process_page.theory_overlay
+    for source_id, expected in zip(reversed(theory_ids), (20, 10), strict=True):
+        reference = next(item.reference for item in control._inputs
+                         if item.reference.source_id == source_id
+                         and item.dataset.channel(item.channel_id).quantity == "force")
+        overlay.curve_combo.setCurrentIndex(overlay.curve_combo.findData(reference.stable_id))
+        assert control.source_id() == source_id
+        window.calculate_action.trigger()
+        _wait(window)
+        state = control.selected_state()
+        assert state.completed, state.error
+        assert state.config.channels == (reference,)
+        assert next(iter(state.results.values())).metrics["total_impulse_ns"] == expected
+        assert window.session.analysis_result is None
+        assert window.session.project_data.primary_channels == bindings
+    # A theory input with conflicting physical units is visibly unavailable, never experimental.
+    source_id = theory_ids[0]
+    reference = window.session.source_analyses[f"{source_id}/thrust_analysis"].config.channels[0]
+    stream = window.session.project_data.streams[reference.stream_id]
+    channel = stream.dataset.channel(reference.channel_id)
+    invalid = Channel(channel.id, channel.quantity, "ADC", channel.values, channel.role,
+                      semantic_role=channel.semantic_role)
+    channels = dict(stream.dataset.channels)
+    channels[channel.id] = invalid
+    dataset = replace(stream.dataset, channels=channels)
+    streams = dict(window.session.project_data.streams)
+    streams[stream.id] = replace(stream, dataset=dataset)
+    window.session.project_data = replace(window.session.project_data, streams=streams)
+    window.session.calibrated_streams.pop(stream.id, None)
+    window._source_analysis_views_sync()
+    control.source_combo.setCurrentIndex(0)
+    overlay.curve_combo.setCurrentIndex(overlay.curve_combo.findData(reference.stable_id))
+    control.source_combo.setCurrentIndex(1)
+    assert not window.calculate_action.isEnabled()
+    assert control.notice.text() and not control.notice.isHidden()
+    assert window.session.analysis_result is None
+
+
 def test_independent_source_results_params_display_reopen_and_removal(
     window: MainWindow, tmp_path: Path, monkeypatch,
 ) -> None:

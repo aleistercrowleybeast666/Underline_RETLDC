@@ -246,6 +246,7 @@ def test_gui_initializes_measurement_workspaces_and_switches_locale(
         window.export_action,
         window.save_project_action,
         window.open_project_action,
+        window.calculate_action,
     ]
     assert not hasattr(window.project_page, "analysis_button")
     assert not hasattr(window.project_page, "analysis_requested")

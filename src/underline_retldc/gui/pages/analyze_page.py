@@ -50,13 +50,14 @@ class AnalyzePage(QWidget):
         self._result: AnalysisResult | None = None
         self._display_preferences: dict[str, str] = {}
         self._display_mode = UnitDisplayMode.ENGINEERING
-        self.calculate_button = QPushButton()
+        self.calculate_button = QPushButton(self)
         self.calculate_button.setObjectName("primaryButton")
         self.calculate_button.clicked.connect(self._calculate)
         self.source_analysis = SourceAnalysisWidget(translations, "thrust_analysis", "force")
         self.source_analysis.view_changed.connect(self._results_refresh)
 
         self.metrics_group = AnalysisResultsPanel()
+        self.metrics_group.layout().insertWidget(0, self.source_analysis)
         self.metrics_table = self.metrics_group.table
         self.metrics_table.setMinimumWidth(0)
 
@@ -64,8 +65,7 @@ class AnalyzePage(QWidget):
         self.diagnostics_list = self.diagnostics_group.list
 
         layout = QVBoxLayout(self)
-        layout.addWidget(self.source_analysis)
-        layout.addWidget(self.calculate_button)
+        self.calculate_button.hide()
         layout.addWidget(self.metrics_group, 2)
         layout.addWidget(self.diagnostics_group, 1)
         self.retranslate()

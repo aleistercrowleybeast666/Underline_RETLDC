@@ -498,5 +498,6 @@
   "source_analysis.experimental": "实验",
   "source_analysis.theoretical": "理论",
   "source_analysis.legacy_parameters_kept": "工程已载入。已保留旧工程的来源独立质量或处理配置；工程公共质量仅用于已标记为共用的计算。",
-  "export.select_all": "全选"
+  "export.select_all": "全选",
+  "source_analysis.no_input": "不可计算：缺少有效通道数据或物理单位不兼容。"
 }
