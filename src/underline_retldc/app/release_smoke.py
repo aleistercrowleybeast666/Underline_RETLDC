@@ -370,6 +370,21 @@ def _source_workflow_check(
         check(f"source_reopened_{workspace_id}", state.completed and {
             key: dict(value.metrics) for key, value in state.results.items()
         } == expected)
+    old_payload = json.loads(project.read_text(encoding="utf-8"))
+    old_payload.pop("plot_views")
+    project.write_text(json.dumps(old_payload), encoding="utf-8")
+    for plot in window._plot_widgets().values():
+        plot.plot_widget.getViewBox().setRange(
+            xRange=(-200, -100), yRange=(-20, -10), padding=0,
+        )
+    with _temporary_attribute(
+        QFileDialog, "getOpenFileName", lambda *a, **k: (str(project), "")
+    ):
+        window._project_open_dialog()
+        _wait(window, errors)
+    for workspace_id, plot in window._plot_widgets().items():
+        bounds = plot.plot_widget.getViewBox().viewRange()[0]
+        check(f"plot_legacy_defaults_{workspace_id}", bounds[0] <= 5 <= bounds[1])
     window.process_page.theory_overlay.reset_button.click()
     check("source_reset_timing", not (
         window.session.project_data.sources[theory.id].display_transform.zero_start

@@ -3508,6 +3508,10 @@ class MainWindow(QMainWindow):
 
     def _plot_views_restore(self) -> None:
         session = self.session
+        # Missing axes in old Projects must start from data-driven defaults, not
+        # inherit another Project's manual viewport on the same window.
+        for plot in self._plot_widgets().values():
+            plot.reset_view()
         PlotViews_Restore(self._plot_widgets(), session.plot_views)
 
         def deferred_restore() -> None:

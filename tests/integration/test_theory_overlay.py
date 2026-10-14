@@ -1353,3 +1353,32 @@ def test_legacy_theory_conflicts_reopen_with_missing_experimental_mass(
     _wait(window)
     assert Project_Load(project).source_analyses[state.config.key].config == restored.config
     assert not window._test_errors
+
+
+
+def test_legacy_missing_view_uses_default_after_another_project_zoom(
+    window: MainWindow, tmp_path: Path, monkeypatch,
+) -> None:
+    _experimental_import(window, tmp_path / "old-view.csv")
+    window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+    window._processing_apply()
+    _wait(window)
+    project = tmp_path / "old-view.json"
+    window._project_save_path(project)
+    _wait(window)
+    payload = json.loads(project.read_text(encoding="utf-8"))
+    payload.pop("plot_views")
+    project.write_text(json.dumps(payload), encoding="utf-8")
+    for plot in window._plot_widgets().values():
+        plot.plot_widget.getViewBox().setRange(
+            xRange=(-200, -100), yRange=(-20, -10), padding=0,
+        )
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+    window._project_open_dialog()
+    _wait(window)
+    for key, plot in window._plot_widgets().items():
+        window._workspace_select(key)
+        QApplication.processEvents()
+        bounds = plot.plot_widget.getViewBox().viewRange()[0]
+        assert bounds[0] <= 1 <= bounds[1], (key, bounds)
+    assert not window._test_errors
