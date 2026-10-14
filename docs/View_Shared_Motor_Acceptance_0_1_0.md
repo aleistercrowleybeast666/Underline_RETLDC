@@ -28,10 +28,27 @@
   附加右轴、旧文件缺省和非法范围；共同质量/总质量/尺寸变化、实际 Isp、缺失质量、
   旧冲突参数迁移追溯、完成/草稿恢复及实验数组/处理/区间隔离。
 - 开发中测试临时目录配置错误、页面属性错误和缺失质量追溯预期已修正；以上为最终验证。
-- 首个解压便携 EXE：169 检查通过，退出码 0；最终修复包验证与哈希待补充。
+- 最终解压便携 EXE：173 检查通过，退出码 0，包含四页面视窗重开与旧工程默认视图。
+  运行在仓库外，清除 Python/开发目录环境依赖，真实解析/计算未打桩。
+  首版的 169 项结果属于修复前代码，不用于替代最终验证。
+- `BUILD_INFO.json` 的代码提交、版本和 151 个源码哈希已核对；553 个解压文件与
+  测试前 ZIP 逐项一致。最终文档更新后再核对完整运行文件与最终 ZIP。
 - 未运行：用户原桌面窗口/真实用户文件的人工验收、本轮长期稳定性测试。
   先前原生堆错误的根因仍未证实，不能用本轮功能烟测宣称已消除。
 
 任务过程文件在 `D:\Temp\Underline_RETLDC_v010_validation\view-shared-work`。
 复用原环境，不创建工作树，不枚举系统进程，不关闭用户窗口，不永久删除过程文件或旧包。
 不推送、不打 tag、不发布。
+
+## 最终候选
+
+代码提交：`d4360095c1fb957d62a6a66073b8ae32dcf2eb41`，版本 `0.1.0`。
+已验证 EXE 的 SHA-256：
+`77886d6febcc3aba6de2cff1e9dec0a5c88eede0ee68c7f2803bbe02ae6d1257`。
+
+直接运行：
+`dist/Underline_RETLDC_0_1_0_ViewStateSharedMotor_Final/Underline_RETLDC.exe`。
+便携 ZIP：`dist/Underline_RETLDC_0_1_0_ViewStateSharedMotor_Final_Windows_Portable.zip`。
+ZIP 的最终大小与 SHA-256 见其 `.zip.sha256` 及任务 `package-summary.json`，避免把包内
+文档写入自身 ZIP 哈希造成循环。`BUILD_INFO.json` 区分代码与验收文档提交。
+旧候选和修复前候选保留；请使用带 `ViewStateSharedMotor_Final` 的交付物。
