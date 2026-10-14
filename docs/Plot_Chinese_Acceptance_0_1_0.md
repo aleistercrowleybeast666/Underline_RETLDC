@@ -30,8 +30,21 @@ PNG 继续包含当前绘图、理论叠加和显示变换。正式实验导出�
   与理论叠加，以及原有工作流。未打科学桩。
 - 最终完整 pytest：311 通过，0 失败，333.86 秒；Ruff 和差异检查通过。
 - 源码中文轴菜单和导出窗口截图已视觉核查；参数静态标签（含分隔符与参数组）已修正，
-  内部 `params`、`separator` 及枚举值仍保留。最终便携 EXE 及哈希完成后补记。
+  内部 `params`、`separator` 及枚举值仍保留。
+- 解压便携 EXE 完整烟测：186 检查通过，退出码 0。清除开发/Python 路径后，实际执行
+  中文/英文菜单、参数 ID/值、CSV 重复导出 X 列、PNG 理论叠加、共享参数和视窗保存重开。
+  首次隔离启动曾退出 `0xC0000005`，未生成报告；后续中英文短启动均为 0，原条件重跑
+  完整验证为 0。首次原生失败未有根因证据，不能用重跑成功宣称稳定性问题已消除。
 - 未运行本轮真实用户文件/原桌面窗口人工验收或长期稳定测试；不触碰用户运行窗口。
 
 过程文件在 `D:\Temp\Underline_RETLDC_v010_validation\plot-chinese-work`，复用原环境。
 旧候选保留，不永久清理，不 push/tag/发布。
+
+## 独立交付
+
+代码提交 `f83836894cfe4971473e6594776659bf7621c598`，版本 `0.1.0`。
+EXE：`dist/Underline_RETLDC_0_1_0_PlotChinese/Underline_RETLDC.exe`。
+ZIP：`dist/Underline_RETLDC_0_1_0_PlotChinese_Windows_Portable.zip`。
+EXE SHA-256：`c57a642a5e77ae4e8f4f99ae1179e9e4b7656a4ac8e63052bfb3f9506f05652c`。
+最终 ZIP 大小/哈希见 `.zip.sha256` 和任务 `package-summary.json`；包内文档不写自身 ZIP
+哈希，避免循环。`BUILD_INFO.json` 区分代码与验收文档提交，保留完整源码哈希。
