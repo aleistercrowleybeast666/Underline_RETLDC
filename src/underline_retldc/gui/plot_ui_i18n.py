@@ -8,7 +8,7 @@ from weakref import WeakSet
 import pyqtgraph as pg
 from pyqtgraph.exporters import CSVExporter
 from pyqtgraph.GraphicsScene.exportDialog import ExportDialog
-from PySide6.QtCore import QLibraryInfo, QObject, QSignalBlocker, QTranslator
+from PySide6.QtCore import QLibraryInfo, QObject, QSignalBlocker, Qt, QThread, QTranslator
 from PySide6.QtWidgets import QApplication, QComboBox, QWidgetAction
 
 from underline_retldc.i18n.plot_qt import PLOT_QT_MESSAGES
@@ -51,6 +51,8 @@ class PlotQtTranslations(QObject):
         self.service: TranslationService | None = None
 
     def bind(self, service: TranslationService) -> None:
+        if QThread.currentThread() != self.app.thread():
+            raise RuntimeError("Plot translation binding must run on the GUI thread")
         if self.service is service:
             return
         if self.service is not None:
@@ -61,6 +63,8 @@ class PlotQtTranslations(QObject):
         self.refresh()
 
     def refresh(self, *_args: object) -> None:
+        if QThread.currentThread() != self.app.thread():
+            raise RuntimeError("Plot translation updates must run on the GUI thread")
         self.app.removeTranslator(self.translator)
         self.app.removeTranslator(self.qt_base)
         if self.service is not None and self.service.locale == "zh_CN":
@@ -107,10 +111,13 @@ class PlotCSVExporter(CSVExporter):
 class LocalizedPlotExportDialog(ExportDialog):
     """Instance adapter for upstream hardcoded labels and display-only list limits."""
 
-    def __init__(self, scene: Any, service: TranslationService) -> None:
+    def __init__(self, scene: Any, service: TranslationService, owner: Any) -> None:
         self.translations = service
         self._bool_connections: WeakSet[Any] = WeakSet()
         super().__init__(scene)
+        # It is a separate window, but must be destroyed with its plot owner.
+        # Scene-only Python references otherwise leave a live dialog with a dead scene.
+        self.setParent(owner, Qt.WindowType.Window)
         service.locale_changed.connect(self.retranslate)
         self.retranslate()
 
@@ -239,7 +246,7 @@ class PlotUiLocalizer(QObject):
 
         retain(plot.getPlotItem().ctrlMenu)
         retain(plot.getPlotItem().vb.menu)
-        self.scene.exportDialog = LocalizedPlotExportDialog(self.scene, service)
+        self.scene.exportDialog = LocalizedPlotExportDialog(self.scene, service, plot)
         service.locale_changed.connect(self.retranslate)
         self.retranslate()
 

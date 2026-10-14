@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import csv
 import gc
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
 import pyqtgraph as pg
 import pytest
 from pyqtgraph.exporters import CSVExporter, ImageExporter, SVGExporter
-from PySide6.QtCore import QCoreApplication
+from PySide6.QtCore import SIGNAL, QCoreApplication, QEvent
 from PySide6.QtWidgets import QApplication
+from shiboken6 import isValid
 
 from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
 from underline_retldc.i18n.plot_qt import PLOT_QT_MESSAGES
@@ -153,3 +155,34 @@ def test_image_and_svg_exports_keep_overlay_arrays_and_options(plot, tmp_path: P
         actual = item.getOriginalDataset()
         np.testing.assert_array_equal(actual[0], expected[0])
         np.testing.assert_array_equal(actual[1], expected[1])
+
+
+def test_plot_owner_deletion_releases_dialog_and_locale_connections() -> None:
+    app = QApplication.instance() or QApplication([])
+    service = TranslationService("zh_CN")
+    for _ in range(3):
+        widget = AnalysisPlotWidget(service, regions_movable=False)
+        dialog = widget.plot_widget.scene().exportDialog
+        dialog.updateItemList(select=widget.plot_widget.getPlotItem())
+        before = service.receivers(SIGNAL("locale_changed(QString)"))
+        service.set_locale("en_US")
+        service.set_locale("zh_CN")
+        assert service.receivers(SIGNAL("locale_changed(QString)")) == before
+        widget.close()
+        widget.deleteLater()
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        app.processEvents()
+        gc.collect()
+        assert not isValid(dialog)
+        assert service.receivers(SIGNAL("locale_changed(QString)")) == 1
+        service.set_locale("en_US")
+        app.processEvents()
+
+
+def test_translation_binding_rejects_worker_thread(plot) -> None:
+    _widget, service = plot
+    owner = QApplication.instance()._retldc_plot_translations
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(owner.bind, service)
+        with pytest.raises(RuntimeError, match="GUI thread"):
+            future.result(timeout=5)

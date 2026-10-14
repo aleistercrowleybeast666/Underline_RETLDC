@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
     QStyleOptionSlider,
 )
 
+from underline_retldc.app.native_diagnostics import NativeDiagnostics
 from underline_retldc.core.project import Project_Load
 from underline_retldc.core.project_data import SourceKind
 from underline_retldc.core.registry import PluginLoadResult
@@ -37,6 +38,50 @@ from underline_retldc.gui.plugin_install_dialog import PluginInstallPreviewDialo
 class ReleaseSmokeResult(IntEnum):
     SUCCESS = 0
     FAILED = 1
+
+
+def ReleaseSmoke_BoundedPlotCheck(window: MainWindow, diagnostics: NativeDiagnostics) -> None:
+    """Two locale passes on a tiny UI fixture; not a substitute for scientific checks."""
+    plot = window.process_page.analysis_plot
+    directory = Path(diagnostics.phase_stream.name).parent
+    original_locale = window.translations.locale
+    window._workspace_select("thrust_analysis")
+    for locale in ("zh_CN", "en_US"):
+        diagnostics.phase("bounded.locale.begin", locale=locale)
+        window._locale_select(locale)
+        plot.set_empty_state("")
+        plot.plot_widget.plot([0, 1, 2, 3], [0, 100, 120, 0], name="diagnostic [N]")
+        plot.reset_view()
+        QApplication.processEvents()
+        diagnostics.phase("bounded.context_menu.begin", locale=locale)
+        QTest.mouseClick(
+            plot.plot_widget.viewport(), Qt.MouseButton.RightButton, pos=QPoint(180, 180),
+        )
+        QApplication.processEvents()
+        menu = plot.plot_widget.getPlotItem().vb.menu
+        assert menu.viewAll.text() == ("适应全部数据" if locale == "zh_CN" else "View All")
+        menu.hide()
+        diagnostics.phase("bounded.context_menu.ready", locale=locale)
+        scene = plot.plot_widget.scene()
+        scene.contextMenu[0].trigger()
+        QApplication.processEvents()
+        dialog = scene.exportDialog
+        assert dialog.isVisible()
+        diagnostics.phase("bounded.export_dialog.ready", locale=locale)
+        row = next(index for index in range(dialog.ui.formatList.count())
+                   if dialog.ui.formatList.item(index).expClass == CSVExporter)
+        dialog.ui.formatList.setCurrentRow(row)
+        exporter = dialog.currentExporter
+        exporter.parameters()["columnMode"] = "(x,y,y,y) for all plots"
+        exporter.export(str(directory / f"bounded_{locale}.csv"))
+        dialog.selectBox.hide()
+        image = ImageExporter(plot.plot_widget.getPlotItem())
+        image.parameters()["width"] = 400
+        assert image.export(toBytes=True).save(str(directory / f"bounded_{locale}.png"))
+        dialog.close()
+        diagnostics.phase("bounded.export.ready", locale=locale)
+    window._locale_select(original_locale)
+    diagnostics.phase("bounded.complete")
 
 
 @contextmanager

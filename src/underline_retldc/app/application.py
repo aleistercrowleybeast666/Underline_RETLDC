@@ -11,6 +11,7 @@ from pathlib import Path
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
 
+from underline_retldc.app.native_diagnostics import NativeDiagnostics_FromEnvironment
 from underline_retldc.app.settings import SettingsService
 from underline_retldc.app.version import NAME, PRODUCT_NAME, __version__
 from underline_retldc.core.registry import PluginLoadResult
@@ -54,11 +55,20 @@ def _smoke_failure_write(details: str) -> None:
 def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
     options, qt_arguments = _arguments_parse(arguments)
+    diagnostics = NativeDiagnostics_FromEnvironment(
+        options.smoke_test or options.release_smoke is not None,
+    )
+    if diagnostics is not None:
+        diagnostics.phase("application.begin", locale=options.locale, theme=options.theme)
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    if diagnostics is not None:
+        diagnostics.phase("qapplication.begin")
     app = QApplication([sys.argv[0], *qt_arguments])
+    if diagnostics is not None:
+        diagnostics.phase("qapplication.ready")
     app.setOrganizationName(NAME)
     app.setApplicationName(PRODUCT_NAME)
     app.setApplicationVersion(__version__)
@@ -66,7 +76,9 @@ def main(argv: list[str] | None = None) -> int:
         options.release_smoke = options.release_smoke.resolve()
         options.release_smoke.mkdir(parents=True, exist_ok=True)
     settings = SettingsService(
-        options.release_smoke / "settings.ini" if options.release_smoke is not None else None
+        options.release_smoke / "settings.ini" if options.release_smoke is not None
+        else (Path(diagnostics.phase_stream.name).parent / "settings.ini"
+              if diagnostics is not None else None)
     )
     Theme_Apply(app, options.theme or settings.theme())
     locale = options.locale or settings.locale()
@@ -87,6 +99,8 @@ def main(argv: list[str] | None = None) -> int:
                 ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
             )
     try:
+        if diagnostics is not None:
+            diagnostics.phase("mainwindow.begin")
         window = MainWindow(
             translations,
             settings,
@@ -95,12 +109,16 @@ def main(argv: list[str] | None = None) -> int:
             user_plugin_directory=user_plugin_root,
             initial_theme=options.theme,
         )
+        if diagnostics is not None:
+            diagnostics.phase("mainwindow.ready")
     except BaseException:
         if options.smoke_test:
             _smoke_failure_write(traceback.format_exc())
             return 1
         raise
     window.show()
+    if diagnostics is not None:
+        diagnostics.phase("window.shown")
     if options.release_smoke is not None:
         from underline_retldc.app.release_smoke import ReleaseSmoke_Run
 
@@ -155,5 +173,20 @@ def main(argv: list[str] | None = None) -> int:
                     for diagnostic in record.diagnostics
                 )
             _smoke_failure_write("\n".join(lines))
+        if diagnostics is not None:
+            from underline_retldc.app.release_smoke import ReleaseSmoke_BoundedPlotCheck
+
+            try:
+                ReleaseSmoke_BoundedPlotCheck(window, diagnostics)
+            except (RuntimeError, ValueError, AssertionError, OSError):
+                _smoke_failure_write(traceback.format_exc())
+                smoke_exit_code = 1
         QTimer.singleShot(500, lambda: app.exit(smoke_exit_code))
-    return app.exec()
+    result = app.exec()
+    if diagnostics is not None:
+        diagnostics.phase("event_loop.exit", result=result)
+        window.close()
+        app.processEvents()
+        diagnostics.phase("window.closed")
+        diagnostics.close()
+    return result
