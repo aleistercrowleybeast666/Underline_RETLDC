@@ -544,6 +544,38 @@ def ReleaseSmoke_Run(window: MainWindow, output: Path) -> ReleaseSmokeResult:
                                 window.grab().save(str(output / f"reference_{filename}"))
                                 shell.controls_scroll.verticalScrollBar().setValue(0)
             window._locale_select("en_US")
+            dialog = window.export_dialog
+            window._export_dialog_show()
+            QApplication.processEvents()
+            available_exports = {
+                key for key, checkbox in dialog.exporter_checks.items() if checkbox.isEnabled()
+            }
+            check("export_open_selects_all",
+                  set(dialog.selected_exporter_ids()) == available_exports)
+            first_export = next(iter(available_exports))
+            dialog.exporter_checks[first_export].setChecked(False)
+            window._export_availability_update()
+            check("export_manual_uncheck_survives_refresh",
+                  not dialog.exporter_checks[first_export].isChecked())
+            dialog.select_all_button.click()
+            check("export_select_all_button",
+                  set(dialog.selected_exporter_ids()) == available_exports)
+            check("export_locked_items_unchecked", all(
+                checkbox.isEnabled() or not checkbox.isChecked()
+                for checkbox in dialog.exporter_checks.values()
+            ))
+            dialog.exporter_checks[first_export].setChecked(False)
+            dialog.hide()
+            window._locale_select("zh_CN")
+            window._export_dialog_show()
+            QApplication.processEvents()
+            check("export_reopen_selects_all",
+                  set(dialog.selected_exporter_ids()) == available_exports)
+            check("export_select_all_zh_label", dialog.select_all_button.text() == "全选")
+            dialog.grab().save(str(output / "export_select_all.png"))
+            report["screenshots"].append({"file": "export_select_all.png"})
+            dialog.hide()
+            window._locale_select("en_US")
             window.export_dialog.set_output_directory(output / "exports")
             window.export_dialog.set_output_locale("en_US")
             ids = (

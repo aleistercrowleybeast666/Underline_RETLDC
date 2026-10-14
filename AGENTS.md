@@ -199,12 +199,16 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 - The Export dialog is always inspectable. Each export option declares stable data capability IDs
   and optional analysis IDs that must be complete before it becomes selectable. Options are
   grouped and sorted by generic metadata, with unknown third-party groups placed last.
-- Default export selection depends on the option's actual capability and `default_selected`
-  metadata. A default is applied only the first time that option becomes available; a user's
-  unchecked choice is not silently restored by later availability refreshes or Project reopen.
-  Persist selected IDs separately from initialized-default IDs. Unavailable formats stay disabled
-  and unchecked. The list displays at most ten option rows before vertical scrolling, and every
-  checkbox retains a visible square indicator in every state.
+- Opening the Export dialog selects every currently available option. Its localized Select All
+  button repeats that action. A manual uncheck remains unchanged while the dialog stays open,
+  including availability and locale refreshes; showing an already-visible dialog does not reset it.
+  A new open deliberately selects all available options again. First-availability metadata defaults
+  remain for workflow refreshes, and selected IDs remain separate from initialized-default IDs.
+  Unavailable formats stay disabled and unchecked. The list displays at most ten option rows before
+  vertical scrolling, and every checkbox retains a visible square indicator in every state.
+- Unified CSV/report/formal PNG exports continue to use experimental primary workflow inputs.
+  Selecting a theoretical result does not change their Source. The retained pyqtgraph context-menu
+  export is a separate current-plot pathway; it can include theory curves and display transforms.
 - Chamber-pressure PNG requires ACTIVE_TEST and clips both its plotted samples and X-axis range to
   that interval; it must not merely shade ACTIVE_TEST over the full PRE/POST record.
 - Formal curve exports use the selected final processed channel and ACTIVE_TEST interval with

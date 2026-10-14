@@ -1171,14 +1171,17 @@ or formal-export units.
 
 Exporter desktop metadata declares generic capabilities, grouping, ordering, and a default. The
 dialog sorts Overall, Thrust, Chamber Pressure, Temperature, then Other. An unavailable option is
-disabled and unchecked. Its default applies only on first availability and is never silently
-restored after a user unchecks it. Overall, thrust, pressure, and temperature formats depend on
+disabled and unchecked. Each fresh opening selects every available choice, and a localized
+Select All button repeats that selection. Manual unchecks survive refreshes while the dialog is
+open; showing the already-visible window does not reset them. Metadata defaults still apply only
+on first availability during workflow refreshes. Overall, thrust, pressure, and temperature formats depend on
 their own data and analysis readiness. Chamber Pressure and Temperature become analyzed only after
 their explicit Calculate action; binding or segmentation changes invalidate that state. OpenRocket
 ENG additionally requires physical force and segmentation, has no final-curve confirmation gate,
 and defaults on when those requirements first become complete. Selected IDs and initialized-default
-IDs are persisted separately so a manual uncheck survives Project reopen while a still-locked page
-format receives its default when that page is completed later.
+IDs are persisted separately. Reopening a Project restores that state; subsequently opening the
+Export dialog deliberately selects all currently available formats. A still-locked page format
+receives its metadata default when that page is completed later.
 
 ---
 

@@ -497,5 +497,6 @@
   "theory.shifted": "Shared offset {offset} s. Fine-tune or align again.",
   "source_analysis.experimental": "Experimental",
   "source_analysis.theoretical": "Theoretical",
-  "source_analysis.legacy_parameters_kept": "Project loaded. Saved independent source mass or processing settings were retained. Project mass applies only to calculations marked as shared."
+  "source_analysis.legacy_parameters_kept": "Project loaded. Saved independent source mass or processing settings were retained. Project mass applies only to calculations marked as shared.",
+  "export.select_all": "Select All"
 }

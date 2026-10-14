@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QDoubleValidator
+from PySide6.QtGui import QDoubleValidator, QShowEvent
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -105,6 +105,12 @@ class ExportDialog(QDialog):
         self.availability_label.setObjectName("warningLabel")
         self.availability_label.setWordWrap(True)
         formats_layout.addWidget(self.availability_label)
+        self.select_all_button = QPushButton()
+        self.select_all_button.clicked.connect(self.select_all_available)
+        selection_row = QHBoxLayout()
+        selection_row.addStretch(1)
+        selection_row.addWidget(self.select_all_button)
+        formats_layout.addLayout(selection_row)
         self.exporter_scroll = QScrollArea()
         self.exporter_scroll.setObjectName("exporterScroll")
         self.exporter_scroll.setWidgetResizable(True)
@@ -205,6 +211,7 @@ class ExportDialog(QDialog):
             if index >= 0:
                 self.output_language_combo.setItemText(index, t(translation_key))
         self.formats_group.setTitle(t("export.formats"))
+        self.select_all_button.setText(t("export.select_all"))
         self.eng_group.setTitle(t("export.motor_metadata"))
         self._format_labels_update()
         self.annotate_metrics_check.setText(t("export.annotate_metrics"))
@@ -454,6 +461,9 @@ class ExportDialog(QDialog):
         self._exporter_list_size_update()
 
     def _export_controls_refresh(self, _checked: bool | None = None) -> None:
+        self.select_all_button.setEnabled(
+            any(checkbox.isEnabled() for checkbox in self.exporter_checks.values())
+        )
         if hasattr(self, "export_button"):
             self.export_button.setEnabled(bool(self.selected_exporter_ids()))
         if hasattr(self, "eng_group"):
@@ -468,6 +478,15 @@ class ExportDialog(QDialog):
                     for plugin_id in motor_options
                 )
             )
+
+    def showEvent(self, event: QShowEvent) -> None:
+        super().showEvent(event)
+        self.select_all_available()
+
+    def select_all_available(self) -> None:
+        for checkbox in self.exporter_checks.values():
+            checkbox.setChecked(checkbox.isEnabled())
+        self._export_controls_refresh()
 
     def required_analysis_ids(self, plugin_id: str) -> tuple[str, ...]:
         try:

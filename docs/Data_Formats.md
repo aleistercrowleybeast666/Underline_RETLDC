@@ -192,7 +192,9 @@ Temperature calculation and `temperature_ready`; ENG additionally requires `phys
 `segmentation_ready`, but no separate final-curve confirmation. Changing the relevant Primary
 binding or Project segmentation invalidates the affected workspace calculation. Disabled items
 stay unchecked. Each metadata default is applied only the first time the option becomes available,
-and a later availability refresh does not undo a user's manual uncheck. Every bundled format,
+and a later availability refresh does not undo a user's manual uncheck. Opening the Export dialog
+is an explicit UI reset to all available options; Select All repeats it. Re-showing an already
+visible dialog does not reset manual choices. This changes no Project schema or scientific state. Every bundled format,
 including ENG, defaults on once its own requirements are met. Group and
 format ordering come from exporter metadata; absent metadata places a third-party option in Other
 at the end. The list shows at most ten option rows and scrolls when more are registered.

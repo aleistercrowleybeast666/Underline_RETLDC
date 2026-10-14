@@ -280,7 +280,9 @@ temperature readiness additionally requires the corresponding workspace's explic
 to be complete. ENG has no independent final-curve confirmation stage. Project export settings
 persist both the selected IDs and the IDs whose defaults have already been initialized, so an
 incomplete Project can unlock newly completed page outputs by default without overwriting an older
-manual uncheck.
+manual uncheck during refreshes. Each fresh Export dialog opening deliberately selects all
+available formats; its Select All button repeats this, while manual unchecks survive refreshes and
+re-showing an already-visible dialog. This is confined to selection UI, not export inputs.
 Export choices are held in a scrolling list that shows at most ten option rows.
 
 Checkbox indicators are theme-rendered as bordered squares in unchecked, checked, and disabled
