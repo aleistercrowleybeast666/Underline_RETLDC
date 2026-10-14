@@ -15,6 +15,7 @@ from xml.sax.saxutils import escape
 
 import numpy as np
 from PySide6.QtCore import QPoint, Qt, QTimer
+from PySide6.QtGui import QShowEvent
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import (
     QApplication,
@@ -556,6 +557,14 @@ def ReleaseSmoke_Run(window: MainWindow, output: Path) -> ReleaseSmokeResult:
             dialog.exporter_checks[first_export].setChecked(False)
             window._export_availability_update()
             check("export_manual_uncheck_survives_refresh",
+                  not dialog.exporter_checks[first_export].isChecked())
+
+            class RestoredWindowEvent(QShowEvent):
+                def spontaneous(self) -> bool:
+                    return True
+
+            dialog.showEvent(RestoredWindowEvent())
+            check("export_system_restore_keeps_manual_choice",
                   not dialog.exporter_checks[first_export].isChecked())
             dialog.select_all_button.click()
             check("export_select_all_button",

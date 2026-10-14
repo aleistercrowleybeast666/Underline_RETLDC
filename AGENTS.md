@@ -201,7 +201,8 @@ to expose a plugin; extend a general schema/role/registry capability instead.
   grouped and sorted by generic metadata, with unknown third-party groups placed last.
 - Opening the Export dialog selects every currently available option. Its localized Select All
   button repeats that action. A manual uncheck remains unchanged while the dialog stays open,
-  including availability and locale refreshes; showing an already-visible dialog does not reset it.
+  including availability/locale refreshes and window-system minimize/restore events; showing an
+  already-visible dialog does not reset it.
   A new open deliberately selects all available options again. First-availability metadata defaults
   remain for workflow refreshes, and selected IDs remain separate from initialized-default IDs.
   Unavailable formats stay disabled and unchecked. The list displays at most ten option rows before

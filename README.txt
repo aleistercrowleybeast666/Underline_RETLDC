@@ -11,7 +11,7 @@ Underline RETLDC 0.1.0 使用说明
 一、第一次使用
 --------------
 
-便携包用户：完整解压 Underline_RETLDC_0_1_0_ExportSelectAll_Windows_Portable.zip，在解压得到的
+便携包用户：完整解压 Underline_RETLDC_0_1_0_ExportSelectAll_Final_Windows_Portable.zip，在解压得到的
 Underline_RETLDC 文件夹中双击 Underline_RETLDC.exe；无需安装 Python。保留整个文件夹，
 不要单独移动 EXE。以下 Python 步骤仅用于从源码运行。
 

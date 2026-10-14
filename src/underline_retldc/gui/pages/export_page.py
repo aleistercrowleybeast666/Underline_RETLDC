@@ -481,7 +481,8 @@ class ExportDialog(QDialog):
 
     def showEvent(self, event: QShowEvent) -> None:
         super().showEvent(event)
-        self.select_all_available()
+        if not event.spontaneous():
+            self.select_all_available()
 
     def select_all_available(self) -> None:
         for checkbox in self.exporter_checks.values():

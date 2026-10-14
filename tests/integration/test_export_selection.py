@@ -2,6 +2,7 @@ from collections.abc import Iterator
 
 import pytest
 from PySide6.QtCore import QEvent
+from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import QApplication
 
 from underline_retldc.gui.pages.export_page import ExportDialog, ExportOption
@@ -102,3 +103,16 @@ def test_empty_or_all_unavailable_disables_selection_and_export(dialog: ExportDi
     assert dialog.selected_exporter_ids() == ()
     assert not dialog.select_all_button.isEnabled()
     assert not dialog.export_button.isEnabled()
+
+
+def test_window_system_restore_does_not_reset_manual_uncheck(dialog: ExportDialog) -> None:
+    class RestoredWindowEvent(QShowEvent):
+        def spontaneous(self) -> bool:
+            return True
+
+    dialog.show()
+    QApplication.processEvents()
+    checkbox = dialog.exporter_checks["example.available"]
+    checkbox.setChecked(False)
+    dialog.showEvent(RestoredWindowEvent())
+    assert not checkbox.isChecked()
