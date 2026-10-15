@@ -6,11 +6,12 @@ from typing import Any
 from weakref import WeakSet
 
 import pyqtgraph as pg
-from pyqtgraph.exporters import CSVExporter
+from pyqtgraph.exporters import CSVExporter, SVGExporter
 from pyqtgraph.GraphicsScene.exportDialog import ExportDialog
 from PySide6.QtCore import QLibraryInfo, QObject, QSignalBlocker, Qt, QThread, QTranslator
 from PySide6.QtWidgets import QApplication, QComboBox, QWidgetAction
 
+from underline_retldc.gui.plot_svg import PlotSVGExporter
 from underline_retldc.i18n.plot_qt import PLOT_QT_MESSAGES
 from underline_retldc.i18n.service import TranslationService
 
@@ -126,8 +127,9 @@ class LocalizedPlotExportDialog(ExportDialog):
         self._items_retranslate()
 
     def exportFormatChanged(self, item: Any, previous: Any) -> None:
-        if item is not None and item.expClass == CSVExporter:
-            exporter = PlotCSVExporter(item=self.ui.itemTree.currentItem().gitem)
+        adapters = {CSVExporter: PlotCSVExporter, SVGExporter: PlotSVGExporter}
+        if item is not None and item.expClass in adapters:
+            exporter = adapters[item.expClass](item=self.ui.itemTree.currentItem().gitem)
             self.ui.paramTree.setParameters(exporter.parameters())
             self.currentExporter = exporter
             self.ui.copyBtn.setEnabled(exporter.allowCopy)
@@ -176,7 +178,7 @@ class LocalizedPlotExportDialog(ExportDialog):
         if exporter is None or exporter.parameters() is None:
             return
         if (not type(exporter).__module__.startswith("pyqtgraph.exporters.")
-                and not isinstance(exporter, PlotCSVExporter)):
+                and not isinstance(exporter, (PlotCSVExporter, PlotSVGExporter))):
             return
         if exporter.parameters().name() == "params":
             exporter.parameters().setOpts(title=_text(self.translations, "PlotExport", "Parameter"))

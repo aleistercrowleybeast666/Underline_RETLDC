@@ -622,5 +622,6 @@ docs/Portable_Acceptance_0_1_0.md。
 CSV 的独立 X/Y 列保留每条曲线的采样时间；共享 X 列仅按行合并 Y，不作时间对齐。
 当前图 CSV 包含显示单位和理论平移，但不含绘图库 FFT/对数/降采样，与顶部正式 CSV 不同。
 系统原生选择器、打印界面和外部软件仍可能跟随系统/软件自身语言。当前 Qt 6.11.1 的原版
-pyqtgraph SVG 渲染器存在坐标解析错误；本轮保留该格式及选项，不宣称修复 SVG 输出。
+pyqtgraph SVG 渲染器把闭合命令 Z 当作坐标而失败；应用内兼容适配现保留该命令，沿用
+原有视窗裁剪、变换和参数。详细验证及仍未定位的原生异常见 docs/Plot_SVG_Acceptance_0_1_0.md。
 详情和第三方许可见 docs/I18N.md 与 docs/third_party/pyqtgraph_LICENSE.txt。

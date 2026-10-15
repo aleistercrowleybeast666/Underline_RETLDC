@@ -14,9 +14,10 @@ from typing import Any
 from xml.sax.saxutils import escape
 
 import numpy as np
-from pyqtgraph.exporters import CSVExporter, ImageExporter
+from pyqtgraph.exporters import CSVExporter, ImageExporter, SVGExporter
 from PySide6.QtCore import QPoint, Qt, QTimer
 from PySide6.QtGui import QShowEvent
+from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import (
     QApplication,
@@ -78,6 +79,15 @@ def ReleaseSmoke_BoundedPlotCheck(window: MainWindow, diagnostics: NativeDiagnos
         image = ImageExporter(plot.plot_widget.getPlotItem())
         image.parameters()["width"] = 400
         assert image.export(toBytes=True).save(str(directory / f"bounded_{locale}.png"))
+        row = next(index for index in range(dialog.ui.formatList.count())
+                   if dialog.ui.formatList.item(index).expClass == SVGExporter)
+        dialog.ui.formatList.setCurrentRow(row)
+        svg = dialog.currentExporter
+        svg.parameters()["width"] = 400
+        path = directory / f"bounded_{locale}.svg"
+        svg.export(str(path))
+        assert QSvgRenderer(str(path)).isValid()
+        diagnostics.phase("bounded.svg.ready", locale=locale)
         dialog.close()
         diagnostics.phase("bounded.export.ready", locale=locale)
     window._locale_select(original_locale)
@@ -309,6 +319,21 @@ def _plot_language_check(
     rendered = image.export(toBytes=True)
     check("plot_png_export", not rendered.isNull() and rendered.width() == 800
           and rendered.save(str(output / "plot_overlay.png")))
+    svg_row = next(index for index in range(dialog.ui.formatList.count())
+                   if dialog.ui.formatList.item(index).expClass == SVGExporter)
+    dialog.ui.formatList.setCurrentRow(svg_row)
+    svg = dialog.currentExporter
+    svg.parameters()["width"] = 800
+    for selected_locale, scaling in (("zh_CN", False), ("en_US", True)):
+        window._locale_select(selected_locale)
+        svg.parameters()["scaling stroke"] = scaling
+        path = output / f"plot_overlay_{selected_locale}.svg"
+        svg.export(str(path))
+        check(f"plot_svg_export_{selected_locale}", QSvgRenderer(str(path)).isValid()
+              and b"clip-path" in path.read_bytes() and dialog.currentExporter is svg)
+    check("plot_svg_preserves_science_and_views", window._plot_views_capture() == views
+          and window.session.analysis_result is science[0]
+          and window.session.processing_result is science[1])
     dialog.close()
     window._locale_select(locale)
 

@@ -4,12 +4,14 @@ import csv
 import gc
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 import numpy as np
 import pyqtgraph as pg
 import pytest
 from pyqtgraph.exporters import CSVExporter, ImageExporter, SVGExporter
 from PySide6.QtCore import SIGNAL, QCoreApplication, QEvent
+from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import QApplication
 from shiboken6 import isValid
 
@@ -144,13 +146,28 @@ def test_image_and_svg_exports_keep_overlay_arrays_and_options(plot, tmp_path: P
     dialog, svg = _select_exporter(widget, SVGExporter)
     assert svg.parameters().param("scaling stroke").title() == "缩放线宽"
     dialog.selectBox.hide()
-    # Qt 6.11.1 emits paths the upstream 0.14 SVG coordinate parser cannot read.
-    # Keep the format and match the unadapted renderer's failure rather than mask it.
+    # Preserve the upstream reproducer while checking the application's local fix.
     with pytest.raises(ValueError) as baseline:
         SVGExporter(widget.plot_widget.getPlotItem()).export(toBytes=True)
-    with pytest.raises(ValueError) as localized:
-        svg.export(toBytes=True)
-    assert str(localized.value) == str(baseline.value)
+    assert "not enough values" in str(baseline.value)
+    for locale in ("zh_CN", "en_US"):
+        service.set_locale(locale)
+        assert dialog.currentExporter is svg
+        for scaling in (False, True):
+            svg.parameters()["scaling stroke"] = scaling
+            data = svg.export(toBytes=True)
+            assert QSvgRenderer(data).isValid()
+            root = ET.fromstring(data)
+            assert root.findall(".//{*}clipPath")
+            paths = root.findall(".//{*}path")
+            assert any("Z" in path.attrib.get("d", "") for path in paths)
+            assert b"experiment [N]" in data and b"theory [N]" in data
+            if scaling:
+                assert all(node.attrib.get("vector-effect") != "non-scaling-stroke"
+                           for node in root.iter())
+    target = tmp_path / "overlay.svg"
+    svg.export(str(target))
+    assert QSvgRenderer(str(target)).isValid()
     for item, expected in zip(widget.plot_widget.listDataItems(), original, strict=True):
         actual = item.getOriginalDataset()
         np.testing.assert_array_equal(actual[0], expected[0])
@@ -162,8 +179,10 @@ def test_plot_owner_deletion_releases_dialog_and_locale_connections() -> None:
     service = TranslationService("zh_CN")
     for _ in range(3):
         widget = AnalysisPlotWidget(service, regions_movable=False)
-        dialog = widget.plot_widget.scene().exportDialog
-        dialog.updateItemList(select=widget.plot_widget.getPlotItem())
+        widget.plot_widget.plot([0, 1, 2], [0, 1, 0])
+        dialog, exporter = _select_exporter(widget, SVGExporter)
+        dialog.selectBox.hide()
+        assert QSvgRenderer(exporter.export(toBytes=True)).isValid()
         before = service.receivers(SIGNAL("locale_changed(QString)"))
         service.set_locale("en_US")
         service.set_locale("zh_CN")
@@ -180,9 +199,13 @@ def test_plot_owner_deletion_releases_dialog_and_locale_connections() -> None:
 
 
 def test_translation_binding_rejects_worker_thread(plot) -> None:
-    _widget, service = plot
+    widget, service = plot
     owner = QApplication.instance()._retldc_plot_translations
     with ThreadPoolExecutor(max_workers=1) as executor:
         future = executor.submit(owner.bind, service)
+        with pytest.raises(RuntimeError, match="GUI thread"):
+            future.result(timeout=5)
+        _dialog, exporter = _select_exporter(widget, SVGExporter)
+        future = executor.submit(exporter.export, toBytes=True)
         with pytest.raises(RuntimeError, match="GUI thread"):
             future.result(timeout=5)
