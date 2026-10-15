@@ -14,15 +14,20 @@ def PlotAnalysis_Select(
 ) -> tuple[NDArray[np.bool_], str]:
     """Select existing samples in scientific time; never interpolate or bridge gaps."""
     mask = np.ones(time.shape, dtype=bool)
+    if fft and not np.all(np.isfinite(time)):
+        # A missing clock value cannot safely be assigned to either side of a cut.
+        return mask, "timestamps"
     if active_only:
         if interval is None or not all(np.isfinite(interval)) or interval[0] >= interval[1]:
             return np.zeros(time.shape, dtype=bool), "interval"
         mask = (time >= interval[0]) & (time <= interval[1])
+        indices = np.flatnonzero(mask)
+        if indices.size:
+            span = slice(indices[0], indices[-1] + 1)
+            mask[span] |= ~np.isfinite(time[span])  # Preserve internal display gaps.
     selected_time, selected_values = time[mask], values[mask]
     if selected_time.size < 2:
         return mask, "samples"
-    if not np.all(np.isfinite(selected_time)):
-        return mask, "timestamps"
     steps = np.diff(selected_time)
     if np.any(steps <= 0):
         return mask, "timestamps"

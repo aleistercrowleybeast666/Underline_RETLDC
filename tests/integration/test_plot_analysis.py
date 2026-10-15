@@ -170,6 +170,29 @@ def test_fft_remains_frequency_data_with_other_native_options_selected(plot, mod
     assert curve.getData()[0].size == 999
 
 
+def test_scoped_time_display_preserves_missing_clock_and_fft_rejects_it(plot) -> None:
+    time = np.array([0., np.nan, 2., 3.])
+    values = np.array([1., 2., 3., 4.])
+    curve = plot.add_series(time, values, name="missing clock")
+    plot.set_regions({"active_test": (0, 2)})
+    plot.analysis_scope_check.setChecked(True)
+    np.testing.assert_array_equal(curve.getData()[0], time[:3])
+    plot.plot_widget.getPlotItem().ctrl.fftCheck.setChecked(True)
+    assert curve.analysis_notice == "timestamps"
+    assert curve.getData() == (None, None)
+
+
+def test_scoped_fft_ignores_bad_values_outside_interval(plot) -> None:
+    time = np.arange(5, dtype=float)
+    values = np.array([np.nan, 3., 0., -3., 0.])
+    curve = plot.add_series(time, values, name="outside gap")
+    plot.set_regions({"active_test": (1, 4)})
+    plot.analysis_scope_check.setChecked(True)
+    plot.plot_widget.getPlotItem().ctrl.fftCheck.setChecked(True)
+    assert curve.analysis_notice == ""
+    np.testing.assert_allclose(curve.getData()[1], np.abs(np.fft.rfft(values[1:]) / 4))
+
+
 @pytest.mark.parametrize("time,values,reason", [
     ([0], [1], "samples"),
     ([0, 1, 2], [1, np.nan, 1], "gaps"),
