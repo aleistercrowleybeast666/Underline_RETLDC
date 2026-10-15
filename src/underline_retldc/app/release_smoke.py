@@ -307,6 +307,17 @@ def _plot_analysis_check(
             control.logYCheck.setChecked(enabled)
             check(f"fft_log_units_{workspace}_{enabled}", plot.bottom_axis.labelUnits == "Hz")
     plot = window.process_page.analysis_plot
+    curve = next(curve for curve in plot._series if not curve.analysis_notice)
+    curve.getData()
+    baseline = (curve._datasetMapped.x.copy(), curve._datasetMapped.y.copy())
+    control = plot.plot_widget.getPlotItem().ctrl
+    for option in (control.derivativeCheck, control.phasemapCheck):
+        option.setChecked(True)
+        curve.getData()
+        check(f"fft_precedence_{option.objectName()}",
+              np.array_equal(curve._datasetMapped.x, baseline[0])
+              and np.array_equal(curve._datasetMapped.y, baseline[1]))
+        option.setChecked(False)
     image = ImageExporter(plot.plot_widget.getPlotItem()).export(toBytes=True)
     check("fft_png_export", image.save(str(output / "fft_active_interval.png")))
     check("fft_preserves_science", window.session.analysis_result is science[0]

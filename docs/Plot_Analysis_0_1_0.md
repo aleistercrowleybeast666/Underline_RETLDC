@@ -23,6 +23,8 @@ FFT 至少要求两个点、有限且严格递增的时间、有限数值、等�
 已检查项目安装的 pyqtgraph 0.14.0 `PlotDataItem._fourierTransform`：
 `f = np.fft.rfft(y) / N`，显示 `abs(f)`，频率来自 `np.fft.rfftfreq(N, dt)`。
 这不是功率谱或 PSD，也没有对非 DC/Nyquist 点乘 2，不能标为校准的单边振幅谱。
+内置菜单允许同时勾选其他变换；FFT 开启时优先显示频域，防止导数/相图覆盖 FFT
+数组却继续标为 Hz。关闭 FFT 后仍可使用原选项，其算法未改。
 本次不改变该归一化算法，仅据实际计算标为“FFT 模值 |rFFT|/N”。例如整周期、幅值
 6 N 的余弦在对应正频率处为 3 N；DC 保留均值，除非另外开启既有“去均值”。
 

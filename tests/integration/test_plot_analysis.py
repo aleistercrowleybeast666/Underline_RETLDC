@@ -153,6 +153,23 @@ def test_existing_derived_modes_receive_selected_samples(plot, mode) -> None:
     np.testing.assert_array_equal(curve.getOriginalDataset()[1], values)
 
 
+@pytest.mark.parametrize("mode", ["derivativeCheck", "phasemapCheck"])
+def test_fft_remains_frequency_data_with_other_native_options_selected(plot, mode) -> None:
+    time = np.arange(1000) / 1000
+    values = 6 * np.cos(2 * np.pi * 50 * time)
+    curve = plot.add_series(time, values, name="source")
+    control = plot.plot_widget.getPlotItem().ctrl
+    getattr(control, mode).setChecked(True)
+    control.fftCheck.setChecked(True)
+    frequency, magnitude = curve.getData()
+    assert frequency[50] == pytest.approx(50)
+    assert magnitude[50] == pytest.approx(3)
+    assert plot.bottom_axis.labelUnits == "Hz"
+    control.fftCheck.setChecked(False)
+    assert getattr(control, mode).isChecked()
+    assert curve.getData()[0].size == 999
+
+
 @pytest.mark.parametrize("time,values,reason", [
     ([0], [1], "samples"),
     ([0, 1, 2], [1, np.nan, 1], "gaps"),

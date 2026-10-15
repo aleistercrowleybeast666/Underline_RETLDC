@@ -560,6 +560,7 @@
   "plot.axis.frequency": "频率",
   "plot.axis.fft_magnitude": "{quantity} — FFT 模值 |rFFT|/N",
   "plot.analysis.active_only": "仅分析工作区间",
+  "plot.analysis.fft_tip": "显示 |rFFT|/N，不是功率或补偿双倍系数的单边振幅。勾选 FFT 时优先显示频域，不叠加导数/相图变换。",
   "plot.analysis.scope_tip": "所有图页同步。时域仅显示试车区间，并先裁剪输入再执行 FFT、去均值及已有导数/相图变换；原数组和 CSV 导出保持完整。理论采用自身检测区间。",
   "plot.analysis.interval": "该数据源没有有效试车区间",
   "plot.analysis.samples": "所选区间至少需要两个采样点",

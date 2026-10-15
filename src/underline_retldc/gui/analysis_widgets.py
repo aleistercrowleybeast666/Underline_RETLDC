@@ -237,6 +237,9 @@ class AnalysisPlotWidget(QWidget):
         self.plot_widget.setLabel("left", y_label, units=y_unit or None)
         self.analysis_scope_check.setText(self._translations.translate("plot.analysis.active_only"))
         self.analysis_scope_check.setToolTip(self._translations.translate("plot.analysis.scope_tip"))
+        self.plot_widget.getPlotItem().ctrl.fftCheck.setToolTip(
+            self._translations.translate("plot.analysis.fft_tip"),
+        )
         fft = self.plot_widget.getPlotItem().ctrl.fftCheck.isChecked()
         for region in (self.pre_region, self.active_region, self.post_region):
             in_scope = not self.analysis_scope_check.isChecked() or region is self.active_region

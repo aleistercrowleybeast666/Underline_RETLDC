@@ -58,7 +58,13 @@ class AnalysisPlotDataItem(pg.PlotDataItem):
         # is restored even on errors; CSVExporter.getOriginalDataset stays full-record.
         time = self.scientific_time if self.opts["fftMode"] else original.x
         self._dataset = PlotDataset(time[mask], original.y[mask])
+        other_modes = self.opts["derivativeMode"], self.opts["phasemapMode"]
+        if self.opts["fftMode"]:
+            # Native mappings are not composable: derivative/phase overwrite FFT
+            # with time-domain arrays. While FFT is selected it owns the display.
+            self.opts["derivativeMode"] = self.opts["phasemapMode"] = False
         try:
             return super()._getDisplayDataset()
         finally:
+            self.opts["derivativeMode"], self.opts["phasemapMode"] = other_modes
             self._dataset = original

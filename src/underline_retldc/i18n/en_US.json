@@ -560,6 +560,7 @@
   "plot.axis.frequency": "Frequency",
   "plot.axis.fft_magnitude": "{quantity} — FFT magnitude |rFFT|/N",
   "plot.analysis.active_only": "Analyze ACTIVE_TEST only",
+  "plot.analysis.fft_tip": "Displays |rFFT|/N, not power or a doubled one-sided amplitude. While selected, FFT takes precedence over derivative/phase options.",
   "plot.analysis.scope_tip": "Shared by all plots. Shows only the test interval and crops input before FFT, mean subtraction and existing derivative/phase transforms. Original arrays and CSV exports stay intact. Theory uses its own detected interval.",
   "plot.analysis.interval": "No valid test interval for this source",
   "plot.analysis.samples": "Analysis requires at least two samples in the selected interval",
