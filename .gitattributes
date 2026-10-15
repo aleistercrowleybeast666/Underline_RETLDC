@@ -1,1 +1,2 @@
 *.bat text eol=crlf
+docs/third_party/upstream/*.txt -text

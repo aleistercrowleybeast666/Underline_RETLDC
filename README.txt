@@ -7,11 +7,20 @@ Underline RETLDC 0.1.0 使用说明
 当前版本提供项目、推力分析、燃烧室压力、温度和数据浏览器工作区。程序是离线软件，
 不负责点火、实时采集或发动机控制。
 
+版本与下载：本分支为 0.1.0 开发候选，尚未发布。GitHub 最新公开版为 v0.0.4：
+https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.0.4
+公开下载入口：https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases
+最新本地 PlotSVG 候选仍待用户验收，不能把内部候选当作已发布版本。
+
+项目自身许可证尚未指定，不能从第三方 MIT/LGPL 文本推定项目授权。第三方声明见
+THIRD_PARTY_NOTICES.txt；待确认的许可选择与打包影响见 docs/Licensing_Review_0_1_0.md。
+
 
 一、第一次使用
 --------------
 
-便携包用户：完整解压 Underline_RETLDC_0_1_0_CompactResults_Windows_Portable.zip，在解压得到的
+便携包用户：公开 v0.0.4 使用 Underline_RETLDC_0_0_4_Windows_Portable.zip；本地待验收候选为
+dist/Underline_RETLDC_0_1_0_PlotSVG_Windows_Portable.zip。完整解压所选 ZIP，在解压得到的
 Underline_RETLDC 文件夹中双击 Underline_RETLDC.exe；无需安装 Python。保留整个文件夹，
 不要单独移动 EXE。以下 Python 步骤仅用于从源码运行。
 

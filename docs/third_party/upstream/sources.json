@@ -1,0 +1,22 @@
+[
+  {
+    "path": "LGPL-3.0.txt",
+    "url": "https://www.gnu.org/licenses/lgpl-3.0.txt",
+    "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+    "bytes": 7652
+  },
+  {
+    "path": "OpenSSL-3.0.18-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/openssl/openssl/openssl-3.0.18/LICENSE.txt",
+    "sha256": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a",
+    "bytes": 10175
+  },
+  {
+    "path": "GPL-3.0.txt",
+    "source_distribution": "numpy 2.5.2",
+    "source_file": "numpy-2.5.2.dist-info/licenses/LICENSE.txt",
+    "source_byte_offset": 10681,
+    "sha256": "e57f1c320b8cf8798a7d2ff83a6f9e06a33a03585f6e065fea97f1d86db84052",
+    "bytes": 35150
+  }
+]

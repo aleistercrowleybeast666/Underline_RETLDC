@@ -363,6 +363,13 @@ official `plugins/` tree stays beside the executable as ordinary files. Built-in
 is collected at its package-relative path. README, plugin-authoring prompts, docs, and examples are
 copied into the distribution.
 
+After copying documentation, `scripts/collect_licenses.py` copies the installed runtime
+distributions' upstream legal documents, the base Python license, the root third-party notice,
+and any existing owner-selected root legal files. A version/hash manifest is written under
+`docs/third_party/runtime/`. This step fails on missing/corrupt document copies; it does not
+choose an UNDERLINE license or certify Qt redistribution compliance. Release decisions and
+the Qt Virtual Keyboard finding are tracked in `docs/Licensing_Review_0_1_0.md`.
+
 The entire distribution directory is the release unit: moving only the EXE is unsupported. The
 build script first runs pytest and Ruff with fail-fast errors, then installs PyInstaller into the project `.venv` only when missing, replaces the same
 stable-name build output, and smoke-starts the packaged executable once per theme before reporting

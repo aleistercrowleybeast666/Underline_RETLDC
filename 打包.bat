@@ -133,6 +133,15 @@ copy /Y "%CD%\README.txt" "%DIST_DIR%\README.txt" >nul
 copy /Y "%CD%\新增解析器_PROMPT.txt" "%DIST_DIR%\新增解析器_PROMPT.txt" >nul
 copy /Y "%CD%\新增校准配置_PROMPT.txt" "%DIST_DIR%\新增校准配置_PROMPT.txt" >nul
 
+rem Preserve upstream documents and any owner-selected root legal files.
+rem This collects notices; it does not select a project license or approve release.
+"%VENV_PYTHON%" "%CD%\scripts\collect_licenses.py" --output "%DIST_DIR%"
+if errorlevel 1 (
+    echo ERROR: Failed to collect third-party license documents.
+    if not defined CI pause
+    exit /b 1
+)
+
 if not exist "%DIST_DIR%\%APP_NAME%.exe" (
     echo ERROR: The expected executable was not created.
     if not defined CI pause
