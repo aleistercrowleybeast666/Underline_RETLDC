@@ -1,654 +1,190 @@
-Underline RETLDC 0.1.0 使用说明
-=========================
+Underline RETLDC 0.1.0
+======================
+火箭发动机试车记录的离线解析、校准、分析与导出工具。
+Rocket Engine Test Log Decode and Compute.
 
-英文全称：Underline Rocket Engine Test Log Decode and Compute
-用途：试车结束后，对已经记录好的火箭发动机试车记录进行解析、校准、处理、计算和导出。
+Windows 便携包无需安装 Python：完整解压后运行 Underline_RETLDC.exe，保留整个文件夹。
+源码版本为 0.1.0；本次已完成用户验收并准备发布包。GitHub Release 及资产由用户另行
+创建、上传，推送代码或标签本身不代表二进制已经可下载。
 
-当前版本提供项目、推力分析、燃烧室压力、温度和数据浏览器工作区。程序是离线软件，
-不负责点火、实时采集或发动机控制。
+版本与下载：https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases
+代码与文档：https://github.com/aleistercrowleybeast666/Underline_RETLDC
+问题反馈：https://github.com/aleistercrowleybeast666/Underline_RETLDC/issues
 
-版本与下载：本分支为 0.1.0 开发候选，尚未发布。GitHub 最新公开版为 v0.0.4：
-https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.0.4
-公开下载入口：https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases
-最新本地验收路径为 dist/Underline_RETLDC_0_1_0_FFT_Restored/Underline_RETLDC.exe；
-旧 FFT_Apache 与 PlotSVG 保留，均不是已发布版本。
-此前 FFT/工作区间与 Apache 许可候选另存为 FFT_Apache，不覆盖 PlotSVG；对应源码
-已整理为 dist/Underline_RETLDC_0_1_0_Corresponding_Sources.zip，包含五份官方 6.11.1
-原归档（共 71.21 MiB）、Mesa 精确源码、应用源码和重组工具；不重复保留外部原归档。
-
-原创项目代码采用 Apache License 2.0，完整文本见根目录 LICENSE，与 SilverStar 相同。
-暂不新增个人版权行；LICENSE 附录的 Copyright [yyyy] [name of copyright owner] 是标准示例，
-不是本项目的实际署名。第三方组件及保留上游许可的派生代码不由此重新授权，例如
-pyqtgraph SVG 适配保留 MIT；Qt/PySide 的 LGPL 等义务继续适用。第三方声明见
-THIRD_PARTY_NOTICES.txt，发布材料核查见 docs/Licensing_Review_0_1_0.md。
+在 Releases 页面选择对应 v0.1.0 资产；如尚未列出，请等待该版本资产上传。正式文件名：
+  Underline_RETLDC_0_1_0_Windows_Portable.zip
+  Underline_RETLDC_0_1_0_Corresponding_Sources.zip
+  SHA256SUMS.txt
+本地待上传文件位于 dist/release_0_1_0/。旧候选包保留，不作为本次正式上传文件。
 
 
-一、第一次使用
---------------
+一、快速开始（Windows 便携包）
+----------------------------
+1. 下载对应版本的 Windows Portable ZIP 和 SHA256SUMS.txt，核对 SHA-256。
+   PowerShell 示例：
+   Get-FileHash .\Underline_RETLDC_0_1_0_Windows_Portable.zip -Algorithm SHA256
+2. 完整解压 ZIP，在 Underline_RETLDC 文件夹中双击 Underline_RETLDC.exe。
+   建议使用有写入权限的位置，例如 D:\Tools\Underline_RETLDC；无需管理员权限。
+3. 在“工程”页导入数据，确认来源类型为“实验数据”或“理论数据”。原文件始终只读。
+4. 核对解析结果、时间来源、物理量和单位，确认实验主通道；需要时设置校准。
+5. 进入推力、燃烧室压力、温度或数据浏览器，检测试车区间并人工确认起止时间。
+6. 填写必要发动机参数，点击顶部“计算分析结果”，核对结果后导出。
+   工程可在任意阶段保存；临时分析也可直接导出，无须先保存工程。
 
-便携包用户：公开 v0.0.4 使用 Underline_RETLDC_0_0_4_Windows_Portable.zip；本地待验收候选为
-dist/Underline_RETLDC_0_1_0_Windows_Portable.zip（许可材料收尾版，EXE 不变）。完整解压所选 ZIP，在解压得到的
-Underline_RETLDC 文件夹中双击 Underline_RETLDC.exe；无需安装 Python。保留整个文件夹，
-不要单独移动 EXE。以下 Python 步骤仅用于从源码运行。
-
-1. 安装 Python 3.11 或更高版本。
-   Windows 用户安装 Python 时建议勾选“Add Python to PATH”。
-
-2. 打开 Underline_RETLDC 工程文件夹。
-
-3. 在文件夹空白处打开 PowerShell / Windows Terminal，第一次只需要执行：
-
-   py -m venv .venv
-   .\.venv\Scripts\python.exe -m pip install --upgrade pip
-   .\.venv\Scripts\python.exe -m pip install -e .
-
-   如果电脑没有 py 命令，可把第一行改为：
-
-   python -m venv .venv
-
-4. 安装完成后启动程序：
-
-   python .\main.py
-
-   main.py 会自动使用本工程的 .venv。
-
-以后通常只需要执行最后一条启动命令，不需要重复安装环境。
-
-如果提示找不到 .venv，请重新执行第 3 步。
-
-顶部“主题”使用普通下拉框选择“浅色”或“深色”，选择会立即生效并在下次启动时保留；
-“设置”中的主题下拉框与顶部始终同步。
+软件用于已经记录的数据，不负责点火、实时采集或发动机控制。
 
 
-二、最简单的使用流程
+二、导入、单位和计算
 ------------------
+实验与理论使用同一套已有 Parser 和 Mapping Preset，不限制数据来自哪种仿真软件。
+普通 CSV、TSV、分隔文本及 XLSX 使用通用表格解析器和明确的列映射。自动识别在本地
+确定性运行；未知数值列默认保留为“其他”。识别失败或需要修改时展开高级映射。
+每个来源保存自己的有效映射，重开工程不会重新识别或追随外部预设变化。
 
-1. 启动程序。
-2. 选择“打开原始数据”，可以一次添加一个或多个试车记录文件。
-3. 多文件需要对齐时，填写各文件的“工程时间偏移”。
-4. 普通 CSV、TSV 或 XLSX 会在本地自动识别表头、数据起始行、时间列、单位和通道类别，
-   识别可靠时会直接完成解析。界面仍会显示“自动识别结果”，便于核对软件选择了什么。
-5. 如果自动识别失败或结果不符合实际，展开“高级设置”，手动选择 Parser、时间来源和
-   列映射。普通分类只有时间、推力、燃烧室压力、温度和其他；未知列默认保留为“其他”。
-6. 导入后在“主通道”区域确认主要推力、主要燃烧室压力和所需温度通道。软件会给出
-   建议，但最终选择以这里为准。
-7. 每个新通道默认显示“已经校准”。这只表示软件不额外变换数字，不代表软件证明了
-   传感器标定准确。
-8. 如果数据仍是 ADC/raw/count，为该通道选择正确校准器并填写参数，或加载校准 JSON。
-9. 完成导入和自动解析后，直接在左侧选择“推力”“燃烧室压力”或“温度”工作区查看和分析。
-10. 推力页使用主要推力通道检测试车区间；燃烧室压力页使用主要室压通道。
-    自动结果只是建议，用户保留最终决定权。
-    自动识别后，可在推力或燃烧室压力页面拖动、输入同一套试车前/试车/试车后区间；
-    两个页面和工程状态会立即同步。
-11. 设置“推力极性”。如果传感器方向与软件定义相反，选择“反向 (-1)”。极性会先
-    应用于已校准推力，与下一步的可选推力修正是两件事。
-12. 新工程“推力修正”默认“不启用”，推力极性仍然有效，最终处理通道会保留正确方向。
-    只有确认安装方式和基线物理含义适用时，才主动启用可选的发动机自重变化补偿。
-    已保存工程的显式修正选择会原样恢复。
-13. 检查修正后的曲线和计算结果；需要时导出 TXT、PNG、CSV、JSON 或 OpenRocket ENG。
+两列原始 TXT 若同时兼容 TR_F、TR_P、TR_T，需要明确选择推力、室压或温度含义。
+时间必须来自真实时间列、明确采样率或采样周期，不默认猜测 1 Hz。
+多来源可分别保留采样间隔和科学工程时间偏移，不为共用试车区间而重采样。
 
-单位只需要这样理解：
+数据单位定义原数字的物理含义；显示单位只换算图和表中的值。例如 1,000,000 Pa 可
+显示为 1 MPa，K/°C 会处理零点偏移。工程单位和 SI 科学计数显示均不改变原始数组、
+校准状态或正式导出单位。单位换算不能代替传感器校准。
 
-数据单位：文件里的数字本来是什么单位。修改它是在纠正数据解释，不改变原数字。
-显示单位：软件画图时想显示成什么单位。软件会换算显示值，不改变原数字。
+新通道默认 Identity（已经校准/不额外变换），不代表软件证明了传感器标定准确。
+raw/count/ADC 需要合适的校准及物理单位，才能用于 SI 总冲、比冲或 ENG。
+新工程推力修正默认“不启用”；推力极性独立生效。可选自重/基线补偿需由用户明确
+选择并确认安装含义。校准、极性与补偿属于不同阶段。
 
-例如 Data Unit 为 Pa、Display Unit 为 MPa 时，文件中的 1,000,000 Pa 会显示为 1 MPa。
-温度 K 与 °C 也会正确处理 273.15 的偏移，不是简单修改文字。
-
-“设置”中的单位显示模式有两种：
-- 工程单位（默认）：使用 N、MPa、°C、mm 等便于阅读的工程单位；
-- SI + 科学计数法：使用 N、Pa、K、m 等规范 SI 单位，并以科学计数法显示数值。
-
-这两种模式只改变图、坐标轴和统计表的显示，不修改原始数值、数据单位、校准状态或
-正式导出数据的单位定义。
-
-图表右键菜单的“变换”提供全页同步的“仅分析工作区间”。开启后时域只显示当前
-试车区间，FFT、去均值和已有派生变换也先裁剪输入；关闭恢复全段。使用原有起止
-时间输入/拖动调整范围；理论采用自身检测区间，显示平移不改变科学裁剪或 FFT 频率。
-FFT 横轴为 Hz，纵轴是原显示单位的 |rFFT|/N 模值，不是功率或已补偿单边振幅。
-非等间隔保留原有等点数线性插值；全段空档会提示频谱局限。非有限、非单调或不足
-两点仍拒绝。提示位于图下方，可展开详情，不遮挡曲线。开关及 FFT/对数状态随
-工程保存；图菜单 CSV 保留完整图项输入，正式统计和实验导出仍走原流程。详见
-docs/Plot_Analysis_0_1_0.md。
-
-推力图始终显示 0 N 刻度和参考线，便于检查回零、基线和燃烧结束。燃烧室压力页默认显示
-一个标准大气压参考线（101325 Pa = 0.101325 MPa），可以编辑或隐藏。压力参考线只用于
-显示，不会从压力数据中扣除，也不会改变校准、分析或 CSV 数值。
-
-如果推力通道仍是 raw/count/ADC，可以查看、绘图和分段，也能看到相对峰值；但软件不会
-伪造以 N、N·s、s 为单位的峰值推力、总冲和比冲，也不会生成 OpenRocket ENG。
+实验推力与室压编辑同一套工程 PRE/ACTIVE_TEST/POST 区间，温度读取该区间。
+自动检测仅为建议，用户保留最终区间控制。总冲使用实际时间戳作梯形积分；比冲只用
+推进剂质量，质量缺失或无效时比冲不可用，其他有足够输入的指标仍可计算。
+发动机总质量不能替代推进剂质量，基线推导的等效质量变化不等于精确推进剂消耗。
 
 
-三、工程文件要不要保存
+三、理论曲线与独立结果
 --------------------
-
-可以不保存工程。
-
-如果只是临时分析一次：
-打开原始数据 → 分析 → 直接导出 → 关闭程序即可。
-
-如果希望下次继续：
-选择“保存工程”。工程文件会记录：
-- 原始文件引用和校验信息
-- 多个 Source、Stream 和工程时间偏移
-- 解析器及其参数
-- 每个通道的物理量、数据单位、单位来源、显示单位覆盖、校准模型及参数
-- 处理/补偿配置
-- 选择的工作区间
-- 分析和导出设置
-
-下次直接选择“打开工程”即可恢复并重新计算。
-
-如果原始数据文件被移动，程序会要求重新定位，并校验文件是否还是原来的数据。
-
-同一已保存工程重复导出时，默认覆盖该工程导出目录中的同名结果，不自动生成 (1)、final 等副本。
-
-
-四、语言和外观
-------------
-
-程序支持：
-- 简体中文
-- English
-
-可在窗口顶部切换。
-
-导出窗口的“输出语言”默认选择“跟随界面”，并放在第一项；切换界面语言后，导出的
-`_ZH`/`_EN` 文件名、表格文字和图片文字会一起变化。也可以固定选择简体中文或 English。
-导出窗口内容可上下滚动，“取消”和“导出所选文件”按钮固定在底部，不会被较长的格式
-列表或发动机信息表单挤出窗口。
-某个页面完成计算后，该页面对应且科学条件已经满足的导出格式会在第一次解锁时自动勾选；
-包括满足物理推力、试车区间等条件后的 ENG。每次打开导出窗口会选中全部当前可用格式；
-点击“全选”也可重新选中。窗口打开期间可手动取消，刷新或切换语言不会擅自恢复；
-关闭后重新打开则再次全选。不可用格式始终禁用且不勾选，ENG 仍需填写其发动机信息。
-顶部统一导出的 CSV、TXT/JSON 报告及正式 PNG 仅使用实验数据，不随理论指标来源切换。
-图表右键 Export... 是另一条绘图导出路径：图片和绘图 CSV 可包含当前可见理论曲线及
-显示时间平移，不能把该 CSV 当作未变换的原始数据。
-燃烧室压力曲线 PNG 只绘制试车阶段，横轴也只覆盖 ACTIVE_TEST，不包含试车前后数据。
-
-程序支持浅色模式和深色模式；选择会保存，下次启动继续使用。
-
-
-五、怎样新增一个“解析器”
-----------------------
-
-解析器负责回答：
-“这个原始记录文件怎样读成 Underline RETLDC 的统一数据？”
-
-解析器不负责校准、滤波、总冲、比冲或导出。
-
-官方参考插件位于：
-
-   plugins/parsers/tr_f/
-
-官方插件和用户插件使用完全相同的 plugin.json、plugin.py、Plugin API、Loader、
-SchemaForm 和中英文资源；TR_F 只是软件默认附带的 Parser，不是 Core 特例。
-
-使用 AI 扩展最方便：
-1. 打开根目录“新增解析器_PROMPT.txt”。
-2. 把全文复制给 AI。
-3. 在末尾“【本次具体要求】”写入文件样本、字段意义、时间单位、分隔方式、
-   自动识别依据和坏数据处理要求。
-4. AI 有 Agent 或仓库编辑能力时，让它直接在当前工程中创建插件并运行测试。
-5. AI 无法访问工程时，要求它生成一个可直接安装的插件 ZIP。
-6. 在 Underline RETLDC 中打开“工具 → 插件”，点击“安装插件...”，选择 AI 生成的 ZIP。
-   软件会读取 plugin.json、判断解析器类别、复制到合适位置并自动刷新。
-7. ZIP 可以只有一个插件，也可以包含多个相关插件和任意层说明/包装目录。安装器会递归
-   查找每个 plugin.json，把其所在目录识别为真正插件根，并根据 plugin_type 分别分类。
-   不需要先解压、寻找 plugin.json 或手工判断 parsers/calibrations 等目录。
-
-高级用户也可把解压后的插件文件夹手工复制到程序目录的 plugins/parsers/，或用户插件
-目录的 parsers/，再打开“工具 → 插件 → 刷新”。了解 Python 的用户可直接以
-plugins/parsers/tr_f/ 为模板编写。普通新 Parser
-原则上不需要修改 Core 或主 GUI；如果需求无法由公开 Plugin API 表达，应使用能读取
-完整仓库的 Coding Agent 先扩展平台，而不是让 ZIP 覆盖 Core。
-
-
-六、怎样新增一个“校准模型”
-------------------------
-
-校准模型负责：
-“把 Parser 得到的传感器数值转换成工程量。”
-
-官方参考插件位于：
-
-   plugins/calibrations/linear/
-   plugins/calibrations/identity/
-
-你自己的 Calibration 放在：
-
-   plugins/calibrations/<插件文件夹>/
-
-使用 AI 的步骤与 Parser 相同：
-1. 把“新增校准配置_PROMPT.txt”全文复制给 AI。
-2. 在“【本次具体要求】”写明校准公式、参数、范围、输入意义、输出物理量和单位。
-3. 有 Agent 时让 AI 直接修改当前仓库并测试。
-4. 无 Agent 时让 AI 生成插件 ZIP。
-5. 打开“工具 → 插件 → 安装插件...”，选择这个 ZIP。软件会自动识别 Calibration 类型、
-   复制到正确类别并刷新，新模型随后会出现在校准下拉框。
-
-ZIP 可以包含任意层包装目录或多个相关插件；软件只复制每个真正包含 plugin.json 的最深层
-插件根，不会把外层说明文件和打包目录塞进 plugins。高级用户仍可手工复制到程序插件根的
-plugins/calibrations/ 或用户插件根的 calibrations/，然后刷新。
-
-校准模型只负责数值映射，不承担解析、baseline、自重变化补偿、滤波、分析或导出。
-
-
-七、插件放在哪里
---------------
-
-普通用户推荐这样安装插件：
-
-1. 打开 Underline RETLDC。
-2. 选择“工具 → 插件”。
-3. 点击“安装插件...”。
-4. 选择插件文件夹或 ZIP。
-5. 安装前检查检测到的插件列表；可逐项取消、全选或全不选。
-6. 软件根据每个 plugin.json 的 plugin_type 自动分类，优先安装到程序插件目录；只有对应
-   程序目录无写入权限时，才按插件回退到用户插件目录。
-7. 软件自动刷新 Registry，并且只有插件状态确实为“已加载”时才报告安装成功。
-
-一个文件夹或 ZIP 可以包含多个插件，也可以套任意层包装目录。安装器递归扫描 plugin.json，
-只复制真正插件根；如果祖先和后代目录都含 manifest，默认只安装最深层插件，避免重复发现。
-同一来源内重复 Plugin ID 会明确标记冲突，但不会阻止其他不同 ID 的插件继续安装。
-
-程序插件目录位于当前应用根目录：
-
-   plugins/
-   ├─ parsers/
-   ├─ calibrations/
-   ├─ processors/
-   ├─ analyzers/
-   └─ exporters/
-
-插件类型以 plugin.json 的 plugin_type 为准，分类文件夹主要帮助人阅读。
-
-安装器优先把插件放在这个程序插件目录。如果它不可创建/写入，或者实际复制发生权限
-错误，安装器才会自动改用当前 Windows 用户插件目录：
-
-   %APPDATA%\Underline_RETLDC\plugins\
-   ├─ parsers\
-   ├─ calibrations\
-   ├─ processors\
-   ├─ analyzers\
-   └─ exporters\
-
-如果同一 Plugin ID 已经存在，安装预览会显示当前/待安装版本和已有路径。选择“替换”时
-始终原位置原子替换，不会在程序根和用户根各留下一个副本；选择“跳过”不会影响同包其他插件。
-
-软件判断的是目标目录的实际写权限，不根据 C:、D: 或其他盘符猜测，也不会要求普通
-插件安装必须以管理员身份运行。D: 只是推荐，不是运行要求；程序可以位于 C:、E:、
-网络/便携目录或其他用户自定义路径。
-
-建议将 Underline RETLDC 安装或解压到 D 盘等可写的非系统目录，例如：
-
-   D:\Tools\Underline_RETLDC
-
-这样程序插件可以直接保存在软件目录中，便于整体移动和备份。如果程序位于
-C:\Program Files 等受保护目录，插件会自动安装到当前用户的插件目录。
-
-Installing or extracting Underline RETLDC to a writable non-system location such as the D: drive
-is recommended, for example:
-
-   D:\Tools\Underline_RETLDC
-
-This allows application plugins to remain with the program for easier backup and portable use.
-If the application is installed in a protected location such as C:\Program Files, plugins will
-automatically be installed to the current user's plugin folder instead.
-
-高级用户/开发者仍可手工把可信插件目录复制到程序 plugins/<category>/ 或用户插件目录的
-对应类别，再选择“工具 → 插件 → 刷新”。列表来源“随软件提供 / 程序目录 / 用户目录”
-仅说明发现位置：随正式程序发布的官方插件为“随软件提供”，后来放入程序插件目录的
-第三方插件为“程序目录”，用户根中的插件为“用户目录”。三者都进入同一个 Registry，
-使用同一套 API；来源标签不代表软件对第三方插件作出安全背书。
-
-
-八、插件安全
-----------
-
-外部 Python 插件属于可执行代码，请安装可信来源的插件。插件不是沙箱。
-
-坏插件通常会被程序隔离并显示加载错误，但恶意 Python 插件本身仍可能拥有当前用户权限。
-
-
-九、高级：给了解编程的用户
-----------------------
-
-Underline RETLDC 的核心数据链：
-
-Source（只读原始文件）
-  → Parser
-  → Stream（本地时间 + 工程时间偏移）
-  → Channel（Quantity + Data Unit + Raw Values）
-  → Calibration Model
-  → Calibrated Channels
-  → 可选的 Display Unit 换算
-  → Processor
-  → Processed Channels
-  → Analyzer
-  → Analysis Result
-  → Exporter
-
-五类主要 Plugin API：
-1. Parser：读取新的记录格式
-2. Calibration Model：新增校准数学模型
-3. Processor：补偿、滤波、重采样等数据处理
-4. Analyzer：计算新的物理/统计结果
-5. Exporter：输出新的文件格式
-
-平台边界可以概括为：
-
-Platform Core
-  → Plugin API
-  → plugins/
-     ├─ parsers
-     ├─ calibrations
-     ├─ processors
-     ├─ analyzers
-     └─ exporters
-
-所有具体格式和算法，包括随软件提供的 TR_F、Identity、Linear、自重补偿、推力分析和
-各类导出器，都位于根目录 plugins/，由同一个递归 Loader 发现。稳定 plugin_id 中的
-“builtin”只表示官方随附，不表示源码仍在 src/underline_retldc/builtin/。
-
-详细接口见：
-- docs/Architecture.md
-- docs/Plugin_API.md
-- docs/Data_Formats.md
-- docs/Calibration.md
-- docs/Analysis.md
-- docs/I18N.md
-
-原则：
-- 原始数据不可破坏。
-- Unit 和 Calibration 完全独立；所有新通道默认 Identity。
-- Parser 明确知道单位时必须保留；已知物理量缺单位时平台使用规范 SI。
-- 数据单位解释与显示单位换算必须分开。
-- 稳定 ID 与显示文字分离。
-- GUI 不复制科学算法。
-- 普通扩展优先写插件，不修改 Core。
-- 插件参数尽量通过 schema 自动生成 GUI。
-
-
-十、高级：加入压强、温度、流量等新数据
-----------------------------------
-
-这类任务通常不再只是“增加一个两列 Parser”这么简单。
-
-如果只是某种文件里多了一个已经能用现有 Dataset 表示的 Channel，可能只需要新增/修改 Parser，并给 Dataset 增加对应 quantity/unit Channel。
-
-当前已提供燃烧室压力、温度和通用数据浏览工作区；如果希望继续加入完整专用分析，例如：
-- 静态燃烧室压力
-- 动态燃烧压力
-- 更多压强统计/频域分析
-- 多通道同步
-- 压强与推力联合分析
-- 新图表和新报告
-
-通常需要同时检查：
-- Dataset/Channel 语义
-- Parser
-- Calibration
-- Processor
-- Analyzer
-- Exporter
-- GUI workspace
-- Project 持久化
-- i18n
-- 测试和 docs
-
-这种修改建议使用 Codex 等较强的代码代理，并要求它先完整阅读 AGENTS.md、TARGETS.md 和 docs/，不要让能力较弱的 AI 直接在 MainWindow 中堆 if/else。
-
-若扩展需求超出当前 Plugin API，应该先扩展通用架构和文档，再实现具体功能，而不是给某一个插件做隐藏特例。
-
-
-十一、开发者常用命令
+来源明确标记“实验/理论”，旧工程默认实验；它与 raw/calibrated/processed 通道阶段
+分开保存。同一个物理文件可分别作为两种来源导入，独立 Source ID 防止同名通道混用。
+
+理论曲线直接叠加在已有推力、室压、温度及适用的数据浏览器时间曲线上，以理论图例、
+颜色和虚线区分。可选择曲线和可见性；叠加前校验物理量及物理单位，原采样点和 NaN
+缺口保持原样。理论来源不会自动成为实验主通道。
+
+正负“显示时间平移”及滑条在各时间曲线页共享。“对齐试车起点”使用当前实验起点
+（包含人工修改）和理论独立检测的起点，重复点击不累计偏移，之后仍可微调。
+“恢复原时序”恢复原显示时间。显示平移不修改 Stream 科学时钟、积分区间或文件。
+来源类型、选择/可见性、平移、图轴范围及自动范围状态随工程保存、重开恢复。
+
+各页原有结果区以一个“指标来源”选择器查看实验或理论，顶部统一计算动作复用已有
+计算器。两种来源分别保存通道引用、科学时间区间、处理配置和完成状态；新理论来源
+计算默认使用完整记录，草稿不会在重开时自动推进为已完成。
+
+理论使用工程中的实验发动机物理参数，包括推进剂质量、总质量、直径及长度；不再
+维护一套重复的理论物理输入。缺失参数保持不可用，不填零。新理论计算采用工程量
+通道、+1 方向、不启用修正，不继承实验分段或自重补偿；旧独立配置保留读取兼容。
+实验和理论的计算区间均采用科学时间，不采用显示对齐坐标。
+
+理论导入、删除、校准、隐藏或对齐不改变已完成的实验主流程结果及正式导出就绪状态。
+本版不提供残差、MAE/RMSE、自动拟合、大模型分析或发动机优化。
+细节：docs/Theoretical_Curves.md。
+
+
+四、工作区间、FFT 和图表导出
+---------------------------
+图表右键“变换”中的“仅分析工作区间”在所有时间曲线页同步。开启后，时域只显示
+该试车区间，FFT、去均值及既有派生变换也先选取区间内原点；关闭即可恢复全段。
+实验使用工程 ACTIVE_TEST，理论使用自身独立检测区间；该显示选区不重写科学计算
+配置。FFT 时隐藏时间区间标记，退出后恢复。选择和 FFT/对数状态随工程保存。
+
+FFT 沿用 pyqtgraph 0.14 原有行为：非等间隔时间先按首末实测时长线性插值为同样 N
+个等间隔点，再显示 abs(rFFT(y)/N)。横轴为 Hz，纵轴保留输入显示单位，标为
+“FFT 模值 |rFFT|/N”；不是 PSD/功率，也没有补乘 2 的单边振幅归一化。
+去均值选中时，沿用先减原选中点均值、再插值和 FFT 的顺序，DC 可能有插值残差。
+
+非有限数值、重复/倒序时钟和不足两点仍拒绝。有限但间隔较大的空档允许沿用原插值
+出图，并在图下方一行提示频谱局限：空档内的直线不是实测数据，插值可能衰减或改变
+高频内容。优先检查连续工作区间。提示可悬停或展开，不遮挡曲线，也不修改原始数组。
+
+顶部统一 CSV、TXT/JSON 报告和正式 PNG 继续使用实验主流程，不随理论指标选择改变。
+室压正式 PNG 的样本及 X 范围均只覆盖 ACTIVE_TEST；正式推力图保留 0 N 参考。
+图表右键 Export 是独立的当前图路径：PNG/SVG 可显示理论、平移和当前 FFT；绘图 CSV
+保留完整图项输入的显示单位/平移，不包含 FFT、去均值、对数、降采样或本显示区间裁剪。
+绘图 CSV 不等同于原始文件或顶部正式 CSV。导出不要求事先保存工程。
+
+导出窗口每次新打开选中全部当前可用格式；窗口保持打开时，手动取消不会因刷新或
+换语言而恢复。不可用项禁用且不勾选。输出语言默认跟随界面，正式文件使用 _ZH/_EN
+固定名称（ENG 无语言后缀）；重复导出覆盖同名结果。
+细节：docs/Plot_Analysis_0_1_0.md、docs/FFT_Restored_Acceptance_0_1_0.md。
+
+
+五、工程、界面与插件
+------------------
+工程记录来源引用及 SHA-256、解析/校准/处理配置、主通道、区间、结果状态和视图。
+重开时核验原文件；移动文件需重新定位并通过同一哈希检查，不接受不同内容混入。
+已完成来源结果按已保存有效配置恢复，未完成阶段保持草稿。显示设置不改变科学数组。
+
+界面支持简体中文/English、浅色/深色、工程单位/SI 科学计数。顶部与设置中的主题、
+语言保持同步。导出输出语言可独立固定为中文或英文。
+
+“工具 → 插件 → 安装插件”接受文件夹或 ZIP。安装器按 plugin.json 类型递归识别，
+优先使用可写程序 plugins/，权限不足时逐插件回退到用户插件目录；同 ID 替换仍在
+原位置完成。只有 Registry 实际加载成功才报告成功。外部 Python 插件会执行代码，
+请只安装可信来源；来源标签不代表安全背书，插件不在沙箱内。
+Plugin API v1：docs/Plugin_API.md；扩展指引：新增解析器_PROMPT.txt、新增校准配置_PROMPT.txt。
+
+
+六、许可与对应源码
 ----------------
+项目原创代码采用标准 Apache License 2.0，完整条款见 LICENSE。第三方组件及保留
+上游许可的代码仍按各自条款提供；例如 pyqtgraph/SVG 适配保留 MIT，Qt/PySide/Shiboken
+仍适用其相应许可。第三方原文与说明见 THIRD_PARTY_NOTICES.txt 和 docs/third_party/。
 
+与便携包同时提供 Corresponding_Sources ZIP：匹配标签的应用源码、构建/重组工具、
+精确依赖版本及五份 Qt/PySide 6.11.1 原始归档，另含 Mesa 11.2.2 固定提交源码和软件
+OpenGL/LLVM 许可材料。六份上游原始压缩归档合计 85,322,364 字节，不展开 SDK。
+内部清单逐成员记录哈希，SHA256SUMS.txt 校验两个交付 ZIP。GitHub 自动生成的应用
+Source code ZIP 不包含这些第三方归档，不能代替该对应源码包。
+
+Qt/PySide 的 Python 绑定重组途径已实际运行验证；原生 C++ 库未重新编译。源码提供
+方式、库替换步骤和证据见 docs/Qt_Corresponding_Source_0_1_0.md、
+docs/Qt_Library_Replacement_0_1_0.md、docs/License_Delivery_Closeout_0_1_0.md。
+
+
+七、从源码运行与验证（开发者）
+----------------------------
+需要 Python >=3.11。已有 .venv 时直接复用；首次没有环境时执行：
+  py -m venv .venv
+  .\.venv\Scripts\python.exe -m pip install -e ".[dev,packaging]"
 启动：
-python .\main.py
-
-测试：
-.\.venv\Scripts\python.exe -m pytest
-
-代码检查：
-.\.venv\Scripts\python.exe -m ruff check .
-
-重新安装当前工程依赖/可编辑包：
-.\.venv\Scripts\python.exe -m pip install -e .
-
-
-十二、遇到问题先看哪里
---------------------
-
-程序使用问题：README.txt
-项目目标：TARGETS.md
-开发约束：AGENTS.md
-总体架构：docs/Architecture.md
-插件接口：docs/Plugin_API.md
-数据格式：docs/Data_Formats.md
-校准：docs/Calibration.md
-分析公式：docs/Analysis.md
-语言：docs/I18N.md
-
-不要修改 .venv 中的源码来“修程序”；真正源码位于 src/underline_retldc/。
-
-
-十三、生成可分发的 Windows 文件夹版
---------------------------------
-
-需要制作无需安装 Python 的 Windows 版本时，双击根目录：
-
-   打包.bat
-
-脚本只使用当前工程的 .venv，先运行 pytest 和 Ruff；任一步失败都会停止，不生成正式包。
-如果其中没有 PyInstaller，会自动安装。随后使用文件夹
-模式构建并自动执行浅色、深色两次启动检查，同时确认所有随包插件均可载入。成功后的
-发布位置是：
-
-   dist\Underline_RETLDC\
-
-主程序是：
-
-   dist\Underline_RETLDC\Underline_RETLDC.exe
-
-窗口标题为 `Underline RETLDC — 0.1.0`，顶部显示本地化版本标签；发布文件夹和 EXE 使用稳定名称 `Underline_RETLDC`。
-
-发布时必须复制或压缩整个 Underline_RETLDC 文件夹，不能只拿走 EXE。
-`_internal` 中是运行依赖，`plugins` 中是随软件发布的标准插件，二者都不能删除。
-发布文件夹还包含 README、插件生成 Prompt、技术文档和示例数据。
-
-重新打包会替换同名发布目录中的旧构建产物；不会改动源码、原始试车文件或用户的
-AppData 插件目录。打包脚本和生成的 EXE 仅面向 Windows。
-
-十四、普通 CSV / TSV / XLSX：优先使用通用表格解析
----------------------------------------------
-
-大多数普通二维表格不需要开发新的 Parser Plugin。只要数据能够表示为“每行一个采样、每列一个字段”，
-应优先使用：
-
-   Generic CSV / TSV（内部 ID：builtin.parser.generic_delimited）
-   Generic XLSX（内部 ID：builtin.parser.generic_xlsx）
-
-普通用户操作步骤：
-
-1. 在“工程”工作区添加 CSV、TSV 或 XLSX 文件。
-2. 软件默认自动识别文件结构、表头、数据开始行、时间、单位和列类别。
-3. 识别可靠时自动完成解析，可以直接确认主通道并进入相应分析页。
-4. 识别失败时“高级设置”自动展开；识别不正确时也可以主动展开修改。
-5. 普通列分类只有 Time、Thrust、Chamber Pressure、Temperature 和 Other。
-6. 未知数值列默认按 Other 导入，不会因为数值形状被猜成温度，也不会丢失。
-7. 相同格式还会使用时，可以在高级设置中保存或导入纯 JSON 预设。
-
-自动导入完全在本机运行，不使用 LLM，不访问网络。它只使用表头、单位、有限行数的
-数值特征、Preset 和固定规则评分，因此离线可用、资源开销低，并且相同输入会得到可重复
-的结果。最终映射会保存到工程；重新打开工程时不会再次猜测。
-
-Other 与 Ignore 不同：Other 会作为辅助通道导入并随工程保存，但默认不进入专用工作区、
-试车区间检测或科学分析；Ignore 只在高级映射中提供，表示完全不导入该列。稳定 Channel ID、
-Quantity、Semantic Role 和 Metadata 等专业选项也都在默认折叠的“高级映射”中。
-
-软件绝不会在未指定时间来源时默默使用 1 Hz。存在真实时间列时会保留真实时间戳，不会把它重采样成
-均匀时间。某列中间缺少单元格时，默认用 NaN 保持所有通道的行和时间对齐。
-
-简单 CSV 示例：
-
-   Time,P,F
-   0,0.1,10
-   0.1,0.2,20
-
-可以配置为：
-
-   A → Time / s
-   B → Chamber Pressure / MPa
-   C → Thrust / N
-
-列标题叫什么并不决定数据含义。即使标题改成 T0、CH_A、CH_B，也可以在高级设置中明确指定
-A 为时间、B 为燃烧室压力、C 为推力。自动识别只负责生成可编辑的显式建议；真正执行的是
-最终保存的 Column Mapping。
-
-TR_F、TR_P 和 TR_T 都是“时间 + 一个原始数值”的两列文本，单凭数字形状无法可靠判断
-第二列是推力、压力还是温度。因此自动识别会把分数接近的候选项列出来，由用户确认：
-
-   TR_F → 时间 / 原始推力
-   TR_P → 时间 / 原始燃烧室压力
-   TR_T → 时间 / 原始温度
-
-可以在候选单选项或普通解析器下拉框中直接选择 TR_P。新工程不需要先解析推力文件，室压
-文件就能独立解析并进入燃烧室压力页面。
-
-确认的含义只决定通道的物理类别；原始数值仍使用 raw 单位，必要时还要应用真实校准。
-
-预设与工程文件的区别：
-
-- Preset 是可复用的格式模板，Windows 用户预设保存在
-  %APPDATA%\Underline_RETLDC\presets\tabular\，主要通过软件的“导入预设/导出预设”操作。
-- Project 保存当前这个 Source 最终实际使用的完整 Mapping。以后修改同名 Preset，不会改变旧工程。
-- Preset 是纯 JSON 配置，不执行 Python，适合普通表格格式。
-- Plugin 是可执行 Python 代码，只能安装可信来源。
-
-以下变化通常只需要 Generic Tabular + Preset：
-
-- CSV/XLSX 列位置变化；
-- 表头文字变化；
-- 数据单位变化；
-- 文件前面增加说明行；
-- 某些列需要忽略。
-
-只有下列格式无法表示为普通二维表格时，才考虑使用“新增解析器_PROMPT.txt”开发 Parser Plugin：
-
-- 二进制或压缩格式；
-- 专有通信协议；
-- 带特殊校验/解码；
-- 多个复杂数据块；
-- 多个工作表之间存在必须联合解析的专有关系。
-
-没有 Agent 的 AI 如果面对普通 CSV/TSV/XLSX，应优先生成：
-
-   <format_name>_tabular_preset.json
-
-然后由用户在表格映射区域点击“导入预设”，而不是生成可执行插件 ZIP。
-
-
-v0.0.4 预设自动应用与英文快速说明
---------------------------------
-新导入 Generic CSV / TSV / XLSX 时先识别结构和可靠时间列。只有解析器 ID/版本、工作表、
-表头/数据起始行、全部列索引和单位提示都兼容，且表头匹配分数达到 0.95、领先第二候选
-至少 0.08 时，才自动应用校验通过的预设。带固定结束行的预设不自动套用，避免裁掉新记录。
-界面显示“已自动应用预设：名称”和最终映射；高级设置仍可修改，手动配置不会被再次覆盖。
-工程保存最终 effective mapping 的独立副本。后来修改全局预设，不会改变旧工程；
-打开工程时不会重新自动识别或应用预设。
-
-After importing and automatically parsing a file, select Thrust, Chamber Pressure, or Temperature
-in the left navigation to inspect and analyze the bound channels. New projects default to
-Thrust Correction: None; polarity remains active. Enable optional motor weight-change compensation
-only when the installation and baseline interpretation are appropriate. Explicit saved choices
-are restored unchanged.
-
-New Generic CSV / TSV / XLSX imports may apply a compatible preset automatically only after
-structure, headers, units, real time, and mapping validation pass (score >= 0.95; margin >= 0.08).
-Advanced Mapping remains editable. Each Project stores its effective mapping independently;
-reopening never reapplies or dynamically links a changed global preset.
-
-Pressure means now use trapezoidal integration over actual timestamps divided by the selected
-interval duration, as thrust means already did. Peaks are unchanged. Analysis retains recorded
-samples and does not invent boundary samples; formal export endpoint interpolation is separate.
-
-0.1.0 理论曲线叠加（目标 2026 年 10 月 15 日发布，当前未发布）
----------------------------------------------------------
-
-理论数据与实验数据使用相同解析器，不限制仿真软件；CSV、TSV、XLSX 仍使用现有映射。
-旧工程默认全部为实验数据。来源类型独立于 raw/calibrated/processed 通道阶段。
-
-1. 在工程页把“新增数据来源”选为“理论数据”，再点“添加来源”。列表清楚标记类型；
-   待解析文件可修改来源类型，已解析文件需移除后重新导入才能更改类型。
-2. 在现有推力、燃烧室压力、温度页面的“显示”组直接选择理论曲线可见性。
-   数据浏览器也可叠加相同物理量的理论时间曲线。理论图例带“理论”前缀并使用虚线。
-3. 输入正负“显示时间平移（秒）”或拖动滑条，所有页面和理论曲线共用这个偏移。
-   “对齐试车起点”按当前实验起点（包括人工修改）对齐理论独立识别的起点。重复点击
-   不累计偏移，对齐后仍可拖动微调；只显示实验区间，不额外绘制理论区间。
-4. “恢复原时序”恢复原本时间显示；“重置图表”可显示叠加后的完整时间范围。
-   全部理论曲线共享对齐，实验曲线不移动。保存/重开工程保留类型、偏移、区间和可见性。
-
-5. 各页原有结果区的“指标来源”只显示“实验”和“理论”，分别保留各自参数和结果。
-   右侧不再单独显示理论通道/区间面板和计算按钮。“指标来源”简洁放在原结果框内。
-   通过左侧已有理论曲线选择确定理论来源/通道，再点击顶部统一“计算分析结果”。
-   已保存的各源原时钟区间和温度多通道选集继续保留，新来源默认计算完整记录。
-   推力复用现有总冲、比冲等指标；室压、温度及数据浏览器复用已有适用统计。
-6. 推进剂质量、发动机总质量、直径和长度统一在工程设置中输入，理论读取实验发动机参数；
-   修改后分别点击计算更新推力结果。比冲仅使用推进剂质量，总质量不替代推进剂质量。
-   未指定或非正质量时比冲不可用，其他指标仍可计算。理论默认使用工程单位通道、+1
-   方向和不启用修正，不套用实验自重补偿。右侧只保留结果来源切换和原有指标；缺少有效输入时明确显示不可计算。
-   旧理论参数与实验冲突时以实验为准，旧值保留为追溯记录；实验缺失的参数保持不可用。
-   旧来源的区间、方向或修正继续独立，有冲突时载入给出一次非阻塞说明。
-   计算区间采用科学工程时间，与显示平移/归零分开。显示变换不改变积分及峰值时间。
-7. 保存/重开保留来源区间、处理参数和完成状态；已完成结果按有效配置重新计算，未计算草稿
-   不自动推进。结果在同一位置切换显示，不覆盖主要实验结果，不增加数值比较页面。
-
-只有物理量和物理单位兼容的曲线能共用坐标轴；换算使用现有单位系统，包括 K/°C。
-单位冲突、未知物理量、raw/count/ADC 或无有效点的曲线显示不可用原因。
-保留原采样点、时间间距和 NaN 缺口，不插值、不重采样、不改原文件或原时间数组。
-工程还保存各时间曲线页的 X/Y 图轴视窗和自动范围开关（包含关联、多图轴）。重开先恢复
-曲线和显示平移，再恢复视窗；切换页面保留缩放，不重复应用时间偏移。旧工程无此字段时
-使用默认视图。“重置图表”仍主动恢复完整可见数据范围，原时间和计算区间不受影响。
-
-添加/删除理论来源、隐藏/对齐曲线或校准理论来源不改变实验主通道、分段、自重补偿、
-极性、计算结果及导出选择。正式导出继续使用实验数据。无实验来源时可先查看理论曲线，
-但不能据此启用实验计算。没有残差、MAE/RMSE、自动拟合、大模型分析或发动机优化功能。
-
-若缺少理论数据、实验试车区间或有效理论区间，软件会提示原因，不擅自移动曲线。
-
-详细说明：docs/Theoretical_Curves.md
-
-同一个物理文件也可分别作为实验和理论来源导入，不需要复制文件：切换“新增数据来源”后
-再次选择该文件。两种来源保有独立 Source ID、映射和显示状态；只删除选中的那一种来源。
-同一文件、同一来源类型仍去重。复核说明及明早的最短验收步骤见 docs/Delivery_Review_0_1_0.md。
-
-0.1.0 便携包的实际验证范围、尚未完成的用户文件验收及最短操作步骤见
-docs/Portable_Acceptance_0_1_0.md。
-
-共享滑条、双来源起点对齐和本轮候选验证的最新说明见 docs/Alignment_Acceptance_0_1_0.md。
-
-导入状态修正（0.1.0 候选）
--------------------------
-顶部导入和工程页添加来源都会追加文件；只有明确选择新建工程才清空当前工程。
-取消文件选择或重复选择相同路径、相同来源类型，不会清空既有主通道和计算结果。
-每个新表格独立识别时间列，不能沿用上一文件的列位置；批量添加表格后，逐项确认各自
-映射并导入。已保存来源的映射属于该来源，删除后重新添加会重新开始识别。
-第二个文件误选实验类型，也会保留已有实验主通道；需要更换主通道时请明确选择。
-两列原始 TXT 若出现多个兼容解析器，仍需明确选择 TR_F、TR_P 或 TR_T。
-详细修复和验证记录：docs/Import_Acceptance_0_1_0.md。
-
-
-图表工具中文模式（0.1.0 候选）
-----------------------------------------
-图表右键菜单、X/Y 轴设置、显示变换、降采样、网格、数据点和当前图导出窗口现在跟随
-软件语言切换。导出格式与参数也有中文显示；内部参数名、枚举值、单位和数值保持不变。
-CSV 的独立 X/Y 列保留每条曲线的采样时间；共享 X 列仅按行合并 Y，不作时间对齐。
-当前图 CSV 包含显示单位和理论平移，但不含绘图库 FFT/对数/降采样，与顶部正式 CSV 不同。
-系统原生选择器、打印界面和外部软件仍可能跟随系统/软件自身语言。当前 Qt 6.11.1 的原版
-pyqtgraph SVG 渲染器把闭合命令 Z 当作坐标而失败；应用内兼容适配现保留该命令，沿用
-原有视窗裁剪、变换和参数。详细验证及仍未定位的原生异常见 docs/Plot_SVG_Acceptance_0_1_0.md。
-详情和第三方许可见 docs/I18N.md 与 docs/third_party/pyqtgraph_LICENSE.txt。
-
-许可材料收尾与源码交付验证：docs/License_Delivery_Closeout_0_1_0.md。
+  .\.venv\Scripts\python.exe main.py
+验证：
+  .\.venv\Scripts\python.exe -m pytest
+  .\.venv\Scripts\python.exe -m ruff check .
+
+本次已验收程序使用 Python 3.14.0、Qt/PySide6 6.11.1、pyqtgraph 0.14.0、NumPy 2.5.2、
+SciPy 1.18.0、PyInstaller 6.22.0。来源包 BUILD_DEPENDENCIES.json 保存实际版本。
+打包.bat 在 pytest 或 Ruff 失败时停止，不继续 PyInstaller。
+
+验证记录：348 项 pytest、57 项针对性检查、源码/冻结 GUI 各 244 项、中英文启动及
+仓库外解压启动通过；真实 TEST_SD 与其合成参考的全段/工作区间 FFT 已逐点比对。
+这些验证对应已记录的数据与软件路径，不构成传感器、发动机或现场硬件认证。
+Windows IME 人工专项验收未运行。完整边界见 docs/FFT_Restored_Acceptance_0_1_0.md。
+
+
+English quick start
+-------------------
+Underline RETLDC is an offline rocket-engine test-log decoder and calculator.
+For Windows, download the matching Portable ZIP from Releases when the v0.1.0 assets
+are available, verify SHA256SUMS.txt, extract the complete folder and run
+Underline_RETLDC.exe. Python is not required for the portable application.
+
+Experimental and theoretical sources share the existing parsers and mappings.
+Theory overlays and its results live in the existing workspaces. Display alignment
+never changes scientific timestamps; engine physical parameters come from the
+Project model. Formal unified exports continue to use experimental primary inputs.
+FFT retains linear interpolation for nonuniform clocks and displays |rFFT|/N,
+not PSD or doubled one-sided amplitude. Inspect gap warnings and prefer a continuous
+active-test interval. Source files and raw arrays remain unchanged.
+
+Application code is Apache-2.0; third-party licenses remain in effect. Distribute the
+matching Corresponding_Sources ZIP and checksums with the portable archive.
+The repository/tag push does not by itself create a GitHub Release or upload assets.

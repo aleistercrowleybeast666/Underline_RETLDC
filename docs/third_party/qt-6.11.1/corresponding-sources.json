@@ -13,7 +13,7 @@
       "body_checksum_verified": true,
       "unpacked": false,
       "archive_member": "upstream/qt-6.11.1/qtbase-everywhere-src-6.11.1.tar.xz",
-      "local_container": "dist/Underline_RETLDC_0_1_0_Corresponding_Sources.zip"
+      "local_container": "dist/release_0_1_0/Underline_RETLDC_0_1_0_Corresponding_Sources.zip"
     },
     {
       "component": "qtsvg",
@@ -26,7 +26,7 @@
       "body_checksum_verified": true,
       "unpacked": false,
       "archive_member": "upstream/qt-6.11.1/qtsvg-everywhere-src-6.11.1.tar.xz",
-      "local_container": "dist/Underline_RETLDC_0_1_0_Corresponding_Sources.zip"
+      "local_container": "dist/release_0_1_0/Underline_RETLDC_0_1_0_Corresponding_Sources.zip"
     },
     {
       "component": "qtimageformats",
@@ -39,7 +39,7 @@
       "body_checksum_verified": true,
       "unpacked": false,
       "archive_member": "upstream/qt-6.11.1/qtimageformats-everywhere-src-6.11.1.tar.xz",
-      "local_container": "dist/Underline_RETLDC_0_1_0_Corresponding_Sources.zip"
+      "local_container": "dist/release_0_1_0/Underline_RETLDC_0_1_0_Corresponding_Sources.zip"
     },
     {
       "component": "qttranslations",
@@ -52,7 +52,7 @@
       "body_checksum_verified": true,
       "unpacked": false,
       "archive_member": "upstream/qt-6.11.1/qttranslations-everywhere-src-6.11.1.tar.xz",
-      "local_container": "dist/Underline_RETLDC_0_1_0_Corresponding_Sources.zip"
+      "local_container": "dist/release_0_1_0/Underline_RETLDC_0_1_0_Corresponding_Sources.zip"
     },
     {
       "component": "pyside-setup",
@@ -65,7 +65,7 @@
       "body_checksum_verified": true,
       "unpacked": false,
       "archive_member": "upstream/qt-6.11.1/pyside-setup-everywhere-src-6.11.1.tar.xz",
-      "local_container": "dist/Underline_RETLDC_0_1_0_Corresponding_Sources.zip"
+      "local_container": "dist/release_0_1_0/Underline_RETLDC_0_1_0_Corresponding_Sources.zip"
     }
   ],
   "full_sdk_unpacked": false,
@@ -79,7 +79,7 @@
     "commit": "3a9f6283f435f90ca1a2901be39ec9d629c95bb6",
     "bytes": 10656080,
     "sha256": "1687ef183c5b33160580c16960f22d08a5baaf8268ef92174e4765dab190339a",
-    "local_container": "dist/Underline_RETLDC_0_1_0_Corresponding_Sources.zip",
+    "local_container": "dist/release_0_1_0/Underline_RETLDC_0_1_0_Corresponding_Sources.zip",
     "archive_member": "upstream/mesa/mesa-11.2.2-source.tar.gz"
   },
   "retention": "Single copy as original archive members in source companion ZIP after validation"

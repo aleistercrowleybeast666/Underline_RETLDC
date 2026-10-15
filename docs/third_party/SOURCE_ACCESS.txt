@@ -1,6 +1,6 @@
 Underline RETLDC 0.1.0 source companion
 ======================================
-Local asset: dist/Underline_RETLDC_0_1_0_Corresponding_Sources.zip
+Local asset: dist/release_0_1_0/Underline_RETLDC_0_1_0_Corresponding_Sources.zip
 Contains an exact tracked application-source snapshot and original Qt/PySide
 6.11.1 archives plus Mesa 11.2.2 source and license/reassembly evidence.
 SOURCE_MANIFEST.json records original member hashes and version provenance.
@@ -12,8 +12,8 @@ drafts are excluded. If application code changes, regenerate this companion
 and checksums before distribution. Local candidates still need user acceptance.
 
 Proposed public delivery (not yet uploaded): the same GitHub v0.1.0 Release as
-the final accepted binary asset, with SHA256SUMS.txt. The final binary filename
-is not settled; historical portable assets are preserved.
+Underline_RETLDC_0_1_0_Windows_Portable.zip, with SHA256SUMS.txt.
+The accepted executable is unchanged; historical portable assets are preserved.
 Planned source asset URL:
 https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/download/v0.1.0/Underline_RETLDC_0_1_0_Corresponding_Sources.zip
 

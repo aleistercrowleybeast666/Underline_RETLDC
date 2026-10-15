@@ -12,7 +12,9 @@ Plugin API: 1
 The directory name is never versioned. Application versions, Git tags, and schema versions are
 independent identifiers.
 
-Version `0.1.0` is being prepared for the 2026-10-15 target release; it has not been published.
+Version `0.1.0` has passed local user acceptance. The release handoff prepares matching portable,
+source and checksum assets and pushes the source/tag; GitHub Release creation and asset upload
+are separate user actions and have not been performed by this handoff.
 Application version numbers never alter Project, Calibration, Analysis,
 or Plugin API schema generations.
 
@@ -36,13 +38,18 @@ QSettings `ui/theme` without changing any science or Project schema version.
 
 - Explicit experimental/theoretical Source origin; old Projects default to experimental.
 - Shared Parsers, same-page theory overlays, visibility, distinct colors and dashed legends.
-- Compatible Quantity/Unit conversions and source-only signed shifts, start zeroing and reset.
+- Compatible Quantity/Unit conversions, shared theoretical display shifts, independent test-start
+  alignment and original-timing reset, without changing scientific timestamps.
 - Persistent origin, alignment and visibility; experimental results survive theory operations.
 - Independent Source calculations in the existing result panels, with separate intervals,
   processing parameters, explicit mass provenance and reproducible completion state. New GUI
-   theory calculations share the single Project mass input; legacy source values remain intact.
-   The result area retains only source/channel/interval controls, calculation and results.
+  theory calculations share the experimental Project motor parameters and propellant mass.
+  The result area retains one compact metric-source selector and results; the toolbar dispatches
+  calculation. Saved source Channel/interval configuration remains independent and reproducible.
 - Original sampling and NaN gaps preserved. No residuals, fitting or motor optimization.
+- Shared ACTIVE_TEST display/transform scope, persisted FFT/log/view state and compact notices.
+  Interactive FFT retains pyqtgraph's same-count interpolation of finite nonuniform clocks and
+  displays `abs(rFFT/N)`, with long-gap limitations disclosed. Formal exports remain experimental.
 - Current visible window title is Underline RETLDC — 0.1.0. Plugin API and schemas stay unchanged.
 
 ## 0.0.4 changes
@@ -103,3 +110,9 @@ When the Windows portable release is produced, the release archive name is
 `Underline_RETLDC_0_1_0_Windows_Portable.zip`; it contains the stable `Underline_RETLDC/` folder
 and `Underline_RETLDC.exe`. The archive/version naming does not rename the repository directory or
 the executable inside the portable folder.
+
+The locally staged formal assets reside under `dist/release_0_1_0/` to preserve older candidates
+with colliding basenames. The source companion is
+`Underline_RETLDC_0_1_0_Corresponding_Sources.zip`; `SHA256SUMS.txt` covers both archives.
+The executable retains the accepted FFT_Restored bytes; release-only documentation/metadata is
+repacked and reverified. See `Release_Handoff_0_1_0.md` and `Release_Notes_0_1_0.md`.
