@@ -12,8 +12,11 @@ https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.0.4
 公开下载入口：https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases
 最新本地 PlotSVG 候选仍待用户验收，不能把内部候选当作已发布版本。
 
-项目自身许可证尚未指定，不能从第三方 MIT/LGPL 文本推定项目授权。第三方声明见
-THIRD_PARTY_NOTICES.txt；待确认的许可选择与打包影响见 docs/Licensing_Review_0_1_0.md。
+原创项目代码采用 Apache License 2.0，完整文本见根目录 LICENSE，与 SilverStar 相同。
+暂不新增个人版权行；LICENSE 附录的 Copyright [yyyy] [name of copyright owner] 是标准示例，
+不是本项目的实际署名。第三方组件及保留上游许可的派生代码不由此重新授权，例如
+pyqtgraph SVG 适配保留 MIT；Qt/PySide 的 LGPL 等义务继续适用。第三方声明见
+THIRD_PARTY_NOTICES.txt，发布材料核查见 docs/Licensing_Review_0_1_0.md。
 
 
 一、第一次使用

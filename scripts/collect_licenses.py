@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import sys
+import tomllib
 from importlib.metadata import distribution, packages_distributions
 from pathlib import Path
 from shutil import copyfile
@@ -93,14 +94,16 @@ def Licenses_Collect(output: Path) -> dict[str, object]:
             application_license_files.append(name)
     bundled_qt = output / "_internal" / "PySide6"
     manifest: dict[str, object] = {
-        "scope": "Upstream documents only; no UNDERLINE license selection or compliance approval",
+        "scope": "Upstream documents; the project license does not replace dependency obligations",
+        "application_license": tomllib.loads(
+            (repository / "pyproject.toml").read_text(encoding="utf-8"),
+        )["project"].get("license"),
         "application_legal_files": application_license_files,
         "distributions": records,
         "frozen_python_roots": frozen_roots,
         "qt_virtual_keyboard_present": (bundled_qt / "Qt6VirtualKeyboard.dll").is_file(),
         "unresolved": [
-            "Application license and copyright holder require owner decision",
-            "Qt licensing route, matching sources and complete nested attributions need review",
+            "Matching Qt sources and build-concluded nested attributions need review",
             "Copying license texts alone does not authorize a public release",
         ],
     }
@@ -118,7 +121,7 @@ def main() -> None:
     result = Licenses_Collect(args.output)
     count = sum(len(item["files"]) for item in result["distributions"])
     print(f"Copied {count} upstream license documents; see docs/third_party/runtime/manifest.json")
-    print("Application/Qt release licensing decisions remain separate from document collection.")
+    print("Copying notices does not complete Qt corresponding-source or release obligations.")
 
 
 if __name__ == "__main__":

@@ -1,2 +1,4 @@
 *.bat text eol=crlf
 docs/third_party/upstream/*.txt -text
+docs/third_party/qt-6.11.1/** -text
+LICENSE -text

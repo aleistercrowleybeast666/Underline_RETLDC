@@ -1,9 +1,11 @@
 Underline RETLDC — third-party software notices
 ==============================================
 
-This notice describes third-party components. It does not license UNDERLINE's own
-code. No application-wide license has yet been selected in this repository.
-Do not infer an UNDERLINE MIT, GPL, LGPL or commercial license from dependency terms.
+Original UNDERLINE project code is licensed under Apache License 2.0; see the root
+LICENSE and the scope statement in README.txt. No personal copyright line has
+been added. The standard appendix example is not a project copyright assertion.
+This notice preserves third-party terms: the project license does not relicense
+Qt/PySide, pyqtgraph-derived code or other dependencies.
 
 The Windows portable application includes Python, NumPy, SciPy, pyqtgraph,
 PySide6/Qt and Shiboken. Their copyright notices and exact license documents are
@@ -25,9 +27,9 @@ hashes in docs/third_party/runtime/manifest.json.
   its input-method plugin. Its published options are GPLv3 or commercial. New
   build outputs exclude these unused optional files; the original is preserved.
   The module must not be described as covered by LGPL alone.
-- OpenSSL: the observed candidate includes versions 3.0.18 and 3.6.4. The retained
-  OpenSSL 3.0.18 Apache-2.0 text does not establish that all notices/source details
-  of the second binary or Qt's other nested components have been verified.
+- OpenSSL: the observed candidate includes versions 3.0.18 and 3.6.4; both exact
+  upstream LICENSE texts are retained. This does not establish that all nested
+  notices or supplier build details have been verified.
 - PyInstaller: build/bootloader notices are included for reference. Its bootloader
   exception does not choose an application license or replace dependency duties.
 - The frozen archive also contains pytest, pluggy, iniconfig, colorama, packaging,
@@ -49,3 +51,8 @@ https://www.qt.io/development/open-source-lgpl-obligations
 https://pyinstaller.org/en/stable/license.html
 
 Current review, decisions and package impact: docs/Licensing_Review_0_1_0.md
+Pinned source-version attribution catalogue: docs/third_party/qt-6.11.1/
+Corresponding-source plan: docs/Qt_Corresponding_Source_0_1_0.md
+Dynamic-library/re-freezing instructions: docs/Qt_Library_Replacement_0_1_0.md
+The source catalogue is not a build-concluded SBOM. Source archives were not
+downloaded or provided merely by listing their URLs and advertised checksums.

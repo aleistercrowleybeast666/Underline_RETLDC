@@ -18,5 +18,11 @@
     "source_byte_offset": 10681,
     "sha256": "e57f1c320b8cf8798a7d2ff83a6f9e06a33a03585f6e065fea97f1d86db84052",
     "bytes": 35150
+  },
+  {
+    "path": "OpenSSL-3.6.4-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/openssl/openssl/openssl-3.6.4/LICENSE.txt",
+    "sha256": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a",
+    "bytes": 10175
   }
 ]

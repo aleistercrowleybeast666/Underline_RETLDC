@@ -1,11 +1,13 @@
 [build-system]
-requires = ["setuptools>=75"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "underline-retldc"
 version = "0.1.0"
 description = "Offline rocket-engine test log decoding and computation platform"
+license = "Apache-2.0"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.txt", "docs/third_party/pyqtgraph_LICENSE.txt"]
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.0",

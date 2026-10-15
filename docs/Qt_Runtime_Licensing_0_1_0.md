@@ -12,7 +12,9 @@ EXE SHA-256 为 `1db99b981f4000c5fff0afef3a422ea764710eee3bfe836f230228cdf6a6a81
 2. 保留 Virtual Keyboard 时，需满足其 GPLv3 路线，或有适用的 Qt 商业授权。
    两者不能仅靠拷贝 LGPL 文本替代，也不能据此默认替 UNDERLINE 选 GPL。
 
-两条路线仍需项目许可证/署名决定；本轮只实施路线 1 的可验证打包排除部分。
+项目自身许可随后已按用户决定采用 Apache-2.0，暂不新增个人版权行。当前实施路线 1
+的打包排除部分；剩余 Qt 对应源码等材料见
+[准备与候选计划](Qt_Corresponding_Source_0_1_0.md)，不能由项目 Apache 取代。
 
 ## 实物依赖
 
@@ -67,4 +69,5 @@ Qt、PDF 等更深层依赖仍按总核查报告待补，不能将此结论扩�
 既往首次 `0xC0000005` 的根因仍未定位，本轮正常退出不构成根治证明。
 
 过程证据：`qt-license-audit.json`、新目录 `PACKAGING_EXCLUSIONS.json`、
-`docs/third_party/runtime/manifest.json`。不推送、不打 tag、不发布，项目自身 LICENSE 仍待确认。
+`docs/third_party/runtime/manifest.json`。不推送、不打 tag、不发布。项目自身 Apache-2.0
+已确认；约 661.4 MiB 源码提供方案及精确供应商构建材料仍待落实。

@@ -3,6 +3,11 @@
 核查日期：2026-10-15。本轮仅修改许可、说明和打包时许可文件的收集，不改变应用功能。
 最新 PlotSVG 仍为待用户验收候选；没有用户已验收该候选的结论。
 
+最新用户决定已落实：原创项目代码采用与 SilverStar 相同的 **Apache-2.0**。根 LICENSE
+是完整标准文本，Git blob 同为 `d645695673349e3947e8e5ae42332d0ac3164cd7`。
+README 限定原创代码范围；暂不新增个人版权行，不制造空白项目署名。附录示例不是实际
+署名，第三方声明不删改。项目元数据同步 SPDX 表达式；这不覆盖 Qt/PySide 的 LGPL。
+
 ## GitHub 与本地
 
 - GitHub `main`：`3c4e436cc0072c0a3f33c068d3a9bb6df1a43fa7`，与本地 `main` 一致。
@@ -10,10 +15,10 @@
   涉及 70 个文件；这批本地功能和验收记录尚未出现在 GitHub main。
 - 最新公开 Release 是 [v0.0.4](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.0.4)，
   发布于 2026-09-11。没有公开 v0.1.0 Release。
-- 本地/远端根目录都没有 LICENSE/COPYING/NOTICE，pyproject 没有项目 license 字段。
+- 初始审计时，本地/远端根目录都没有 LICENSE/COPYING/NOTICE，pyproject 没有项目 license 字段。
   所有可见本地分支历史未发现项目自身许可证；唯一既有许可文本是 pyqtgraph 的 MIT。
 - `.agents` 和已知本机 `memory_summary.md` 路径不存在；个人上下文服务不可用。
-  因此没有可据以沿用的、已确认的 UNDERLINE 项目授权选择。
+  当时没有可据以沿用的 UNDERLINE 项目授权选择；后续用户已明确选择并落实如上。
 
 以上为只读核查；未更改远端 main、tag、Release 或下载资产。
 
@@ -34,10 +39,10 @@ GNU LGPLv3、GPLv3 和 OpenSSL 3.0.18 Apache-2.0 文本保存在 `docs/third_par
 出处及哈希见 `sources.json`。GPLv3 原文取自本机 NumPy 2.5.2 许可文件的完整末段；
 保留正文和附录，未把 NumPy/GCC 的许可扩展为项目许可。
 
-## 不能由本轮代选的事项
+## 已落实的选择与仍待完成的材料
 
-1. **项目自身许可证及署名。** 需权利人明确许可证名称/版本、适用范围和署名主体；
-   不能因源码公开或存在第三方 MIT 就替项目选 MIT/GPL，也不生成占位 LICENSE。
+1. **项目自身许可证及署名。** 已按用户决定落实 Apache-2.0 和原创代码范围，暂不新增
+   个人版权行；没有把标准附录占位符或第三方机构当作项目署名。此项不再作为待选许可。
 2. **Qt 分发路线和 Virtual Keyboard。** 当前候选实际包含 `Qt6VirtualKeyboard.dll` 和
    `plugins/platforminputcontexts/qtvirtualkeyboardplugin.dll`。
    [Qt 6.11 官方说明](https://doc.qt.io/qt-6.11/qtvirtualkeyboard-index.html)将其列为
@@ -47,9 +52,9 @@ GNU LGPLv3、GPLv3 和 OpenSSL 3.0.18 Apache-2.0 文本保存在 `docs/third_par
 3. **所选 Qt 路线的实际材料。** LGPL 路线涉及对应库源码、安装/替换信息等，单有文本
    和上游网址不足以宣称完成。Qt PDF、图像插件、字体等嵌套归属需按实带二进制版本
    核对；当前清单不是完整 Qt SBOM 或许可合规证明。
-4. 当前包另含 OpenSSL 3.0.18 与 3.6.4 两组二进制，以及 Windows/VC 运行库。已补的
-   OpenSSL 文本属于已核实的 3.0.18 来源；第二组及其它嵌套 notices、运行库再分发材料
-   仍待核实。不存在的 NOTICE 下载路径未被当作许可文件或成功证据。
+4. 当前包另含 OpenSSL 3.0.18 与 3.6.4 两组二进制，以及 Windows/VC 运行库。两种精确
+   OpenSSL 版本的上游 LICENSE 已保留；其它嵌套归属和运行库再分发材料仍需按供应商
+   配置核对。不存在的 NOTICE 下载路径未被当作许可文件或成功证据。
 
 Qt 主许可及其嵌套组件各有条件，见[官方许可说明](https://doc.qt.io/qt-6/licensing.html)、
 [第三方列表](https://doc.qt.io/qt-6.11/licenses-used-in-qt.html)和
@@ -83,4 +88,9 @@ PlotSVG EXE 与 ZIP 哈希仍与上一轮一致。没有运行新 PyInstaller �
 
 剩余 Qt 模块与实际冻结 Python 依赖的核对、可选许可路线及实物证据见
 [Qt 运行依赖核查](Qt_Runtime_Licensing_0_1_0.md)。这是限定模块范围的审计，仍不宣称
-完整嵌套 SBOM、对应源码材料或项目自身许可已经解决。现有 PlotSVG 保持原字节。
+完整嵌套 SBOM、对应源码材料已经解决。现有 PlotSVG 保持原字节。
+
+项目自身许可现已按上述用户新决定落实；Qt/PySide 对应源码的精确版本、约 661.4 MiB
+归档方案、归属快照和当前最小阻塞见
+[对应源码准备](Qt_Corresponding_Source_0_1_0.md)。未下载大型归档或 SDK，不把链接清单
+当成已经履行源码交付义务。
