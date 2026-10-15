@@ -10,7 +10,7 @@ Underline RETLDC 0.1.0 使用说明
 版本与下载：本分支为 0.1.0 开发候选，尚未发布。GitHub 最新公开版为 v0.0.4：
 https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.0.4
 公开下载入口：https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases
-最新本地 PlotSVG 候选仍待用户验收，不能把内部候选当作已发布版本。
+最新本地候选为 FFT_Apache，仍待用户验收；旧 PlotSVG 保留，均不是已发布版本。
 后续 FFT/工作区间与 Apache 许可候选另存为 FFT_Apache，不覆盖 PlotSVG；对应源码
 位于 dist/Underline_RETLDC_0_1_0_Qt_Sources（五份官方 6.11.1 原归档，共 71.21 MiB）。
 
@@ -25,7 +25,7 @@ THIRD_PARTY_NOTICES.txt，发布材料核查见 docs/Licensing_Review_0_1_0.md�
 --------------
 
 便携包用户：公开 v0.0.4 使用 Underline_RETLDC_0_0_4_Windows_Portable.zip；本地待验收候选为
-dist/Underline_RETLDC_0_1_0_PlotSVG_Windows_Portable.zip。完整解压所选 ZIP，在解压得到的
+dist/Underline_RETLDC_0_1_0_FFT_Apache_Windows_Portable.zip。完整解压所选 ZIP，在解压得到的
 Underline_RETLDC 文件夹中双击 Underline_RETLDC.exe；无需安装 Python。保留整个文件夹，
 不要单独移动 EXE。以下 Python 步骤仅用于从源码运行。
 
