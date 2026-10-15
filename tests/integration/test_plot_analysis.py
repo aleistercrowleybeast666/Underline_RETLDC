@@ -196,14 +196,80 @@ def test_scoped_fft_ignores_bad_values_outside_interval(plot) -> None:
 @pytest.mark.parametrize("time,values,reason", [
     ([0], [1], "samples"),
     ([0, 1, 2], [1, np.nan, 1], "gaps"),
-    ([0, .9, 2], [1, 2, 1], "nonuniform"),
     ([0, 0, 1], [1, 2, 1], "timestamps"),
 ])
-def test_fft_rejects_invalid_input_without_interpolation(plot, time, values, reason) -> None:
+def test_fft_rejects_invalid_input_without_bridging_gaps(plot, time, values, reason) -> None:
     curve = plot.add_series(np.array(time), np.array(values), name="invalid")
     plot.plot_widget.getPlotItem().ctrl.fftCheck.setChecked(True)
     assert curve.analysis_notice == reason
     assert curve.getData() == (None, None)
-    assert plot.plot_widget.getPlotItem().titleLabel.text
+    assert not plot.plot_widget.getPlotItem().titleLabel.text
+    assert plot.analysis_status.isVisible()
+    assert curve.name() in plot.analysis_status.toolTip()
     plot.plot_widget.getPlotItem().ctrl.fftCheck.setChecked(False)
     np.testing.assert_array_equal(curve.getData()[1], values)
+
+
+def test_jittered_fft_crops_first_and_status_does_not_squeeze_plot(plot) -> None:
+    time = np.arange(4000) / 1000
+    time += .0001 * np.sin(2 * np.pi * 137 * time)
+    time[100] = time[99] + .000001  # Unusable timing outside ACTIVE_TEST.
+    values = 2 + 6 * np.cos(2 * np.pi * 20 * time)
+    originals = time.copy(), values.copy()
+    plot.set_regions({"active_test": (2, time[-1])})
+    curves = [plot.add_series(
+        time + shift, values * scale, name=name, scientific_time=time,
+        theoretical=theory, active_interval=(2, time[-1]),
+    ) for shift, scale, name, theory in [
+        (0, 1, "raw", False), (0, .001, "corrected [kN]", False),
+        (-20, 1, "theory " + "long source name " * 20, True),
+    ]]
+    control = plot.plot_widget.getPlotItem().ctrl
+    plot.analysis_scope_check.setChecked(True)
+    control.fftCheck.setChecked(True)
+    QApplication.processEvents()
+    for curve, scale in zip(curves, (1, .001, 1), strict=True):
+        frequency, magnitude = curve.getData()
+        peak = np.argmax(magnitude[1:]) + 1
+        assert frequency[peak] == pytest.approx(20, abs=.02)
+        assert magnitude[peak] == pytest.approx(3 * scale, rel=.01)
+        assert magnitude[0] == pytest.approx(2 * scale, rel=.01)
+        assert curve.analysis_notice == "resampled"
+    assert plot.analysis_status.isVisible()
+    assert len(plot.analysis_status.text()) < 100
+    assert not plot.plot_widget.getPlotItem().titleLabel.isVisible()
+    assert plot.plot_widget.height() > plot.height() * .8
+    plot.analysis_status.setChecked(True)
+    assert plot._analysis_details_scroll.isVisible()
+    control.subtractMeanCheck.setChecked(True)
+    selected = time >= 2
+    centered = values[selected] - np.mean(values[selected])
+    grid = np.linspace(time[selected][0], time[-1], np.count_nonzero(selected))
+    expected = np.abs(np.fft.rfft(np.interp(grid, time[selected], centered)) / len(grid))
+    np.testing.assert_allclose(curves[0].getData()[1], expected, atol=1e-14)
+    plot._translations.set_locale("zh_CN")
+    assert "重采样" in plot.analysis_status.text()
+    assert "线性" in plot.analysis_status.toolTip()
+    control.fftCheck.setChecked(False)
+    control.subtractMeanCheck.setChecked(False)
+    plot.analysis_scope_check.setChecked(False)
+    assert not plot.analysis_status.isVisible()
+    np.testing.assert_array_equal(time, originals[0])
+    np.testing.assert_array_equal(values, originals[1])
+    np.testing.assert_array_equal(curves[0].getOriginalDataset()[0], time)
+    np.testing.assert_array_equal(curves[0].getOriginalDataset()[1], values)
+
+
+def test_clock_gaps_use_original_native_fft_with_visible_limitation(plot) -> None:
+    time = np.array([0., .01, .02, .08, .09, .1])
+    values = np.array([1., 2., 3., 2., 1., 0.])
+    curve = plot.add_series(time, values, name="clock gap")
+    plot.plot_widget.getPlotItem().ctrl.fftCheck.setChecked(True)
+    grid = np.linspace(time[0], time[-1], len(time))
+    expected = np.abs(np.fft.rfft(np.interp(grid, time, values)) / len(time))
+    np.testing.assert_allclose(curve.getData()[1], expected)
+    assert curve.analysis_notice == "resampled_gaps"
+    assert "gap" in plot.analysis_status.toolTip().lower()
+    assert "0 unavailable" in plot.analysis_status.text()
+    np.testing.assert_array_equal(curve.getOriginalDataset()[0], time)
+    np.testing.assert_array_equal(curve.getOriginalDataset()[1], values)

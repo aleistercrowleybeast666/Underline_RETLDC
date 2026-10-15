@@ -127,6 +127,10 @@ to expose a plugin; extend a general schema/role/registry capability instead.
 
 - Calibration and baseline compensation are distinct stages.
 - Use actual timestamps and trapezoidal integration.
+- Interactive FFT retains pyqtgraph's existing same-point-count linear interpolation for finite,
+  increasing nonuniform clocks, after interval selection. Disclose interpolation and long-gap
+  spectral limitations. Reject nonfinite/duplicate/nonmonotonic clocks and missing values;
+  preserve original samples, scientific calculations, and formal exports.
 - `g0` is exactly `9.80665 m/s²`.
 - Specific impulse uses propellant mass only. Unknown propellant mass means unavailable Isp.
 - Automatic test-interval detection is advisory. Users retain final interval control.

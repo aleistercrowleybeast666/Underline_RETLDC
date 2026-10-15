@@ -566,7 +566,6 @@
   "plot.analysis.samples": "Analysis requires at least two samples in the selected interval",
   "plot.analysis.timestamps": "Analysis requires finite, strictly increasing timestamps",
   "plot.analysis.gaps": "FFT unavailable: selected data contains gaps or nonfinite values",
-  "plot.analysis.nonuniform": "FFT unavailable: timestamps are not uniformly spaced; no resampling applied",
   "plot.qt.form.show_x_grid": "Show X Grid",
   "plot.qt.form.show_y_grid": "Show Y Grid",
   "plot.qt.form.subsample": "Subsample",
@@ -608,5 +607,8 @@
   "plot.qt.plotexport.true": "True",
   "plot.export.csv_tip": "Exports the arrays supplied to the plot (including display units and theory shifts), before analysis-interval cropping and pyqtgraph FFT/log/downsampling. Separate X/Y pairs retain each curve’s sample times. Shared X joins Y columns by row; it does not time-align or resample curves.",
   "plot.export.svg_stroke_tip": "When disabled, strokes retain their screen width regardless of zoom or scaling.",
-  "plot.qt.graphicsscene.export": "Export..."
+  "plot.qt.graphicsscene.export": "Export...",
+  "plot.analysis.resampled": "FFT uses the original linear interpolation to N uniform points over the measured duration. Source data is unchanged; selected mean subtraction precedes interpolation.",
+  "plot.analysis.status": "Plot analysis: {resampled} resampled, {unavailable} unavailable — details",
+  "plot.analysis.resampled_gaps": "FFT uses the original linear interpolation across clock gaps (an interval exceeds twice the median). This spectrum is only an interpolated reference; prefer a continuous test interval. Source data is unchanged."
 }

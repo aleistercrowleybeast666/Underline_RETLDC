@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 from pyqtgraph.graphicsItems.PlotDataItem import PlotDataset
 from PySide6.QtCore import Signal
 
-from underline_retldc.core.plot_analysis import PlotAnalysis_Select
+from underline_retldc.core.plot_analysis import PlotAnalysis_FFTNotice, PlotAnalysis_Select
 
 
 class AnalysisPlotDataItem(pg.PlotDataItem):
@@ -51,13 +51,17 @@ class AnalysisPlotDataItem(pg.PlotDataItem):
             self.scientific_time, original.y, active_only=self.active_only,
             interval=self.analysis_interval, fft=self.opts["fftMode"],
         )
-        self._notice_set(notice)
         if notice:
+            self._notice_set(notice)
             return None
         # Only native display mapping sees this selected input. The original dataset
         # is restored even on errors; CSVExporter.getOriginalDataset stays full-record.
         time = self.scientific_time if self.opts["fftMode"] else original.x
-        self._dataset = PlotDataset(time[mask], original.y[mask])
+        selected_time, selected_values = time[mask], original.y[mask]
+        if self.opts["fftMode"]:
+            notice = PlotAnalysis_FFTNotice(selected_time)
+        self._notice_set(notice)
+        self._dataset = PlotDataset(selected_time, selected_values)
         other_modes = self.opts["derivativeMode"], self.opts["phasemapMode"]
         if self.opts["fftMode"]:
             # Native mappings are not composable: derivative/phase overwrite FFT

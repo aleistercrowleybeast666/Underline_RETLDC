@@ -12,7 +12,7 @@ def PlotAnalysis_Select(
     interval: tuple[float, float] | None,
     fft: bool,
 ) -> tuple[NDArray[np.bool_], str]:
-    """Select existing samples in scientific time; never interpolate or bridge gaps."""
+    """Select existing samples in scientific time before any display transform."""
     mask = np.ones(time.shape, dtype=bool)
     if fft and not np.all(np.isfinite(time)):
         # A missing clock value cannot safely be assigned to either side of a cut.
@@ -31,11 +31,17 @@ def PlotAnalysis_Select(
     steps = np.diff(selected_time)
     if np.any(steps <= 0):
         return mask, "timestamps"
-    if fft:
-        if not np.all(np.isfinite(selected_values)):
-            return mask, "gaps"
-        # Same 0.1% uniformity boundary as pyqtgraph 0.14.0, but reject rather
-        # than letting its _fourierTransform silently interpolate nonuniform data.
-        if np.any(np.abs(steps - steps[0]) > abs(steps[0]) / 1000.0):
-            return mask, "nonuniform"
+    if fft and not np.all(np.isfinite(selected_values)):
+        return mask, "gaps"
     return mask, ""
+
+
+def PlotAnalysis_FFTNotice(time: NDArray[np.float64]) -> str:
+    """Describe native FFT interpolation for already validated clocks; never block it."""
+    steps = np.diff(time)
+    # Match pyqtgraph 0.14's actual decision, including its first-interval reference.
+    if not np.any(np.abs(steps - steps[0]) > abs(steps[0]) / 1000.0):
+        return ""
+    if float(np.max(steps)) > 2.0 * float(np.median(steps)):
+        return "resampled_gaps"
+    return "resampled"

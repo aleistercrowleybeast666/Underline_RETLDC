@@ -5,10 +5,11 @@ Contains an exact tracked application-source snapshot and original Qt/PySide
 6.11.1 archives plus Mesa 11.2.2 source and license/reassembly evidence.
 SOURCE_MANIFEST.json records original member hashes and version provenance.
 
-This source snapshot accompanies the existing FFT_Apache code baseline; its
-SOURCE_MANIFEST.json identifies the precise committed snapshot and candidate
-EXE hash. Pending, uncommitted FFT changes are excluded. If final application
-code changes, regenerate the companion and checksums before distribution.
+SOURCE_MANIFEST.json identifies the precise committed application snapshot,
+frozen code baseline and matching candidate EXE hash. The selected original
+FFT behavior is documented in docs/FFT_Restored_Acceptance_0_1_0.md. Abandoned
+drafts are excluded. If application code changes, regenerate this companion
+and checksums before distribution. Local candidates still need user acceptance.
 
 Proposed public delivery (not yet uploaded): the same GitHub v0.1.0 Release as
 the final accepted binary asset, with SHA256SUMS.txt. The final binary filename

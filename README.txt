@@ -10,8 +10,9 @@ Underline RETLDC 0.1.0 使用说明
 版本与下载：本分支为 0.1.0 开发候选，尚未发布。GitHub 最新公开版为 v0.0.4：
 https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.0.4
 公开下载入口：https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases
-最新本地候选为 FFT_Apache，仍待用户验收；旧 PlotSVG 保留，均不是已发布版本。
-后续 FFT/工作区间与 Apache 许可候选另存为 FFT_Apache，不覆盖 PlotSVG；对应源码
+最新本地验收路径为 dist/Underline_RETLDC_0_1_0_FFT_Restored/Underline_RETLDC.exe；
+旧 FFT_Apache 与 PlotSVG 保留，均不是已发布版本。
+此前 FFT/工作区间与 Apache 许可候选另存为 FFT_Apache，不覆盖 PlotSVG；对应源码
 已整理为 dist/Underline_RETLDC_0_1_0_Corresponding_Sources.zip，包含五份官方 6.11.1
 原归档（共 71.21 MiB）、Mesa 精确源码、应用源码和重组工具；不重复保留外部原归档。
 
@@ -105,7 +106,8 @@ Underline_RETLDC 文件夹中双击 Underline_RETLDC.exe；无需安装 Python�
 试车区间，FFT、去均值和已有派生变换也先裁剪输入；关闭恢复全段。使用原有起止
 时间输入/拖动调整范围；理论采用自身检测区间，显示平移不改变科学裁剪或 FFT 频率。
 FFT 横轴为 Hz，纵轴是原显示单位的 |rFFT|/N 模值，不是功率或已补偿单边振幅。
-缺口、非等间隔或不足两点时提示不可计算，不静默重采样。开关及 FFT/对数状态随
+非等间隔保留原有等点数线性插值；全段空档会提示频谱局限。非有限、非单调或不足
+两点仍拒绝。提示位于图下方，可展开详情，不遮挡曲线。开关及 FFT/对数状态随
 工程保存；图菜单 CSV 保留完整图项输入，正式统计和实验导出仍走原流程。详见
 docs/Plot_Analysis_0_1_0.md。
 

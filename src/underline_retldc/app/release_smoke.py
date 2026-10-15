@@ -31,10 +31,13 @@ from PySide6.QtWidgets import (
 from underline_retldc.app.native_diagnostics import NativeDiagnostics
 from underline_retldc.core.project import Project_Load
 from underline_retldc.core.project_data import SourceKind
+from underline_retldc.core.region_detection import Activity_DetectSegments
 from underline_retldc.core.registry import PluginLoadResult
+from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
 from underline_retldc.gui.main_window import MainWindow
 from underline_retldc.gui.plot_view import PlotViews_Capture, PlotViews_Restore
 from underline_retldc.gui.plugin_install_dialog import PluginInstallPreviewDialog
+from underline_retldc.plugin_api.common import TaskContext
 
 
 class ReleaseSmokeResult(IntEnum):
@@ -326,6 +329,78 @@ def _plot_analysis_check(
     PlotViews_Restore(plots, original_views)
     check("fft_exit_time_units", all(plot.bottom_axis.labelUnits == "s"
                                      for plot in plots.values()))
+    _native_fft_inputs_check(window, output, check)
+
+
+def _native_fft_inputs_check(
+    window: MainWindow, output: Path, check: Callable[[str, bool], None],
+) -> None:
+    """Exercise real parser clocks when explicitly seeded in the private smoke directory."""
+    time = np.arange(2000) / 1000
+    time += .0001 * np.sin(2 * np.pi * 137 * time)
+    inputs = [("jitter", time, 2 + 6 * np.cos(2 * np.pi * 20 * time), False)]
+    gap_time = np.array([0., .01, .02, .08, .09, .1])
+    inputs.append(("clock_gap", gap_time, np.array([1., 2., 3., 2., 1., 0.]), True))
+    for name, theoretical in (("TEST_SD.TXT", False), ("TEST_SD_reference.TXT", True)):
+        source = output / "validation_input" / name
+        if source.is_file():
+            dataset = window.registry.get("builtin.parser.tr_f").parse(
+                source, {}, TaskContext(),
+            ).dataset
+            inputs.append((name, dataset.project_time,
+                           dataset.channel("thrust_raw").values, theoretical))
+    summaries = []
+    for name, time, values, theoretical in inputs:
+        candidates = Activity_DetectSegments(time, values)
+        interval = ((candidates[0].start, candidates[0].end) if candidates
+                    else (float(time[len(time) // 2]), float(time[-1])))
+        plot = AnalysisPlotWidget(window.translations, regions_movable=False)
+        plot.resize(900, 520)
+        plot.set_empty_state(None)
+        plot.apply_theme(window.settings.theme)
+        plot.set_axis(x_label="Time", y_label="Validation signal", y_unit="raw")
+        plot.plot_widget.setDownsampling(ds=1, auto=False)
+        plot.plot_widget.setClipToView(False)
+        plot.set_regions({"active_test": interval})
+        curve = plot.add_series(time + 1.75, values, scientific_time=time, name=name,
+                                theoretical=theoretical, active_interval=interval)
+        control = plot.plot_widget.getPlotItem().ctrl
+        control.fftCheck.setChecked(True)
+        for active_only in (False, True):
+            plot.analysis_scope_check.setChecked(active_only)
+            mask = ((time >= interval[0]) & (time <= interval[1]) if active_only
+                    else np.ones(time.shape, dtype=bool))
+            selected_time, selected_values = time[mask], values[mask]
+            for subtract_mean in (False, True):
+                control.subtractMeanCheck.setChecked(subtract_mean)
+                y = selected_values - np.mean(selected_values) if subtract_mean else selected_values
+                steps = np.diff(selected_time)
+                if np.any(np.abs(steps - steps[0]) > abs(steps[0]) / 1000):
+                    grid = np.linspace(selected_time[0], selected_time[-1], len(y))
+                    y = np.interp(grid, selected_time, y)
+                expected = np.abs(np.fft.rfft(y) / len(y))
+                frequency, magnitude = curve.getData()
+                check(f"native_fft_{name}_{active_only}_{subtract_mean}",
+                      magnitude is not None and np.allclose(magnitude, expected, atol=1e-12)
+                      and np.allclose(frequency, np.fft.rfftfreq(
+                          len(y), (selected_time[-1] - selected_time[0]) / (len(y) - 1))))
+            summaries.append({"input": name, "active_only": active_only,
+                              "samples": int(np.count_nonzero(mask)),
+                              "interval": interval, "notice": curve.analysis_notice})
+        plot.show()
+        QApplication.processEvents()
+        check(f"native_fft_compact_status_{name}",
+              not plot.plot_widget.getPlotItem().titleLabel.isVisible()
+              and plot.plot_widget.height() > .8 * plot.height())
+        check(f"native_fft_original_{name}",
+              np.array_equal(curve.getOriginalDataset()[1], values))
+        if name == "TEST_SD.TXT":
+            plot.grab().save(str(output / "fft_real_test_sd.png"))
+        plot.close()
+        plot.deleteLater()
+    (output / "fft-inputs.json").write_text(
+        json.dumps(summaries, indent=2) + "\n", encoding="utf-8",
+    )
 
 
 def _plot_language_check(

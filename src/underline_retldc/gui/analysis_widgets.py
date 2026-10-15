@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
     QStackedLayout,
     QTableWidget,
     QTableWidgetItem,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -169,9 +170,35 @@ class AnalysisPlotWidget(QWidget):
         )
         empty_layout.addStretch(1)
 
+        self.plot_container = QWidget()
+        plot_layout = QVBoxLayout(self.plot_container)
+        plot_layout.setContentsMargins(0, 0, 0, 0)
+        plot_layout.setSpacing(2)
+        plot_layout.addWidget(self.plot_widget, 1)
+        self.analysis_status = QToolButton()
+        self.analysis_status.setObjectName("plotAnalysisStatus")
+        self.analysis_status.setCheckable(True)
+        self.analysis_status.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.analysis_status.setArrowType(Qt.ArrowType.RightArrow)
+        plot_layout.addWidget(self.analysis_status, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.analysis_details = QLabel()
+        self.analysis_details.setWordWrap(True)
+        self.analysis_details.setTextFormat(Qt.TextFormat.PlainText)
+        self.analysis_details.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        details_scroll = QScrollArea()
+        details_scroll.setWidgetResizable(True)
+        details_scroll.setMaximumHeight(100)
+        details_scroll.setWidget(self.analysis_details)
+        details_scroll.hide()
+        plot_layout.addWidget(details_scroll)
+        self.analysis_status.toggled.connect(details_scroll.setVisible)
+        self.analysis_status.toggled.connect(lambda expanded: self.analysis_status.setArrowType(
+            Qt.ArrowType.DownArrow if expanded else Qt.ArrowType.RightArrow,
+        ))
+        self._analysis_details_scroll = details_scroll
         stack = QStackedLayout(self)
         stack.setStackingMode(QStackedLayout.StackingMode.StackOne)
-        stack.addWidget(self.plot_widget)
+        stack.addWidget(self.plot_container)
         stack.addWidget(self.empty_widget)
         self._stack = stack
         self.set_empty_state("", button_visible=False)
@@ -273,11 +300,24 @@ class AnalysisPlotWidget(QWidget):
 
     def _analysis_notices_refresh(self) -> None:
         messages = []
+        resampled = unavailable = 0
         for series in self._series:
             if series.analysis_notice:
                 message = self._translations.translate("plot.analysis." + series.analysis_notice)
                 messages.append(f"{series.name()}: {message}")
-        self.plot_widget.setTitle("<br>".join(messages) if messages else None)
+                interpolated = series.analysis_notice.startswith("resampled")
+                resampled += interpolated
+                unavailable += not interpolated
+        self.analysis_status.setText(self._translations.translate(
+            "plot.analysis.status", resampled=resampled, unavailable=unavailable,
+        ))
+        details = "\n".join(messages)
+        self.analysis_status.setToolTip(details)
+        self.analysis_details.setText(details)
+        self.analysis_status.setVisible(bool(messages))
+        if not messages:
+            self.analysis_status.setChecked(False)
+            self._analysis_details_scroll.hide()
 
     def clear_series(self) -> None:
         for item in self._series:
@@ -482,7 +522,7 @@ class AnalysisPlotWidget(QWidget):
         self.empty_label.setText(message or "")
         self.empty_button.setText(button_text)
         self.empty_button.setVisible(empty and button_visible)
-        self._stack.setCurrentWidget(self.empty_widget if empty else self.plot_widget)
+        self._stack.setCurrentWidget(self.empty_widget if empty else self.plot_container)
 
 
 class AnalysisResultsPanel(QGroupBox):

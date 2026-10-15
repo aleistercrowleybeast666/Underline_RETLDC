@@ -566,7 +566,6 @@
   "plot.analysis.samples": "所选区间至少需要两个采样点",
   "plot.analysis.timestamps": "分析需要有限且严格递增的时间戳",
   "plot.analysis.gaps": "FFT 不可用：所选数据含缺口或非有限值",
-  "plot.analysis.nonuniform": "FFT 不可用：时间戳不是等间隔，未执行重采样",
   "plot.qt.form.show_x_grid": "显示 X 网格",
   "plot.qt.form.show_y_grid": "显示 Y 网格",
   "plot.qt.form.subsample": "间隔抽样",
@@ -608,5 +607,8 @@
   "plot.qt.plotexport.true": "是",
   "plot.export.csv_tip": "导出传入图项的数组（含显示单位和理论平移），不应用区间裁剪和绘图库 FFT/对数/降采样。独立 X/Y 列保留各曲线采样时间；共享 X 仅按行拼接 Y 列，不进行时间对齐或重采样。",
   "plot.export.svg_stroke_tip": "关闭时，线条保持屏幕线宽，不随缩放比例改变。",
-  "plot.qt.graphicsscene.export": "导出当前图…"
+  "plot.qt.graphicsscene.export": "导出当前图…",
+  "plot.analysis.resampled": "FFT 沿用原有线性插值，在实测时长内使用 N 个等间隔点。原数据不变；若选中去均值，则先去均值再插值。",
+  "plot.analysis.status": "绘图分析：{resampled} 条重采样，{unavailable} 条不可用 · 详情",
+  "plot.analysis.resampled_gaps": "FFT 沿用原有线性插值跨越时间空档（某间隔超过中位间隔两倍）。频谱仅供插值参考，优先选择连续工作区间；原数据不变。"
 }
