@@ -11,8 +11,15 @@ class AxisViewState:
     range: tuple[float, float] | None
     auto_range: bool | float = False
     linked_to: str | None = None
+    fft_mode: bool = False
+    log_mode: bool = False
+    subtract_mean_mode: bool = False
 
     def __post_init__(self) -> None:
+        if not all(isinstance(value, bool) for value in (
+            self.fft_mode, self.log_mode, self.subtract_mean_mode,
+        )):
+            raise ValueError("Plot transform flags must be boolean")
         if self.range is not None:
             if len(self.range) != 2:
                 raise ValueError("Plot axis range must contain two numbers")
@@ -41,6 +48,8 @@ class AxisViewState:
         return {
             "range": list(self.range) if self.range is not None else None,
             "auto_range": self.auto_range, "linked_to": self.linked_to,
+            "fft_mode": self.fft_mode, "log_mode": self.log_mode,
+            "subtract_mean_mode": self.subtract_mean_mode,
         }
 
     @classmethod
@@ -48,7 +57,11 @@ class AxisViewState:
         bounds = payload.get("range")
         if bounds is not None and not isinstance(bounds, (list, tuple)):
             raise ValueError("Plot axis range must be an array")
-        return cls(bounds, payload.get("auto_range", False), payload.get("linked_to"))
+        return cls(
+            bounds, payload.get("auto_range", False), payload.get("linked_to"),
+            payload.get("fft_mode", False), payload.get("log_mode", False),
+            payload.get("subtract_mean_mode", False),
+        )
 
 
 def PlotViews_FromDict(payload: Any) -> dict[str, dict[str, AxisViewState]]:

@@ -11,6 +11,8 @@ Underline RETLDC 0.1.0 使用说明
 https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.0.4
 公开下载入口：https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases
 最新本地 PlotSVG 候选仍待用户验收，不能把内部候选当作已发布版本。
+后续 FFT/工作区间与 Apache 许可候选另存为 FFT_Apache，不覆盖 PlotSVG；对应源码
+位于 dist/Underline_RETLDC_0_1_0_Qt_Sources（五份官方 6.11.1 原归档，共 71.21 MiB）。
 
 原创项目代码采用 Apache License 2.0，完整文本见根目录 LICENSE，与 SilverStar 相同。
 暂不新增个人版权行；LICENSE 附录的 Copyright [yyyy] [name of copyright owner] 是标准示例，
@@ -97,6 +99,14 @@ Underline_RETLDC 文件夹中双击 Underline_RETLDC.exe；无需安装 Python�
 
 这两种模式只改变图、坐标轴和统计表的显示，不修改原始数值、数据单位、校准状态或
 正式导出数据的单位定义。
+
+图表右键菜单的“变换”提供全页同步的“仅分析工作区间”。开启后时域只显示当前
+试车区间，FFT、去均值和已有派生变换也先裁剪输入；关闭恢复全段。使用原有起止
+时间输入/拖动调整范围；理论采用自身检测区间，显示平移不改变科学裁剪或 FFT 频率。
+FFT 横轴为 Hz，纵轴是原显示单位的 |rFFT|/N 模值，不是功率或已补偿单边振幅。
+缺口、非等间隔或不足两点时提示不可计算，不静默重采样。开关及 FFT/对数状态随
+工程保存；图菜单 CSV 保留完整图项输入，正式统计和实验导出仍走原流程。详见
+docs/Plot_Analysis_0_1_0.md。
 
 推力图始终显示 0 N 刻度和参考线，便于检查回零、基线和燃烧结束。燃烧室压力页默认显示
 一个标准大气压参考线（101325 Pa = 0.101325 MPa），可以编辑或隐藏。压力参考线只用于

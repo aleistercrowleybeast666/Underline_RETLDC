@@ -474,6 +474,8 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(980, 640)
 
     def _signals_connect(self) -> None:
+        for plot in self._plot_widgets().values():
+            plot.analysis_scope_changed.connect(self._plot_analysis_scope_changed)
         for page in (self.analyze_page, *self._measurement_pages()):
             page.source_calculate_requested.connect(self._source_analysis_calculate)
             page.source_analysis.config_changed.connect(self._source_analysis_config_changed)
@@ -948,6 +950,8 @@ class MainWindow(QMainWindow):
         self._export_availability_update()
 
     def _measurement_workspaces_update(self) -> None:
+        for plot in self._plot_widgets().values():
+            plot.set_analysis_active_only(self.session.plot_analysis_active_only)
         series: list[WorkspaceSeries] = []
         theory_curves: list[DisplayCurve] = []
         for reference in self.session.project_data.channel_references():
@@ -1579,6 +1583,11 @@ class MainWindow(QMainWindow):
         self._import_drafts.clear()
         self._import_editor_entry = ""
         self.session = AnalysisSession()
+        for plot in self._plot_widgets().values():
+            control = plot.plot_widget.getPlotItem().ctrl
+            for check in (control.fftCheck, control.subtractMeanCheck,
+                          control.logXCheck, control.logYCheck):
+                check.setChecked(False)
         self._project_title = None
         self._recommendations.clear()
         self._recommendation_source = None
@@ -3477,6 +3486,7 @@ class MainWindow(QMainWindow):
             ),
             motor_metadata=self.setup_page.motor_metadata(),
             plot_views=self._plot_views_capture(),
+            plot_analysis_active_only=self.session.plot_analysis_active_only,
             export_settings=export_settings,
             workflow_state={
                 "parsed": self.session.raw_dataset is not None,
@@ -3506,11 +3516,21 @@ class MainWindow(QMainWindow):
         self.session.plot_views = views
         return views
 
+    def _plot_analysis_scope_changed(self, enabled: bool) -> None:
+        self.session.plot_analysis_active_only = enabled
+        for plot in self._plot_widgets().values():
+            plot.set_analysis_active_only(enabled)
+
     def _plot_views_restore(self) -> None:
         session = self.session
         # Missing axes in old Projects must start from data-driven defaults, not
         # inherit another Project's manual viewport on the same window.
         for plot in self._plot_widgets().values():
+            plot.set_analysis_active_only(session.plot_analysis_active_only)
+            control = plot.plot_widget.getPlotItem().ctrl
+            for check in (control.fftCheck, control.subtractMeanCheck,
+                          control.logXCheck, control.logYCheck):
+                check.setChecked(False)
             plot.reset_view()
         PlotViews_Restore(self._plot_widgets(), session.plot_views)
 
@@ -3676,6 +3696,7 @@ class MainWindow(QMainWindow):
                 calibrated_streams[primary_stream_id] = calibrated
             self.session = AnalysisSession(
                 plot_views={key: dict(axes) for key, axes in document.plot_views.items()},
+                plot_analysis_active_only=document.plot_analysis_active_only,
                 source_analyses=dict(self._recomputed_source_analyses),
                 project_path=project_path,
                 source_path=raw_source.resolve() if raw_source is not None else None,

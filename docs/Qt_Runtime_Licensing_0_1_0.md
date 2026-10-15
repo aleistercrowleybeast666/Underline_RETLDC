@@ -1,3 +1,18 @@
+# 最新范围：九文件排除
+
+下文保留之前仅排除 Virtual Keyboard 的阶段证据（14 个 Qt DLL、528 个运行文件）。
+新候选追加排除未使用的 qpdf/Pdf 及孤立 QML/Quick 七文件；保留 8 个 Qt DLL，其他
+521 个运行文件仍与原 PlotSVG ZIP 一致。新规则的九文件精确清单、正常/延迟 PE 引用
+关系见 `third_party/qt-6.11.1/optional-runtime-exclusions.json`。业务无 PDF/QML API、
+对应 Python 包装或 QML 资源；原有图像写出格式完全不变，读图仅少 PDF。
+
+这次七文件精简后，中/英文冻结启动均退出 0，完整 GUI 189 项通过。官方对应源码从
+旧八归档 661.4 MiB 降为五归档 71.21 MiB；实际下载/校验状态和剩余供应商归属边界见
+[对应源码](Qt_Corresponding_Source_0_1_0.md)。原包及安装库未改。后续 FFT/范围改动
+需要新冻结验证，不冒用此前相同 EXE 的结果，详见 `FFT_Apache_Acceptance_0_1_0.md`。
+
+## 前一阶段原始记录
+
 # Qt 运行依赖与最小排除验证
 
 核查对象：原 PlotSVG ZIP（SHA-256

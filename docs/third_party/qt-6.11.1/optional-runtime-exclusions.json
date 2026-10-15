@@ -1,0 +1,83 @@
+{
+  "base_archive": "Underline_RETLDC_0_1_0_PlotSVG_Windows_Portable.zip",
+  "base_sha256": "3f2aee2e374f4d97372daf0944dad2ab608b4815b24184d1e054dcf2828119a9",
+  "excluded": [
+    {
+      "path": "_internal/PySide6/plugins/platforminputcontexts/qtvirtualkeyboardplugin.dll",
+      "bytes": 33592,
+      "sha256": "d116b216a50037cbfa6ee9afd94bea357cdbee263e0f9b8c6ef2e811da29eb70",
+      "reason": "Unused optional plugin collected by QtGui hook"
+    },
+    {
+      "path": "_internal/PySide6/Qt6VirtualKeyboard.dll",
+      "bytes": 443192,
+      "sha256": "e8db083111dc264c80c81920c882ed1c2c28043edffa988894e0a82723b2aa4b",
+      "reason": "Unused optional plugin collected by QtGui hook"
+    },
+    {
+      "path": "_internal/PySide6/plugins/imageformats/qpdf.dll",
+      "bytes": 42296,
+      "sha256": "273a1b6daaf3c0def92902044cf35d0ec65e56f904acb7fbf428d80dae2bb9d5",
+      "reason": "No business/API/resource entry point; only optional plugin or closed orphan dependency chain"
+    },
+    {
+      "path": "_internal/PySide6/Qt6Pdf.dll",
+      "bytes": 4611384,
+      "sha256": "cf8ae19cf5f98db4a3ae332fbe6bd00bc4cdf5ca5779f88b2071cf8180610106",
+      "reason": "No business/API/resource entry point; only optional plugin or closed orphan dependency chain"
+    },
+    {
+      "path": "_internal/PySide6/Qt6Quick.dll",
+      "bytes": 6593336,
+      "sha256": "33bddb006a99c82ce3bb677fd2535dfb651d4b2fb12aa13eadde6dc442bf7f0d",
+      "reason": "No business/API/resource entry point; only optional plugin or closed orphan dependency chain"
+    },
+    {
+      "path": "_internal/PySide6/Qt6Qml.dll",
+      "bytes": 5380920,
+      "sha256": "5dd60d8e2048557bc1b8a57f6bb44986f45d693c3b0930d1341b07089478f09d",
+      "reason": "No business/API/resource entry point; only optional plugin or closed orphan dependency chain"
+    },
+    {
+      "path": "_internal/PySide6/Qt6QmlMeta.dll",
+      "bytes": 160056,
+      "sha256": "1ae5a50e8defa2b60518a2261a2472ecf4d3e3ca965780339953d658844d4aa0",
+      "reason": "No business/API/resource entry point; only optional plugin or closed orphan dependency chain"
+    },
+    {
+      "path": "_internal/PySide6/Qt6QmlModels.dll",
+      "bytes": 997176,
+      "sha256": "1ec0d115747d65a994798064618ffd9e3e9efa1548297e64e08c49c9a98f0feb",
+      "reason": "No business/API/resource entry point; only optional plugin or closed orphan dependency chain"
+    },
+    {
+      "path": "_internal/PySide6/Qt6QmlWorkerScript.dll",
+      "bytes": 80696,
+      "sha256": "3a764b6c2bc8cb21f009485e7410e6d29b9edd5e0addbed8fb89292c0ab64c97",
+      "reason": "No business/API/resource entry point; only optional plugin or closed orphan dependency chain"
+    }
+  ],
+  "dependency_graph_before_pdf_qml_exclusion": {
+    "qt6pdf.dll": [
+      "_internal/PySide6/plugins/imageformats/qpdf.dll"
+    ],
+    "qt6quick.dll": [],
+    "qt6qml.dll": [
+      "_internal/PySide6/Qt6QmlMeta.dll",
+      "_internal/PySide6/Qt6QmlModels.dll",
+      "_internal/PySide6/Qt6QmlWorkerScript.dll",
+      "_internal/PySide6/Qt6Quick.dll"
+    ],
+    "qt6qmlmeta.dll": [
+      "_internal/PySide6/Qt6Quick.dll"
+    ],
+    "qt6qmlmodels.dll": [
+      "_internal/PySide6/Qt6QmlMeta.dll",
+      "_internal/PySide6/Qt6Quick.dll"
+    ],
+    "qt6qmlworkerscript.dll": [
+      "_internal/PySide6/Qt6QmlMeta.dll"
+    ]
+  },
+  "scope": "No optional PDF reader or orphan QML/Quick entry point; all existing writers retained"
+}

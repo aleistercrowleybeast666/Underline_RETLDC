@@ -6,10 +6,11 @@ from typing import Any
 
 import numpy as np
 import pyqtgraph as pg
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import QSignalBlocker, Qt, QTimer, Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QCheckBox,
     QGroupBox,
     QHBoxLayout,
     QHeaderView,
@@ -31,6 +32,7 @@ from underline_retldc.core.units import (
     UnitDisplayMode,
     UnitDisplayMode_Normalize,
 )
+from underline_retldc.gui.plot_analysis import AnalysisPlotDataItem
 from underline_retldc.gui.plot_ui_i18n import PlotQtTranslations_Ensure, PlotUiLocalizer
 from underline_retldc.i18n.service import TranslationService
 
@@ -68,7 +70,7 @@ class DisplayAxisItem(pg.AxisItem):
     ) -> list[tuple[float, list[float]]]:
         levels = super().tickValues(minVal, maxVal, size)
         forced = self._forced_tick
-        if forced is None or forced < minVal or forced > maxVal or not levels:
+        if self.logMode or forced is None or forced < minVal or forced > maxVal or not levels:
             return levels
         spacing, values = levels[0]
         tolerance = max(abs(float(spacing)) * 1.0e-6, 1.0e-12)
@@ -82,7 +84,7 @@ class DisplayAxisItem(pg.AxisItem):
         scale: float,
         spacing: float,
     ) -> list[str]:
-        if self._display_mode is UnitDisplayMode.SI_SCIENTIFIC:
+        if self._display_mode is UnitDisplayMode.SI_SCIENTIFIC and not self.logMode:
             return [
                 "0" if float(value) == 0.0 else f"{float(value):.3e}"
                 for value in values
@@ -92,6 +94,7 @@ class DisplayAxisItem(pg.AxisItem):
 
 class AnalysisPlotWidget(QWidget):
     select_channel_requested = Signal()
+    analysis_scope_changed = Signal(bool)
 
     SERIES_STYLES = (
         AnalysisSeriesStyle("#4cc9f0"),
@@ -115,6 +118,8 @@ class AnalysisPlotWidget(QWidget):
         self._series: list[Any] = []
         self._series_data: list[tuple[np.ndarray, np.ndarray]] = []
         self._horizontal_references: dict[str, dict[str, Any]] = {}
+        self._axis_labels = ("", "", "")
+        self._active_interval: tuple[float, float] | None = None
         PlotQtTranslations_Ensure(translations)
         self.bottom_axis = DisplayAxisItem("bottom")
         self.left_axis = DisplayAxisItem("left")
@@ -126,6 +131,11 @@ class AnalysisPlotWidget(QWidget):
         )
         self.plot_widget.setObjectName("analysisPlot")
         self._plot_ui_localizer = PlotUiLocalizer(self.plot_widget, translations, self)
+        control = self.plot_widget.getPlotItem().ctrl
+        self.analysis_scope_check = QCheckBox(control.transformGroup)
+        self.analysis_scope_check.setObjectName("analysisActiveOnly")
+        control.gridLayout.addWidget(self.analysis_scope_check, 6, 0, 1, 1)
+        self.analysis_scope_check.toggled.connect(self._analysis_scope_update)
         self.plot_widget.showGrid(x=True, y=True, alpha=0.22)
         self.plot_widget.setDownsampling(auto=True, mode="peak")
         self.plot_widget.setClipToView(True)
@@ -166,6 +176,8 @@ class AnalysisPlotWidget(QWidget):
         self._stack = stack
         self.set_empty_state("", button_visible=False)
         self.apply_theme("light")
+        self.plot_widget.getPlotItem().ctrl.fftCheck.toggled.connect(self._axis_labels_refresh)
+        translations.locale_changed.connect(self._axis_labels_refresh)
 
     def set_display_mode(self, mode: UnitDisplayMode | str) -> None:
         self._display_mode = UnitDisplayMode_Normalize(mode)
@@ -209,14 +221,67 @@ class AnalysisPlotWidget(QWidget):
         self.plot_widget.update()
 
     def set_axis(self, *, x_label: str, y_label: str, y_unit: str = "") -> None:
-        self.plot_widget.setLabel("bottom", x_label, units="s")
+        self._axis_labels = (x_label, y_label, y_unit)
+        self._axis_labels_refresh()
+
+    def _axis_labels_refresh(self, *_args: object) -> None:
+        """Describe pyqtgraph's existing abs(rfft(y)/N), without changing its algorithm."""
+        x_label, y_label, y_unit = self._axis_labels
+        if self.plot_widget.getPlotItem().ctrl.fftCheck.isChecked():
+            x_label = self._translations.translate("plot.axis.frequency")
+            y_label = self._translations.translate("plot.axis.fft_magnitude", quantity=y_label)
+            x_unit = "Hz"
+        else:
+            x_unit = "s"
+        self.plot_widget.setLabel("bottom", x_label, units=x_unit)
         self.plot_widget.setLabel("left", y_label, units=y_unit or None)
+        self.analysis_scope_check.setText(self._translations.translate("plot.analysis.active_only"))
+        self.analysis_scope_check.setToolTip(self._translations.translate("plot.analysis.scope_tip"))
+        fft = self.plot_widget.getPlotItem().ctrl.fftCheck.isChecked()
+        for region in (self.pre_region, self.active_region, self.post_region):
+            in_scope = not self.analysis_scope_check.isChecked() or region is self.active_region
+            region.setVisible(bool(region.property("timeRegionVisible")) and not fft and in_scope)
+        for reference in self._horizontal_references.values():
+            reference["item"].setVisible(reference["visible"] and not fft)
+        self._analysis_notices_refresh()
+
+    def set_analysis_active_only(self, enabled: bool) -> None:
+        if self.analysis_scope_check.isChecked() == enabled:
+            return
+        blocker = QSignalBlocker(self.analysis_scope_check)
+        self.analysis_scope_check.setChecked(enabled)
+        del blocker
+        self._analysis_scope_apply()
+        self.plot_widget.enableAutoRange()
+
+    def _analysis_scope_update(self, enabled: bool) -> None:
+        self._analysis_scope_apply()
+        self.plot_widget.enableAutoRange()
+        self.analysis_scope_changed.emit(enabled)
+
+    def _analysis_scope_apply(self) -> None:
+        for series in self._series:
+            interval = series.analysis_interval if series.theoretical else self._active_interval
+            series.set_analysis_scope(self.analysis_scope_check.isChecked(), interval)
+        self._analysis_notices_refresh()
+        self._axis_labels_refresh()
+        if self.analysis_scope_check.isChecked():
+            self.plot_widget.enableAutoRange()
+
+    def _analysis_notices_refresh(self) -> None:
+        messages = []
+        for series in self._series:
+            if series.analysis_notice:
+                message = self._translations.translate("plot.analysis." + series.analysis_notice)
+                messages.append(f"{series.name()}: {message}")
+        self.plot_widget.setTitle("<br>".join(messages) if messages else None)
 
     def clear_series(self) -> None:
         for item in self._series:
             self.plot_widget.removeItem(item)
         self._series.clear()
         self._series_data.clear()
+        self._analysis_notices_refresh()
 
     def add_series(
         self,
@@ -226,6 +291,8 @@ class AnalysisPlotWidget(QWidget):
         name: str,
         style_index: int = 0,
         theoretical: bool = False,
+        scientific_time: np.ndarray | None = None,
+        active_interval: tuple[float, float] | None = None,
     ) -> Any:
         style = self.SERIES_STYLES[style_index % len(self.SERIES_STYLES)]
         used_colors = {series.opts["pen"].color().name() for series in self._series}
@@ -243,9 +310,12 @@ class AnalysisPlotWidget(QWidget):
                 while color.name() in used_colors:
                     color = QColor.fromHsvF((index * 0.61803398875) % 1.0, 0.65, 0.95)
                     index += 1
-        item = self.plot_widget.plot(
+        item = AnalysisPlotDataItem(
             time,
             values,
+            scientific_time=time if scientific_time is None else scientific_time,
+            interval=active_interval if theoretical else self._active_interval,
+            active_only=self.analysis_scope_check.isChecked(), theoretical=theoretical,
             connect="finite",
             pen=pg.mkPen(
                 color,
@@ -254,8 +324,11 @@ class AnalysisPlotWidget(QWidget):
             ),
             name=name,
         )
+        item.notice_changed.connect(self._analysis_notices_refresh)
+        self.plot_widget.addItem(item)
         self._series.append(item)
         self._series_data.append((np.asarray(time), np.asarray(values)))
+        self._analysis_notices_refresh()
         return item
 
     def set_horizontal_reference(
@@ -306,12 +379,15 @@ class AnalysisPlotWidget(QWidget):
             if candidate["visible"] and candidate["force_tick"]
         ]
         self.left_axis.set_forced_tick(forced_ticks[0] if forced_ticks else None)
+        self._axis_labels_refresh()
         return item
 
     def set_regions(
         self,
         regions: Mapping[str, list[float] | tuple[float, float] | None],
     ) -> None:
+        active = regions.get("active_test", regions.get("burn"))
+        self._active_interval = tuple(active) if active is not None else None
         for keys, item in (
             (("pre",), self.pre_region),
             (("active_test", "burn"), self.active_region),
@@ -323,6 +399,9 @@ class AnalysisPlotWidget(QWidget):
                 item.setVisible(True)
             else:
                 item.setVisible(False)
+            item.setProperty("timeRegionVisible", value is not None and len(value) == 2)
+        self._analysis_scope_apply()
+        self._axis_labels_refresh()
 
     def fit_view(
         self,
@@ -331,6 +410,12 @@ class AnalysisPlotWidget(QWidget):
         values: tuple[np.ndarray, ...] = (),
         regions: Mapping[str, list[float] | tuple[float, float] | None] | None = None,
     ) -> None:
+        control = self.plot_widget.getPlotItem().ctrl
+        if self.analysis_scope_check.isChecked() or any(check.isChecked() for check in (
+            control.fftCheck, control.derivativeCheck, control.phasemapCheck,
+        )):
+            self.plot_widget.enableAutoRange()
+            return
         selected_regions = dict(regions or {})
         if time is None and self._series_data:
             time = np.concatenate([item[0] for item in self._series_data])

@@ -8,11 +8,13 @@ from underline_retldc.core.project import ProjectDocument
 
 def test_plot_view_roundtrip_and_legacy_defaults() -> None:
     states = {"temperature": {
-        "x": AxisViewState((-3, 8), False), "y": AxisViewState((10, 50), .85),
+        "x": AxisViewState((-3, 8), False, fft_mode=True, subtract_mean_mode=True),
+        "y": AxisViewState((10, 50), .85, log_mode=True),
         "right:x": AxisViewState(None, False, "temperature/x"),
     }}
-    document = ProjectDocument(plot_views=states)
+    document = ProjectDocument(plot_views=states, plot_analysis_active_only=True)
     assert ProjectDocument.from_dict(document.to_dict()).plot_views == states
+    assert ProjectDocument.from_dict(document.to_dict()).plot_analysis_active_only
     payload = document.to_dict()
     payload.pop("plot_views")
     assert ProjectDocument.from_dict(payload).plot_views == {}
@@ -23,6 +25,7 @@ def test_plot_view_roundtrip_and_legacy_defaults() -> None:
     {"range": [0, float("inf")]}, {"range": "0,1"}, {"range": [0]},
     {"range": [0, 1], "auto_range": 2}, {"range": [0, 1], "auto_range": "yes"},
     {"range": None}, {"range": [0, 1], "linked_to": 12},
+    {"range": [0, 1], "fft_mode": 1}, {"range": [0, 1], "log_mode": "yes"},
 ])
 def test_invalid_plot_view_rejected(state: dict) -> None:
     payload = ProjectDocument().to_dict()

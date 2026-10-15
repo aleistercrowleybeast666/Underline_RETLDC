@@ -610,6 +610,12 @@ class ProcessPage(QWidget):
         self._plot_refresh()
 
     def _regions_view_fit(self) -> None:
+        if self.analysis_plot.analysis_scope_check.isChecked():
+            self.analysis_plot.fit_view()
+            return
+        if self.analysis_plot.plot_widget.getPlotItem().ctrl.fftCheck.isChecked():
+            self.analysis_plot.fit_view()
+            return
         if not self.burn_region.isVisible():
             return
         regions = self.regions()

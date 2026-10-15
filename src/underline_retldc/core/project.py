@@ -232,8 +232,11 @@ class ProjectDocument:
     source_analyses: Mapping[str, SourceAnalysisDocument] = field(default_factory=dict)
     calibrated_stream_ids: tuple[str, ...] | None = None
     plot_views: Mapping[str, Mapping[str, AxisViewState]] = field(default_factory=dict)
+    plot_analysis_active_only: bool = False
 
     def __post_init__(self) -> None:
+        if not isinstance(self.plot_analysis_active_only, bool):
+            raise ValueError("Project plot analysis scope must be boolean")
         regions = dict(self.regions)
         if "active_test" not in regions and "burn" in regions:
             regions["active_test"] = regions["burn"]
@@ -289,6 +292,7 @@ class ProjectDocument:
                 plot_id: {axis_id: state.to_dict() for axis_id, state in axes.items()}
                 for plot_id, axes in self.plot_views.items()
             },
+            "plot_analysis_active_only": self.plot_analysis_active_only,
             "export_settings": dict(self.export_settings),
             "workflow_state": dict(self.workflow_state),
             "locale": self.locale,
@@ -511,6 +515,7 @@ class ProjectDocument:
             source_analyses=source_analyses,
             calibrated_stream_ids=calibrated_stream_ids,
             plot_views=PlotViews_FromDict(payload.get("plot_views", {})),
+            plot_analysis_active_only=payload.get("plot_analysis_active_only", False),
         )
 
 

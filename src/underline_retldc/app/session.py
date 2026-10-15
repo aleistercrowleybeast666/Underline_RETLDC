@@ -61,6 +61,7 @@ class AnalysisSession:
     export_settings: dict[str, Any] = field(default_factory=dict)
     source_analyses: dict[str, SourceAnalysisState] = field(default_factory=dict)
     plot_views: dict[str, dict[str, AxisViewState]] = field(default_factory=dict)
+    plot_analysis_active_only: bool = False
 
     @property
     def motor_parameters(self) -> MotorPhysicalParameters:

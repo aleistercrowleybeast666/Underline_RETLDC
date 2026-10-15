@@ -1,6 +1,6 @@
 {
-  "total_compressed_bytes": 693541852,
-  "unpacked_size": "Not measured; archives not downloaded",
+  "qt_version": "6.11.1",
+  "total_compressed_bytes": 74666284,
   "archives": [
     {
       "component": "qtbase",
@@ -9,18 +9,10 @@
       "bytes": 50648500,
       "advertised_sha256": "d9594a31228aa23ad6b531719a29b45f0f3989fe6c136d45767ea179f233c1ac",
       "scope": "Core,Gui,Widgets,Network,OpenGL,OpenGLWidgets,Test; platform/TLS plugins",
-      "archive_downloaded": false,
-      "body_checksum_verified": false
-    },
-    {
-      "component": "qtdeclarative",
-      "version": "6.11.1",
-      "url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtdeclarative-everywhere-src-6.11.1.tar.xz",
-      "bytes": 38744644,
-      "advertised_sha256": "52e670f670b0304f534b24f98c47ceb8a41bb710464414ebc9527ec71cc86aa4",
-      "scope": "Qml,QmlMeta,QmlModels,QmlWorkerScript,Quick DLLs still present",
-      "archive_downloaded": false,
-      "body_checksum_verified": false
+      "archive_downloaded": true,
+      "body_checksum_verified": true,
+      "local_file": "D:\\python_software\\Underline_RETLDC\\dist\\Underline_RETLDC_0_1_0_Qt_Sources\\qtbase-everywhere-src-6.11.1.tar.xz",
+      "unpacked": false
     },
     {
       "component": "qtsvg",
@@ -29,8 +21,10 @@
       "bytes": 2336944,
       "advertised_sha256": "7f3cf02f4824bf03c2c5859ea6db173bf1482a1daf24e6cdf7bc78cfa26a8a94",
       "scope": "Svg library and SVG plugins",
-      "archive_downloaded": false,
-      "body_checksum_verified": false
+      "archive_downloaded": true,
+      "body_checksum_verified": true,
+      "local_file": "D:\\python_software\\Underline_RETLDC\\dist\\Underline_RETLDC_0_1_0_Qt_Sources\\qtsvg-everywhere-src-6.11.1.tar.xz",
+      "unpacked": false
     },
     {
       "component": "qtimageformats",
@@ -39,8 +33,10 @@
       "bytes": 2032792,
       "advertised_sha256": "b2bf6c6845ac175ed7f819145483ba4676f617aaa6a5012c8efee63c8bbac413",
       "scope": "Image-format plugins",
-      "archive_downloaded": false,
-      "body_checksum_verified": false
+      "archive_downloaded": true,
+      "body_checksum_verified": true,
+      "local_file": "D:\\python_software\\Underline_RETLDC\\dist\\Underline_RETLDC_0_1_0_Qt_Sources\\qtimageformats-everywhere-src-6.11.1.tar.xz",
+      "unpacked": false
     },
     {
       "component": "qttranslations",
@@ -49,28 +45,10 @@
       "bytes": 1684616,
       "advertised_sha256": "37c02c81206594c7bb4edca85ac93e8e55a9836b70c960fde6cb0f8623ec5677",
       "scope": "Distributed QM translations",
-      "archive_downloaded": false,
-      "body_checksum_verified": false
-    },
-    {
-      "component": "qtshadertools",
-      "version": "6.11.1",
-      "url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtshadertools-everywhere-src-6.11.1.tar.xz",
-      "bytes": 1216568,
-      "advertised_sha256": "2075052f9b23bcf9de045bbd180037084942f82cce870aab14a1454902c982fc",
-      "scope": "Conditional build-time support; verify original build recipe",
-      "archive_downloaded": false,
-      "body_checksum_verified": false
-    },
-    {
-      "component": "qtwebengine",
-      "version": "6.11.1",
-      "url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtwebengine-everywhere-src-6.11.1.tar.xz",
-      "bytes": 578914356,
-      "advertised_sha256": "679c66ccc6c158fc215e9c58ef160331ecd29974232e345c05161889f8667083",
-      "scope": "Pdf library and qpdf image plugin, including its third-party source dependencies",
-      "archive_downloaded": false,
-      "body_checksum_verified": false
+      "archive_downloaded": true,
+      "body_checksum_verified": true,
+      "local_file": "D:\\python_software\\Underline_RETLDC\\dist\\Underline_RETLDC_0_1_0_Qt_Sources\\qttranslations-everywhere-src-6.11.1.tar.xz",
+      "unpacked": false
     },
     {
       "component": "pyside-setup",
@@ -79,8 +57,15 @@
       "bytes": 17963432,
       "advertised_sha256": "6ffd9835bb0dd2c56f061d62f1616bb1707cfc0202b80e3165d6be087f3965e2",
       "scope": "PySide6 and Shiboken source plus binding generation/build scripts",
-      "archive_downloaded": false,
-      "body_checksum_verified": false
+      "archive_downloaded": true,
+      "body_checksum_verified": true,
+      "local_file": "D:\\python_software\\Underline_RETLDC\\dist\\Underline_RETLDC_0_1_0_Qt_Sources\\pyside-setup-everywhere-src-6.11.1.tar.xz",
+      "unpacked": false
     }
-  ]
+  ],
+  "full_sdk_unpacked": false,
+  "source_limit_bytes": 786432000,
+  "supersedes": "Eight-archive 693541852-byte plan; removed unused PDF/QML/Quick binary closure",
+  "publicly_hosted": false,
+  "all_downloaded_body_checks_passed": true
 }

@@ -115,6 +115,23 @@ if exist "%DIST_DIR%\_internal\PySide6\plugins\platforminputcontexts\qtvirtualke
     exit /b 1
 )
 
+rem QtGui also collects the read-only PDF image plugin. No workflow opens PDF,
+rem and QML/Quick have no binding/resource/root reference after keyboard exclusion.
+if exist "%DIST_DIR%\_internal\PySide6\plugins\imageformats\qpdf.dll" del /Q "%DIST_DIR%\_internal\PySide6\plugins\imageformats\qpdf.dll"
+if exist "%DIST_DIR%\_internal\PySide6\plugins\imageformats\qpdf.dll" (
+    echo ERROR: Failed to exclude the unused PDF image reader plugin.
+    if not defined CI pause
+    exit /b 1
+)
+for %%F in (Qt6Pdf.dll Qt6Quick.dll Qt6Qml.dll Qt6QmlMeta.dll Qt6QmlModels.dll Qt6QmlWorkerScript.dll) do (
+    if exist "%DIST_DIR%\_internal\PySide6\%%F" del /Q "%DIST_DIR%\_internal\PySide6\%%F"
+    if exist "%DIST_DIR%\_internal\PySide6\%%F" (
+        echo ERROR: Failed to exclude unused %%F.
+        if not defined CI pause
+        exit /b 1
+    )
+)
+
 robocopy "%CD%\plugins" "%DIST_DIR%\plugins" /E /XD __pycache__ .pytest_cache /XF *.pyc *.pyo /NFL /NDL /NJH /NJS /NP >nul
 if errorlevel 8 (
     echo ERROR: Failed to copy bundled plugins.

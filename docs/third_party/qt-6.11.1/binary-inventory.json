@@ -133,20 +133,6 @@
       "installed_bytes_match": true
     },
     {
-      "path": "_internal/PySide6/plugins/imageformats/qpdf.dll",
-      "bytes": 42296,
-      "sha256": "273a1b6daaf3c0def92902044cf35d0ec65e56f904acb7fbf428d80dae2bb9d5",
-      "product_version": "6.11.1.0",
-      "machine": "0x8664",
-      "installed_wheel_record": [
-        "PySide6_Essentials",
-        "6.11.1",
-        "sha256",
-        "JzobbarzwN75KQIETPNdDsZeVvkErLf79CjYDa4rudU"
-      ],
-      "installed_bytes_match": true
-    },
-    {
       "path": "_internal/PySide6/plugins/imageformats/qsvg.dll",
       "bytes": 39224,
       "sha256": "d4100055c3a4d6c1bca5e303e3d2049bde54d4e916442ee0a3e9b4dfa7d416fc",
@@ -427,90 +413,6 @@
       "installed_bytes_match": true
     },
     {
-      "path": "_internal/PySide6/Qt6Pdf.dll",
-      "bytes": 4611384,
-      "sha256": "cf8ae19cf5f98db4a3ae332fbe6bd00bc4cdf5ca5779f88b2071cf8180610106",
-      "product_version": "6.11.1.0",
-      "machine": "0x8664",
-      "installed_wheel_record": [
-        "PySide6_Addons",
-        "6.11.1",
-        "sha256",
-        "z4rhnPX5jbSjrjMvvmvQC8TN9cpXefiLIHHPgYBhAQY"
-      ],
-      "installed_bytes_match": true
-    },
-    {
-      "path": "_internal/PySide6/Qt6Qml.dll",
-      "bytes": 5380920,
-      "sha256": "5dd60d8e2048557bc1b8a57f6bb44986f45d693c3b0930d1341b07089478f09d",
-      "product_version": "6.11.1.0",
-      "machine": "0x8664",
-      "installed_wheel_record": [
-        "PySide6_Essentials",
-        "6.11.1",
-        "sha256",
-        "XdYNjiBIVXvBuKV_a7RJhvRdaTw7CTDRNBsHCJR48J0"
-      ],
-      "installed_bytes_match": true
-    },
-    {
-      "path": "_internal/PySide6/Qt6QmlMeta.dll",
-      "bytes": 160056,
-      "sha256": "1ae5a50e8defa2b60518a2261a2472ecf4d3e3ca965780339953d658844d4aa0",
-      "product_version": "6.11.1.0",
-      "machine": "0x8664",
-      "installed_wheel_record": [
-        "PySide6_Essentials",
-        "6.11.1",
-        "sha256",
-        "GuWlDo3vorYFGKImGiRy7PTT48qWV4AzmVPWWIRNSqA"
-      ],
-      "installed_bytes_match": true
-    },
-    {
-      "path": "_internal/PySide6/Qt6QmlModels.dll",
-      "bytes": 997176,
-      "sha256": "1ec0d115747d65a994798064618ffd9e3e9efa1548297e64e08c49c9a98f0feb",
-      "product_version": "6.11.1.0",
-      "machine": "0x8664",
-      "installed_wheel_record": [
-        "PySide6_Essentials",
-        "6.11.1",
-        "sha256",
-        "HsDRFXR9ZamUeYBkYY_9nj6e-hVIKX5k4IxJyamPD-s"
-      ],
-      "installed_bytes_match": true
-    },
-    {
-      "path": "_internal/PySide6/Qt6QmlWorkerScript.dll",
-      "bytes": 80696,
-      "sha256": "3a764b6c2bc8cb21f009485e7410e6d29b9edd5e0addbed8fb89292c0ab64c97",
-      "product_version": "6.11.1.0",
-      "machine": "0x8664",
-      "installed_wheel_record": [
-        "PySide6_Essentials",
-        "6.11.1",
-        "sha256",
-        "OnZLbCvIyyHwCUhedBDm0pue3V4K3b7Y-4kpLAq2TJc"
-      ],
-      "installed_bytes_match": true
-    },
-    {
-      "path": "_internal/PySide6/Qt6Quick.dll",
-      "bytes": 6593336,
-      "sha256": "33bddb006a99c82ce3bb677fd2535dfb651d4b2fb12aa13eadde6dc442bf7f0d",
-      "product_version": "6.11.1.0",
-      "machine": "0x8664",
-      "installed_wheel_record": [
-        "PySide6_Essentials",
-        "6.11.1",
-        "sha256",
-        "M73bAGqZyCzju2d_0lNd-2UdSy-xKqE-rd5txEK_fw0"
-      ],
-      "installed_bytes_match": true
-    },
-    {
       "path": "_internal/PySide6/Qt6Svg.dll",
       "bytes": 642360,
       "sha256": "a7352e8062d02e2108e37db4050fb3315d3c03c7d36acdc24b98b9a6c129c1de",
@@ -737,5 +639,10 @@
       "installed_wheel_record": null,
       "installed_bytes_match": true
     }
+  ],
+  "scope": "Nine-file optional exclusion candidate; Qt DLL and binding bytes unchanged from vendor wheels",
+  "software_opengl_version_strings": [
+    "Mesa 11.2.2",
+    "LLVM 3.6.2"
   ]
 }

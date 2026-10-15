@@ -1257,6 +1257,52 @@ def test_linked_and_multiple_plot_axes_store_one_range(window: MainWindow) -> No
     plot.scene().removeItem(right)
 
 
+def test_fft_scope_sync_and_project_reopen(
+    window: MainWindow, tmp_path: Path, monkeypatch,
+) -> None:
+    _experimental_import(window, tmp_path / "fft.csv")
+    window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+    window._processing_apply()
+    _wait(window)
+    window._analysis_calculate()
+    _wait(window)
+    analysis = window.session.analysis_result
+    processing = window.session.processing_result
+    bindings = window.session.project_data.primary_channels
+    export_ids = window.export_dialog.selected_exporter_ids()
+    plots = window._plot_widgets()
+    plots["temperature"].analysis_scope_check.setChecked(True)
+    assert window.session.plot_analysis_active_only
+    assert all(plot.analysis_scope_check.isChecked() for plot in plots.values())
+    for plot in plots.values():
+        plot.plot_widget.getPlotItem().ctrl.fftCheck.setChecked(True)
+        assert plot.bottom_axis.labelUnits == "Hz"
+    assert window.session.analysis_result is analysis
+    assert window.session.processing_result is processing
+    assert window.session.project_data.primary_channels == bindings
+    assert window.export_dialog.selected_exporter_ids() == export_ids
+    # Existing manual interval editor remains usable beyond the clipped viewport.
+    window.process_page.interval_editor.set_regions(
+        {"pre": None, "active_test": [.5, 3.5], "post": None},
+    )
+    window.process_page.burn_region.setRegion([.5, 3.5])
+    QApplication.processEvents()
+    assert window.session.regions["active_test"] == [.5, 3.5]
+    project = tmp_path / "fft.project.json"
+    window._project_save_path(project)
+    _wait(window)
+    assert Project_Load(project).plot_analysis_active_only
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+    window._project_new()
+    window._project_open_dialog()
+    _wait(window)
+    for plot in window._plot_widgets().values():
+        assert plot.analysis_scope_check.isChecked()
+        assert plot.plot_widget.getPlotItem().ctrl.fftCheck.isChecked()
+        assert plot.bottom_axis.labelUnits == "Hz"
+    assert not window._test_errors
+
+
 def test_shared_dimensions_invalidate_and_reach_both_calculators(
     window: MainWindow, tmp_path: Path,
 ) -> None:

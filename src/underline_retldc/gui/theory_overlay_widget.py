@@ -245,9 +245,14 @@ class TheoryOverlayWidget(QWidget):
             else:
                 self._compatible.add(stable_id)
                 if visible:
+                    detection = source.display_transform.detected_test
+                    active = detection.regions.active_test if detection is not None else None
                     plot.add_series(
                         time, curve.channel.display_values(display_unit),
                         name=text, style_index=index + 2, theoretical=True,
+                        scientific_time=self._project.streams[curve.reference.stream_id]
+                        .dataset.project_time,
+                        active_interval=(active.start, active.end) if active is not None else None,
                     )
                     plotted = True
             self.curve_list.addItem(item)

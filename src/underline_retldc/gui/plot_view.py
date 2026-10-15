@@ -33,9 +33,13 @@ def PlotViews_Capture(plots: Mapping[str, Any]) -> dict[str, dict[str, AxisViewS
         target = view.linkedView(axis)
         linked_to = identities.get((id(target), axis)) if target is not None else None
         plot_id, axis_id = key.split("/", 1)
+        control = plots[plot_id].plot_widget.getPlotItem().ctrl
         states.setdefault(plot_id, {})[axis_id] = AxisViewState(
             None if linked_to else tuple(view.viewRange()[axis]),
             view.autoRangeEnabled()[axis], linked_to,
+            axis_id == "x" and control.fftCheck.isChecked(),
+            (control.logXCheck if axis == 0 else control.logYCheck).isChecked(),
+            axis_id == "x" and control.subtractMeanCheck.isChecked(),
         )
     return states
 
@@ -45,6 +49,19 @@ def PlotViews_Restore(
 ) -> None:
     """Restore display coordinates after curves; never apply a Source time transform."""
     bindings = PlotViews_Bindings(plots)
+    # Transforms must precede range restoration: saved coordinates may be Hz/log10.
+    for plot_id, axes in states.items():
+        widget = plots.get(plot_id)
+        if widget is None:
+            continue
+        control = widget.plot_widget.getPlotItem().ctrl
+        x_state, y_state = axes.get("x"), axes.get("y")
+        if x_state is not None:
+            control.subtractMeanCheck.setChecked(x_state.subtract_mean_mode)
+            control.fftCheck.setChecked(x_state.fft_mode)
+            control.logXCheck.setChecked(x_state.log_mode)
+        if y_state is not None:
+            control.logYCheck.setChecked(y_state.log_mode)
     for plot_id, axes in states.items():
         for axis_id, state in axes.items():
             binding = bindings.get(f"{plot_id}/{axis_id}")

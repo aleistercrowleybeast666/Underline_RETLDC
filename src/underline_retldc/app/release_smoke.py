@@ -33,6 +33,7 @@ from underline_retldc.core.project import Project_Load
 from underline_retldc.core.project_data import SourceKind
 from underline_retldc.core.registry import PluginLoadResult
 from underline_retldc.gui.main_window import MainWindow
+from underline_retldc.gui.plot_view import PlotViews_Capture, PlotViews_Restore
 from underline_retldc.gui.plugin_install_dialog import PluginInstallPreviewDialog
 
 
@@ -268,6 +269,52 @@ def _plugin_zip_write(destination: Path) -> str:
         archive.writestr("wrapper/parser/plugin.json", json.dumps(manifest))
         archive.writestr("wrapper/parser/plugin.py", code)
     return plugin_id
+
+
+def _plot_analysis_check(
+    window: MainWindow, output: Path, check: Callable[[str, bool], None],
+) -> None:
+    plots = window._plot_widgets()
+    original_views = PlotViews_Capture(plots)
+    science = (window.session.analysis_result, window.session.processing_result)
+    window.process_page.analysis_plot.analysis_scope_check.setChecked(True)
+    check("fft_scope_all_pages", all(
+        plot.analysis_scope_check.isChecked() for plot in plots.values()
+    ))
+    for workspace, plot in plots.items():
+        control = plot.plot_widget.getPlotItem().ctrl
+        control.fftCheck.setChecked(True)
+        check(f"fft_units_{workspace}", plot.bottom_axis.labelUnits == "Hz"
+              and "|rFFT|/N" in plot.left_axis.labelText)
+        verified = 0
+        for curve in plot._series:
+            if curve.analysis_notice:
+                continue
+            interval = curve.analysis_interval
+            mask = ((curve.scientific_time >= interval[0])
+                    & (curve.scientific_time <= interval[1]))
+            values = curve.getOriginalDataset()[1][mask]
+            expected = np.abs(np.fft.rfft(values) / values.size)
+            # Native display downsampling may reduce getData(); inspect its mapped
+            # pre-downsampling array to verify actual input, not only the visible range.
+            curve.getData()
+            check(f"fft_selected_input_{workspace}_{verified}",
+                  np.allclose(curve._datasetMapped.y, expected))
+            verified += 1
+        check(f"fft_computable_{workspace}", verified > 0)
+        for enabled in (True, False):
+            control.logXCheck.setChecked(enabled)
+            control.logYCheck.setChecked(enabled)
+            check(f"fft_log_units_{workspace}_{enabled}", plot.bottom_axis.labelUnits == "Hz")
+    plot = window.process_page.analysis_plot
+    image = ImageExporter(plot.plot_widget.getPlotItem()).export(toBytes=True)
+    check("fft_png_export", image.save(str(output / "fft_active_interval.png")))
+    check("fft_preserves_science", window.session.analysis_result is science[0]
+          and window.session.processing_result is science[1])
+    window._plot_analysis_scope_changed(False)
+    PlotViews_Restore(plots, original_views)
+    check("fft_exit_time_units", all(plot.bottom_axis.labelUnits == "s"
+                                     for plot in plots.values()))
 
 
 def _plot_language_check(
@@ -550,6 +597,7 @@ def _source_workflow_check(
             and window.session.regions == regions
         ))
     _plot_language_check(window, output, check)
+    _plot_analysis_check(window, output, check)
     row = next(index for index in range(page.source_list.count())
                if page.source_list.item(index).data(page.SOURCE_ID_ROLE) == theory.id)
     page.source_list.setCurrentRow(row)

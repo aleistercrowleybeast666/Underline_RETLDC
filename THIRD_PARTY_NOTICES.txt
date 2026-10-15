@@ -36,11 +36,15 @@ hashes in docs/third_party/runtime/manifest.json.
   Pygments and setuptools (including vendored components). Their notices are
   collected even though they are not scientific workflow dependencies.
 
+New outputs also exclude the unused PDF image reader/library and orphan QML/Quick
+closure (seven further files). Image writer formats are unchanged. Eight Qt DLLs
+remain; the original PlotSVG package is preserved.
+
 The separate filtered validation directory demonstrates the exclusion rule. It
 does not license UNDERLINE or remove LGPL duties from the remaining Qt libraries.
 
 The complete corresponding-source/installation-information route for Qt, nested
-Qt/PDF/image-format attributions, and Windows runtime redistribution terms still
+Qt/image-format/software-OpenGL attributions, and Windows runtime redistribution terms still
 need release review. License text collection is not a declaration of compliance.
 
 Upstream references:
@@ -54,5 +58,7 @@ Current review, decisions and package impact: docs/Licensing_Review_0_1_0.md
 Pinned source-version attribution catalogue: docs/third_party/qt-6.11.1/
 Corresponding-source plan: docs/Qt_Corresponding_Source_0_1_0.md
 Dynamic-library/re-freezing instructions: docs/Qt_Library_Replacement_0_1_0.md
-The source catalogue is not a build-concluded SBOM. Source archives were not
-downloaded or provided merely by listing their URLs and advertised checksums.
+The source catalogue is not a build-concluded SBOM. The reduced runtime needs five
+Qt/PySide 6.11.1 source archives (74,666,284 bytes); their actual downloaded-body
+verification and local location are recorded in corresponding-sources.json.
+Source download is distinct from public hosting or a completed redistribution review.

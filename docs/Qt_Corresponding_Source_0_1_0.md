@@ -1,82 +1,63 @@
-# Qt/PySide 对应源码准备与候选交付计划
+# Qt/PySide 对应源码与本地候选
 
-本轮只准备材料，没有下载以下源码归档、Qt SDK，没有重编译或发布。用户已选择原创
-项目代码采用 Apache-2.0；根 LICENSE 与 SilverStar 标准文本的 Git blob 一致：
-`d645695673349e3947e8e5ae42332d0ac3164cd7`。未新增个人版权行或空白项目版权声明。
-Apache 附录中的示例不是实际署名，第三方版权和许可原样保留。
+项目原创代码采用标准 Apache-2.0；根 LICENSE 与 SilverStar 的标准文本 Git blob
+相同：`d645695673349e3947e8e5ae42332d0ac3164cd7`。没有新增个人版权行；附录示例
+不作为项目版权声明。第三方库保留自己的授权。
 
-## 精确版本与目前证据边界
+## 新候选的实际模块范围
 
-已过滤目录中 14 个 Qt6 DLL 的 ProductVersion 全部为 `6.11.1.0`；PySide6、Essentials、
-Addons、Shiboken 的分发版本均为 `6.11.1`。实际 Qt 构建信息为 Windows AMD64、
-MSVC 2022、shared/dynamic、release。PySide wheel 标签是 `cp310-abi3-win_amd64`，
-当前 Python 运行时为 3.14.0。55 个 Qt/绑定/插件/运行文件与已安装供应商文件字节一致。
-文件路径、大小、SHA-256、PE 版本及对应 wheel RECORD 线索在
+新输出保留 8 个 Qt6 DLL：Core、Gui、Widgets、Network、OpenGL、OpenGLWidgets、Svg、Test。
+版本为 6.11.1.0；PySide6/Essentials/Addons/Shiboken 为 6.11.1，Windows AMD64、
+MSVC 2022、shared release、cp310-abi3，Python 3.14.0。文件与供应商 wheel 的对应证据在
 `third_party/qt-6.11.1/binary-inventory.json`。
 
-已取得精确 `v6.11.1` 标签的源版本归属目录：95 条组件记录、56 份被引用的许可文档，
-以及相关模块 LICENSES/REUSE 原文，出处与哈希逐项保存。部分条目是特定平台或编译选项
-才使用的组件；**这是一份源版本目录，不是此 Windows wheel 已编译组件的结论性 SBOM**。
-当前安装材料中没有找到与本 wheel 精确匹配的供应商构建 SBOM/完整构建配置。
+排除 Virtual Keyboard 两文件、PDF 读图插件/库和孤立的 QML/Quick 闭包七文件，合计九个。
+正常/延迟 PE 导入、业务 API、PYZ 和资源检查支持该边界；写出图像格式全部保留，读入格式
+仅少了 PDF。后七文件合计 17,865,864 字节。规则已加入 `打包.bat`，详见
+`third_party/qt-6.11.1/optional-runtime-exclusions.json`。
 
-Qt PDF 的 PDFium/Chromium 嵌套内容没有由上述小目录完整覆盖；Mesa 软件 OpenGL 等
-额外运行文件也须按供应商构建材料核对，不能用相近 Qt SDK 的 SBOM 假充匹配。
-[Qt 的 SBOM 文档](https://doc.qt.io/qt-6.11/sbom.html)说明它与平台和构建配置有关。
+因此旧八归档 **661.4 MiB** 计划已被取代；新候选不需要 qtwebengine、qtdeclarative、
+qtshadertools。旧 PlotSVG 包原字节保持不变。冻结 GUI 在九文件排除后 189 项通过；
+后续 FFT 小修的冻结版本与验证另记于 `FFT_Apache_Acceptance_0_1_0.md`。
 
-## 需要准备的精确版本源码
+## 五份官方精确版本源码
 
-以下字节数来自官方归档 HEAD 和镜像元数据；已记录公布的 SHA-256，**尚未下载正文，
-因此没有宣称验证了归档正文或完成对应源码交付**。完整 URL/校验值见
-`third_party/qt-6.11.1/corresponding-sources.json`。
+以下 6.11.1 原始 tar.xz 归档各保留一份，不放入 Git、不展开 SDK、不再套重复源码 ZIP。
+正文大小及 SHA-256 必须均匹配官方镜像元数据，才标记为下载完成。执行状态、完整 URL、
+哈希和本地路径见 `third_party/qt-6.11.1/corresponding-sources.json`。
 
-| 归档（均为 6.11.1 tar.xz） | 用途 | 压缩字节 | 约 MiB |
-| --- | --- | ---: | ---: |
-| qtbase-everywhere-src | Core/Gui/Widgets/Network/OpenGL/Test 及平台、TLS 等插件 | 50,648,500 | 48.30 |
-| qtdeclarative-everywhere-src | 仍分发的 QML/Quick 系列 DLL | 38,744,644 | 36.95 |
-| qtsvg-everywhere-src | SVG 库及插件 | 2,336,944 | 2.23 |
-| qtimageformats-everywhere-src | 实带图像格式插件 | 2,032,792 | 1.94 |
-| qttranslations-everywhere-src | 实带 QM 翻译数据的来源 | 1,684,616 | 1.61 |
-| pyside-setup-everywhere-src | PySide6、Shiboken、生成和构建脚本 | 17,963,432 | 17.13 |
-| qtshadertools-everywhere-src | 构建时可能需要，须与原构建配方核对；不冒充实带 DLL | 1,216,568 | 1.16 |
-| qtwebengine-everywhere-src | Qt PDF/qpdf 及其源码依赖；不是整套 SDK | 578,914,356 | 552.10 |
+| 归档 | 对应范围 | 压缩字节 |
+| --- | --- | ---: |
+| qtbase-everywhere-src | 7 个 Qt Base 库、平台/TLS 等插件及源码依赖 | 50,648,500 |
+| qtsvg-everywhere-src | SVG 库与插件 | 2,336,944 |
+| qtimageformats-everywhere-src | 保留的图像格式插件 | 2,032,792 |
+| qttranslations-everywhere-src | QM 翻译数据与生成材料 | 1,684,616 |
+| pyside-setup-everywhere-src | PySide6/Shiboken，生成与构建脚本 | 17,963,432 |
 
-合计 693,541,852 字节，约 **661.41 MiB**；其中除 qtwebengine 外约 109.32 MiB。
-解压大小尚未测量，不能据压缩大小承诺所需磁盘。来源为
-[Qt 分模块官方目录](https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/)和
-[Qt for Python 官方目录](https://download.qt.io/official_releases/QtForPython/pyside6/PySide6-6.11.1-src/)。
-这些来源替代整套 SDK 下载，但本身仍须确认完整对应关系、必要构建脚本和配置。
-552.1 MiB 是目前找到的官方完整分模块归档，不代表法律上的最小 PDF 源码集合。
-若制作更小的 PDF-only 源码子集，须先验证其构建完整性，不能为缩体积随意裁掉必要文件。
+合计 **74,666,284 字节（71.21 MiB）**，低于用户批准的 750 MiB 上限。来源为
+[Qt 官方分模块目录](https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/)
+与 [Qt for Python 官方目录](https://download.qt.io/official_releases/QtForPython/pyside6/PySide6-6.11.1-src/)。
+截断响应在同一 `.part` 续传；未通过完整正文哈希的临时文件不算交付源码。
 
-## 提供方案与最小剩余阻塞
+归档采用流式 tar 读取检查版本/构建/许可材料，不展开源码树。检查结果在
+`third_party/qt-6.11.1/archive-inspection.json`。此前精确 v6.11.1 固定 tag 材料含
+95 条归属元数据和 56 份引用许可，涵盖条件构建和其他平台内容，是源码版本目录，
+不是这个 Windows wheel 的最终 SBOM。
 
-建议将经核验的对应源码作为独立的源码资产，与二进制放在同一发布记录中；保留原
-压缩归档和 SHA-256，不为检查而整套解压，也不把大归档提交进源码 Git。
-另一方案是经审查建立持续可用、明确关联二进制版本的源码托管/获取安排。
-这两者目前都是准备方案，不是已经履行的交付或已发出的书面提供承诺。
+## 实际证据边界与待发布事项
 
-不能仅放一个 Qt 首页、最新版链接或无责任保证的第三方链接就写“LGPL 已完成”。
-需确认源码确实对应所分发库，含必要修改/构建材料；选择的访问方式还要满足适用许可
-的完整性、清晰指引和持续提供要求。见本仓库保留的 LGPLv3 第 4 节、GPLv3 第 6 节和
-[Qt 的官方义务说明](https://www.qt.io/development/open-source-lgpl-obligations)。
+五归档是当前 Qt/PySide 模块的官方发行源码集合，不自动证明供应商每个二进制/嵌套
+组件的完整构建对应关系。本地 wheel 没有匹配的供应商构建配置/SBOM；不能用邻近 SDK
+的 SBOM 替代。[Qt SBOM 文档](https://doc.qt.io/qt-6.11/sbom.html)说明其依赖具体构建。
 
-当前最小剩余阻塞为：
+仍保留的软件 OpenGL `opengl32sw.dll` 含 Mesa 11.2.2、LLVM 3.6.2 版本字符串，
+不是 Qt 6.11.1 模块源码的一部分；精确供应商构建归属及嵌套版权材料仍需补齐。
+Windows/VC 运行库也按供应商条款单独核对。不能把这些归属问题隐藏在“已下载 Qt 源码”中。
 
-1. 与所分发库匹配的源码/构建材料及归属证据，含 Qt PDF、Mesa。可以是匹配 SBOM 或
-   等效材料，并非强制某一种文档形式；当前证据不足以作出完整对应性结论。
-2. 是否保留现有 PDF 图像读取插件并接受约 552 MiB 的主要源码资产，或另行决定评估
-   更小的分发范围。本轮没有悄悄移除 PDF、QML/Quick 或其它已分发功能。
-3. 确认约 661.4 MiB 源码资产的实际托管/提供方案，再获取正文、验证公布的哈希并完成
-   对应关系检查。未经这些步骤，不宣称已可公开发布。
-4. PySide 的纯 Python 部分在 PYZ 中，最终交付还需验证重新冻结/替换流程，不能只说
-   “DLL 可替换”就把全部绑定层义务视作完成。
+Qt DLL/PYD 是外部动态库，但部分 Python 绑定在 PYZ 中。仓库与 pyside-setup 提供
+生成/构建/冻结脚本；修改绑定后的重建、重冻结仍未实测，操作边界见
+[库替换说明](Qt_Library_Replacement_0_1_0.md)。
 
-## 独立候选计划
-
-已验证运行目录仍是任务目录内 `license-filtered/Underline_RETLDC`，不覆盖原 PlotSVG。
-补齐本轮 LICENSE、声明和材料后，先作为用户功能验收目录；只有完成上述材料与公开
-发布确认后，才生成新的命名 ZIP/校验和，并分别记录冻结源码提交和打包文档提交。
-EXE 可复用既有字节；许可/说明更新无需重新 PyInstaller。若再改运行组件，须针对变化
-验证。当前 317/189 项通过证据保留，本轮不无谓重复全量运行。
-
-动态库和绑定层替换边界见 [替换说明](Qt_Library_Replacement_0_1_0.md)。
+源码当前仅本地保存，未公开托管、上传或作出长期书面提供承诺。公开发布前仍需确定
+实际可获的二进制、匹配源码、必要构建信息和许可材料的提供方式。文件清单、源码下载
+或 GUI 通过均不单独构成完整法律合规证明。没有推送、打 tag 或发布 Release。

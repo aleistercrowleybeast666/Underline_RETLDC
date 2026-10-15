@@ -1,0 +1,332 @@
+{
+  "method": "Streaming tar inspection; no source tree extracted",
+  "archives": [
+    {
+      "component": "qtbase",
+      "archive_sha256": "d9594a31228aa23ad6b531719a29b45f0f3989fe6c136d45767ea179f233c1ac",
+      "entries": 26854,
+      "expanded_regular_bytes": 275949217,
+      "unpacked_to_disk": false,
+      "pinned_source_files_verified": [
+        "LICENSES/AFL-2.1.txt",
+        "LICENSES/Apache-2.0.txt",
+        "LICENSES/BSD-2-Clause.txt",
+        "LICENSES/BSD-3-Clause.txt",
+        "LICENSES/BSD-4-Clause.txt",
+        "LICENSES/BSL-1.0.txt",
+        "LICENSES/Bitstream-Vera.txt",
+        "LICENSES/CC0-1.0.txt",
+        "LICENSES/FTL.txt",
+        "LICENSES/GFDL-1.3-no-invariants-only.txt",
+        "LICENSES/GPL-2.0-only.txt",
+        "LICENSES/GPL-2.0-or-later.txt",
+        "LICENSES/GPL-3.0-only.txt",
+        "LICENSES/HPND.txt",
+        "LICENSES/IJG.txt",
+        "LICENSES/IPL-1.0.txt",
+        "LICENSES/Imlib2.txt",
+        "LICENSES/LGPL-2.1-or-later.txt",
+        "LICENSES/LGPL-3.0-only.txt",
+        "LICENSES/Libpng.txt",
+        "LICENSES/LicenseRef-BSD-3-Clause-with-PCRE2-Binary-Like-Packages-Exception.txt",
+        "LICENSES/LicenseRef-ICC-License.txt",
+        "LICENSES/LicenseRef-Lcs-Telegraphics.txt",
+        "LICENSES/LicenseRef-Qt-Commercial.txt",
+        "LICENSES/LicenseRef-SHA1-Public-Domain.txt",
+        "LICENSES/Linux-syscall-note.txt",
+        "LICENSES/MIT-Khronos-old.txt",
+        "LICENSES/MIT-open-group.txt",
+        "LICENSES/MIT.txt",
+        "LICENSES/MPL-2.0.txt",
+        "LICENSES/Qt-GPL-exception-1.0.txt",
+        "LICENSES/SPL-1.0.txt",
+        "LICENSES/Unicode-3.0.txt",
+        "LICENSES/X11.txt",
+        "LICENSES/Xerox.txt",
+        "LICENSES/Zlib.txt",
+        "LICENSES/blessing.txt",
+        "LICENSES/libpng-2.0.txt",
+        "REUSE.toml",
+        "src/3rdparty/D3D12MemoryAllocator/LICENSE.txt",
+        "src/3rdparty/D3D12MemoryAllocator/qt_attribution.json",
+        "src/3rdparty/VulkanMemoryAllocator/LICENSE.txt",
+        "src/3rdparty/VulkanMemoryAllocator/qt_attribution.json",
+        "src/3rdparty/android/LICENSE",
+        "src/3rdparty/android/qt_attribution.json",
+        "src/3rdparty/blake2/COPYING",
+        "src/3rdparty/blake2/qt_attribution.json",
+        "src/3rdparty/double-conversion/LICENSE",
+        "src/3rdparty/double-conversion/qt_attribution.json",
+        "src/3rdparty/easing/LICENSE",
+        "src/3rdparty/easing/qt_attribution.json",
+        "src/3rdparty/emoji-segmenter/qt_attribution.json",
+        "src/3rdparty/forkfd/LICENSE",
+        "src/3rdparty/forkfd/qt_attribution.json",
+        "src/3rdparty/freetype/BDF-LICENSE.txt",
+        "src/3rdparty/freetype/LICENSE.txt",
+        "src/3rdparty/freetype/PCF-LICENSE.txt",
+        "src/3rdparty/freetype/ZLIB-LICENSE.txt",
+        "src/3rdparty/freetype/qt_attribution.json",
+        "src/3rdparty/gradle/LICENSE",
+        "src/3rdparty/gradle/qt_attribution.json",
+        "src/3rdparty/harfbuzz-ng/COPYING",
+        "src/3rdparty/harfbuzz-ng/qt_attribution.json",
+        "src/3rdparty/icc/LICENSE.txt",
+        "src/3rdparty/icc/qt_attribution.json",
+        "src/3rdparty/libjpeg/qt_attribution.json",
+        "src/3rdparty/libpng/LICENSE",
+        "src/3rdparty/libpng/qt_attribution.json",
+        "src/3rdparty/libpsl/PSL-LICENSE.txt",
+        "src/3rdparty/libpsl/qt_attribution.json",
+        "src/3rdparty/libpsl/src/LICENSE.chromium",
+        "src/3rdparty/md4/qt_attribution.json",
+        "src/3rdparty/md4c/LICENSE.md",
+        "src/3rdparty/md4c/qt_attribution.json",
+        "src/3rdparty/md5/qt_attribution.json",
+        "src/3rdparty/pcre2/LICENCE.md",
+        "src/3rdparty/pcre2/LICENSE-SLJIT",
+        "src/3rdparty/pcre2/qt_attribution.json",
+        "src/3rdparty/pixman/LICENSE",
+        "src/3rdparty/pixman/qt_attribution.json",
+        "src/3rdparty/rfc6234/LICENSE",
+        "src/3rdparty/rfc6234/qt_attribution.json",
+        "src/3rdparty/sha1/qt_attribution.json",
+        "src/3rdparty/sha3/BRG_ENDIAN_LICENSE",
+        "src/3rdparty/sha3/CC0_LICENSE",
+        "src/3rdparty/sha3/qt_attribution.json",
+        "src/3rdparty/siphash/qt_attribution.json",
+        "src/3rdparty/sqlite/qt_attribution.json",
+        "src/3rdparty/tinycbor/LICENSE",
+        "src/3rdparty/tinycbor/qt_attribution.json",
+        "src/3rdparty/wasm/DEJAVU-LICENSE",
+        "src/3rdparty/wasm/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/MIT_LICENSE.txt",
+        "src/3rdparty/wayland/protocols/appmenu/LGPL-2.1-or-later.txt",
+        "src/3rdparty/wayland/protocols/appmenu/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/color-management/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/fractional-scale/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/fullscreen-shell/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/linux-dmabuf/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/pointer-gestures/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/pointer-warp/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/presentation-time/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/scaler/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/session-management/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/tablet/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/text-input/v1/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/text-input/v2/HPND_LICENSE.txt",
+        "src/3rdparty/wayland/protocols/text-input/v2/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/text-input/v3/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/viewporter/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/wayland/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/wl-eglstream/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/wlr-data-control/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/wp-primary-selection/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/xdg-activation/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/xdg-decoration/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/xdg-dialog/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/xdg-foreign/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/xdg-output/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/xdg-shell/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/xdg-system-bell/qt_attribution.json",
+        "src/3rdparty/wayland/protocols/xdg-toplevel-icon/qt_attribution.json",
+        "src/3rdparty/wintab/qt_attribution.json",
+        "src/3rdparty/xcb/LICENSE",
+        "src/3rdparty/xcb/qt_attribution.json",
+        "src/3rdparty/zlib/LICENSE",
+        "src/3rdparty/zlib/qt_attribution.json",
+        "src/corelib/global/qt_attribution.json",
+        "src/corelib/kernel/LICENSE.QEVENTDISPATCHER_CF.txt",
+        "src/corelib/kernel/qt_attribution.json",
+        "src/corelib/mimetypes/3rdparty/qt_attribution.json",
+        "src/corelib/text/qt_attribution.json",
+        "src/dbus/LICENSE.LIBDBUS-1.txt",
+        "src/dbus/qt_attribution.json",
+        "src/gui/opengl/LICENSE.KHRONOS.txt",
+        "src/gui/opengl/qt_attribution.json",
+        "src/gui/painting/LICENSE.QIMAGETRANSFORM.txt",
+        "src/gui/painting/LICENSE.XCONSORTIUM.txt",
+        "src/gui/painting/qt_attribution.json",
+        "src/gui/rhi/LICENSE.MiniEngine.txt",
+        "src/gui/rhi/qt_attribution.json",
+        "src/gui/text/LICENSE.AGLFN.txt",
+        "src/gui/text/qt_attribution.json",
+        "src/gui/vulkan/LICENSE.txt",
+        "src/gui/vulkan/qt_attribution.json",
+        "src/plugins/platforms/cocoa/LICENSE.COCOA.txt",
+        "src/plugins/platforms/cocoa/qt_attribution.json",
+        "src/testinternal/3rdparty/cmake/Copyright.txt",
+        "src/testinternal/3rdparty/cmake/qt_attribution.json",
+        "src/testlib/3rdparty/catch2/LICENSE.txt",
+        "src/testlib/3rdparty/catch2/qt_attribution.json",
+        "src/testlib/3rdparty/cycle/LICENSE.txt",
+        "src/testlib/3rdparty/cycle/qt_attribution.json",
+        "src/testlib/3rdparty/linux/LICENSE.txt",
+        "src/testlib/3rdparty/linux/qt_attribution.json",
+        "src/testlib/3rdparty/valgrind/LICENSE.txt",
+        "src/testlib/3rdparty/valgrind/qt_attribution.json"
+      ],
+      "version_files": [
+        {
+          "path": ".cmake.conf",
+          "matching_version_lines": [
+            "# we check for QT_REPO_MODULE_VERSION before defining it below; that will",
+            "if (NOT DEFINED QT_SUPERBUILD OR DEFINED QT_REPO_MODULE_VERSION)",
+            "set(QT_REPO_MODULE_VERSION \"6.11.1\")"
+          ],
+          "sha256": "a4345e31d91833955e805ada3c8c69a7a48b6913d5d5f87dd3c0ed4b16642174"
+        },
+        {
+          "path": "CMakeLists.txt",
+          "matching_version_lines": [
+            "VERSION \"${QT_REPO_MODULE_VERSION}\""
+          ],
+          "sha256": "19284751242b33ff39b86d0b75afd587aae465cbca5d8347f1fe71d1bd9113d2"
+        }
+      ]
+    },
+    {
+      "component": "qtsvg",
+      "archive_sha256": "7f3cf02f4824bf03c2c5859ea6db173bf1482a1daf24e6cdf7bc78cfa26a8a94",
+      "entries": 720,
+      "expanded_regular_bytes": 7054115,
+      "unpacked_to_disk": false,
+      "pinned_source_files_verified": [
+        "LICENSES/BSD-3-Clause.txt",
+        "LICENSES/GFDL-1.3-no-invariants-only.txt",
+        "LICENSES/GPL-2.0-only.txt",
+        "LICENSES/GPL-3.0-only.txt",
+        "LICENSES/HPND-sell-variant.txt",
+        "LICENSES/LGPL-3.0-only.txt",
+        "LICENSES/LicenseRef-Qt-Commercial.txt",
+        "REUSE.toml",
+        "src/svg/LICENSE.XSVG.txt",
+        "src/svg/qt_attribution.json"
+      ],
+      "version_files": [
+        {
+          "path": ".cmake.conf",
+          "matching_version_lines": [
+            "set(QT_REPO_MODULE_VERSION \"6.11.1\")"
+          ],
+          "sha256": "d8f9cb76bfbbfae952de2d671847f7997ec824eb4bc183be831c08b55529686a"
+        },
+        {
+          "path": "CMakeLists.txt",
+          "matching_version_lines": [
+            "VERSION \"${QT_REPO_MODULE_VERSION}\""
+          ],
+          "sha256": "71aaae04cd66109b0e02d71ad2cec846517b38283e48c240a2e5775883b0ed2f"
+        }
+      ]
+    },
+    {
+      "component": "qtimageformats",
+      "archive_sha256": "b2bf6c6845ac175ed7f819145483ba4676f617aaa6a5012c8efee63c8bbac413",
+      "entries": 625,
+      "expanded_regular_bytes": 10230327,
+      "unpacked_to_disk": false,
+      "pinned_source_files_verified": [
+        "LICENSES/BSD-3-Clause.txt",
+        "LICENSES/GFDL-1.3-no-invariants-only.txt",
+        "LICENSES/GPL-2.0-only.txt",
+        "LICENSES/GPL-3.0-only.txt",
+        "LICENSES/LGPL-3.0-only.txt",
+        "LICENSES/LicenseRef-Qt-Commercial.txt",
+        "LICENSES/libtiff.txt",
+        "REUSE.toml",
+        "src/3rdparty/libtiff/COPYRIGHT",
+        "src/3rdparty/libtiff/qt_attribution.json",
+        "src/3rdparty/libwebp/COPYING",
+        "src/3rdparty/libwebp/qt_attribution.json"
+      ],
+      "version_files": [
+        {
+          "path": ".cmake.conf",
+          "matching_version_lines": [
+            "set(QT_REPO_MODULE_VERSION \"6.11.1\")"
+          ],
+          "sha256": "a555ea50433065e7ffa84cc581fc09daefef9e47d8ae194966fa62d11bdd2470"
+        },
+        {
+          "path": "CMakeLists.txt",
+          "matching_version_lines": [
+            "VERSION \"${QT_REPO_MODULE_VERSION}\""
+          ],
+          "sha256": "f2b5d2a45bce5b17c05e916fd75b200e22b6adbb753aa7a1fd2372d9f8b34b75"
+        }
+      ]
+    },
+    {
+      "component": "qttranslations",
+      "archive_sha256": "37c02c81206594c7bb4edca85ac93e8e55a9836b70c960fde6cb0f8623ec5677",
+      "entries": 314,
+      "expanded_regular_bytes": 22580230,
+      "unpacked_to_disk": false,
+      "pinned_source_files_verified": [
+        "LICENSES/BSD-3-Clause.txt",
+        "LICENSES/GPL-3.0-only.txt",
+        "LICENSES/LicenseRef-Qt-Commercial.txt",
+        "LICENSES/Qt-GPL-exception-1.0.txt",
+        "licenseRule.json",
+        "translations/README"
+      ],
+      "version_files": [
+        {
+          "path": ".cmake.conf",
+          "matching_version_lines": [
+            "set(QT_REPO_MODULE_VERSION \"6.11.1\")"
+          ],
+          "sha256": "36727c24ceea2a809ee5e970e21644b5e8c77dd6c658d609cff8bafcf2d5ca0a"
+        },
+        {
+          "path": "CMakeLists.txt",
+          "matching_version_lines": [
+            "VERSION \"${QT_REPO_MODULE_VERSION}\""
+          ],
+          "sha256": "e54ba7fefca4e1411ee008eeda5f8f3593273a626536b75715846de318b11b15"
+        }
+      ]
+    },
+    {
+      "component": "pyside-setup",
+      "archive_sha256": "6ffd9835bb0dd2c56f061d62f1616bb1707cfc0202b80e3165d6be087f3965e2",
+      "entries": 5553,
+      "expanded_regular_bytes": 35816969,
+      "unpacked_to_disk": false,
+      "pinned_source_files_verified": [
+        "LICENSES/Apache-2.0.txt",
+        "LICENSES/BSD-3-Clause.txt",
+        "LICENSES/GFDL-1.3-no-invariants-only.txt",
+        "LICENSES/GPL-2.0-only.txt",
+        "LICENSES/GPL-3.0-only.txt",
+        "LICENSES/LGPL-3.0-only.txt",
+        "LICENSES/LicenseRef-Qt-Commercial.txt",
+        "LICENSES/Qt-GPL-exception-1.0.txt",
+        "README.md",
+        "examples/demos/colorpaletteclient/icons/qt_attribution.json",
+        "examples/webenginewidgets/markdowneditor/resources/3rdparty/MARKDOWN-LICENSE.txt",
+        "examples/webenginewidgets/markdowneditor/resources/3rdparty/MARKED-LICENSE.txt",
+        "examples/webenginewidgets/markdowneditor/resources/3rdparty/qt_attribution.json",
+        "examples/webenginewidgets/simplebrowser/data/3rdparty/COPYING",
+        "examples/webenginewidgets/simplebrowser/data/3rdparty/qt_attribution.json",
+        "sources/shiboken6/libshiboken/bufferprocs_py37.h",
+        "sources/shiboken6/libshiboken/qt_attribution.json",
+        "sources/shiboken6/shibokenmodule/files.dir/shibokensupport/signature/PSF-3.7.0.txt",
+        "sources/shiboken6/shibokenmodule/files.dir/shibokensupport/signature/qt_attribution.json"
+      ],
+      "version_files": [
+        {
+          "path": "CMakeLists.txt",
+          "matching_version_lines": [],
+          "sha256": "c27d9b71431bd0ab47a898db324b37bfa3f894a5a3ba93cfaca51f19cb6ea134"
+        },
+        {
+          "path": "setup.py",
+          "matching_version_lines": [],
+          "sha256": "17be28239e1a8139f83066832a97f2343fe76d6b16ed1dcb71086309f347d4f7"
+        }
+      ]
+    }
+  ]
+}

@@ -301,3 +301,11 @@ persisting another copy of its target's range. Main axes are `x`/`y`; attached V
 names such as `right:x`/`right:y`. Shared actual axes are recorded once. Missing view state uses
 normal defaults; unknown UI axes remain stored. Restoration runs after curves, display transforms
 and initialization. No range is added to scientific timestamps or Source alignment.
+
+Axis entries also accept boolean `log_mode` (per axis), `fft_mode` and
+`subtract_mean_mode` (main `x` entry). All default to false for legacy projects.
+FFT/mean/log controls restore before ranges so saved Hz/log10 coordinates are not
+misinterpreted as time/linear coordinates. These flags are view state only.
+Project-level `plot_analysis_active_only` is a strict boolean, defaults to false,
+and synchronizes the existing derived-plot input scope across workspaces. It does
+not change scientific workflow results or original-data export semantics.
