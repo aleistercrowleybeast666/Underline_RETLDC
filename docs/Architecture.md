@@ -369,6 +369,11 @@ and any existing owner-selected root legal files. A version/hash manifest is wri
 `docs/third_party/runtime/`. This step fails on missing/corrupt document copies; it does not
 choose an UNDERLINE license or certify Qt redistribution compliance. Release decisions and
 the Qt Virtual Keyboard finding are tracked in `docs/Licensing_Review_0_1_0.md`.
+The QtGui hook collects optional input-context plugins. Packaging excludes only the unused
+Virtual Keyboard plugin and its library from the new output; the installed vendor tree is
+untouched. The reduced package is verified separately, as documented in
+`docs/Qt_Runtime_Licensing_0_1_0.md`. License collection also follows the frozen PYZ module roots
+to capture non-workflow packages that were included indirectly.
 
 The entire distribution directory is the release unit: moving only the EXE is unsupported. The
 build script first runs pytest and Ruff with fail-fast errors, then installs PyInstaller into the project `.venv` only when missing, replaces the same

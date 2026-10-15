@@ -6,7 +6,7 @@ import argparse
 import hashlib
 import json
 import sys
-from importlib.metadata import distribution
+from importlib.metadata import distribution, packages_distributions
 from pathlib import Path
 from shutil import copyfile
 
@@ -28,10 +28,24 @@ def Licenses_Collect(output: Path) -> dict[str, object]:
         raise ValueError("License output must not overwrite the repository or legal sources")
     runtime = output / "docs" / "third_party" / "runtime"
     records: list[dict[str, object]] = []
-    for name in (
+    names = {
         "numpy", "scipy", "pyqtgraph", "PySide6", "PySide6_Essentials",
         "PySide6_Addons", "shiboken6", "PyInstaller",
-    ):
+        "pytest", "colorama", "iniconfig", "packaging", "pluggy", "Pygments", "setuptools",
+    }
+    frozen_roots: list[str] = []
+    executable = output / "Underline_RETLDC.exe"
+    if executable.is_file():
+        from PyInstaller.archive.readers import CArchiveReader
+
+        archive = CArchiveReader(str(executable))
+        pyz = archive.open_embedded_archive(next(name for name in archive.toc
+                                                if name.endswith(".pyz")))
+        frozen_roots = sorted({name.split(".")[0] for name in pyz.toc})
+        owners = packages_distributions()
+        names.update(owner for root in frozen_roots for owner in owners.get(root, ())
+                     if owner.lower().replace("_", "-") != "underline-retldc")
+    for name in sorted(names, key=str.lower):
         package = distribution(name)
         documents = [
             path for path in package.files or ()
@@ -54,6 +68,7 @@ def Licenses_Collect(output: Path) -> dict[str, object]:
         records.append({
             "distribution": name, "version": package.version,
             "license_expression": package.metadata.get("License-Expression"),
+            "license_metadata_excerpt": (package.metadata.get("License") or "")[:300],
             "files": copied,
         })
 
@@ -81,6 +96,7 @@ def Licenses_Collect(output: Path) -> dict[str, object]:
         "scope": "Upstream documents only; no UNDERLINE license selection or compliance approval",
         "application_legal_files": application_license_files,
         "distributions": records,
+        "frozen_python_roots": frozen_roots,
         "qt_virtual_keyboard_present": (bundled_qt / "Qt6VirtualKeyboard.dll").is_file(),
         "unresolved": [
             "Application license and copyright holder require owner decision",

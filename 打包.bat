@@ -99,6 +99,22 @@ if exist "%DIST_DIR%\_internal\icuuc.dll" (
     exit /b 1
 )
 
+rem QtGui's hook also collects the optional GPL/commercial virtual keyboard.
+rem This QWidget desktop has no VirtualKeyboard/QML input feature or Python binding.
+rem Exclude only these generated package files; never change the installed Qt tree.
+if exist "%DIST_DIR%\_internal\PySide6\plugins\platforminputcontexts\qtvirtualkeyboardplugin.dll" del /Q "%DIST_DIR%\_internal\PySide6\plugins\platforminputcontexts\qtvirtualkeyboardplugin.dll"
+if exist "%DIST_DIR%\_internal\PySide6\Qt6VirtualKeyboard.dll" del /Q "%DIST_DIR%\_internal\PySide6\Qt6VirtualKeyboard.dll"
+if exist "%DIST_DIR%\_internal\PySide6\Qt6VirtualKeyboard.dll" (
+    echo ERROR: Failed to exclude the unused Virtual Keyboard runtime.
+    if not defined CI pause
+    exit /b 1
+)
+if exist "%DIST_DIR%\_internal\PySide6\plugins\platforminputcontexts\qtvirtualkeyboardplugin.dll" (
+    echo ERROR: Failed to exclude the unused Virtual Keyboard plugin.
+    if not defined CI pause
+    exit /b 1
+)
+
 robocopy "%CD%\plugins" "%DIST_DIR%\plugins" /E /XD __pycache__ .pytest_cache /XF *.pyc *.pyo /NFL /NDL /NJH /NJS /NP >nul
 if errorlevel 8 (
     echo ERROR: Failed to copy bundled plugins.

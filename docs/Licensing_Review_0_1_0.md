@@ -42,8 +42,8 @@ GNU LGPLv3、GPLv3 和 OpenSSL 3.0.18 Apache-2.0 文本保存在 `docs/third_par
    `plugins/platforminputcontexts/qtvirtualkeyboardplugin.dll`。
    [Qt 6.11 官方说明](https://doc.qt.io/qt-6.11/qtvirtualkeyboard-index.html)将其列为
    GPLv3 或商业许可，不能用 PySide 的 LGPL 概述覆盖。需明确商业授权依据，或决定采用
-   适合的 GPL 路线，或在确认不需要该模块后另做打包排除及验证。本轮不删运行组件、
-   不改变已验收功能、不替用户选择路线。
+   适合的 GPL 路线。随后已确认业务不依赖该模块，在独立新目录实施最小打包排除和
+   验证；旧 PlotSVG 保留。该排除不替项目自身选择许可证，也不免除其余 Qt 的义务。
 3. **所选 Qt 路线的实际材料。** LGPL 路线涉及对应库源码、安装/替换信息等，单有文本
    和上游网址不足以宣称完成。Qt PDF、图像插件、字体等嵌套归属需按实带二进制版本
    核对；当前清单不是完整 Qt SBOM 或许可合规证明。
@@ -69,6 +69,18 @@ PyInstaller 的 bootloader 例外允许应用采用适合的许可，
 
 本轮许可收集实测 33 份文件，版本清单与逐项哈希核验通过，材料合计 308937 字节；
 另验证了 3 个源目录覆盖目标会在写入前拒绝。Ruff 和 `git diff --check` 通过。
-完整 pytest 已发起，仍在运行，尚未计为通过；先交付许可阻塞结论供用户决定。
+该轮完整 pytest 已回收到终态：317 项通过，退出码 0，用时 346.23 秒，无遗留测试。
 PlotSVG EXE 与 ZIP 哈希仍与上一轮一致。没有运行新 PyInstaller 构建或发布。
 过程继续使用 `D:\Temp\Underline_RETLDC_v010_validation\plot-chinese-work` 下的小目录。
+
+## 后续最小排除验证
+
+后续授权允许在业务完全不用时修复多收集的打包组件。只读 PYZ、全部 DLL/PYD 导入表、
+业务源码和 PyInstaller 钩子后，确认实际绑定是 PySide6 6.11.1，无 PyQt 模块。
+`Qt6VirtualKeyboard.dll` 唯一 PE 引用者是 `qtvirtualkeyboardplugin.dll`；业务无相应引用、
+冻结包无对应 Python 包装模块，QtGui 钩子会把整个 platforminputcontexts 类别收集进来。
+因此只在新打包输出排除上述两个文件，不修改供应商安装或源码。
+
+剩余 Qt 模块与实际冻结 Python 依赖的核对、可选许可路线及实物证据见
+[Qt 运行依赖核查](Qt_Runtime_Licensing_0_1_0.md)。这是限定模块范围的审计，仍不宣称
+完整嵌套 SBOM、对应源码材料或项目自身许可已经解决。现有 PlotSVG 保持原字节。

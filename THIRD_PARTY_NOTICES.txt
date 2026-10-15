@@ -21,14 +21,21 @@ hashes in docs/third_party/runtime/manifest.json.
 - PySide6/Qt/Shiboken: the installed distributions advertise alternative LGPL/GPL
   terms and a commercial option. License texts in upstream/ are reference copies,
   not proof of a commercial entitlement or selection of a project license.
-- Qt Virtual Keyboard: the current PlotSVG candidate includes this module and
-  its input-method plugin. Its published options are GPLv3 or commercial. It must
-  not be described as covered by LGPL alone. This release decision remains open.
+- Qt Virtual Keyboard: the original PlotSVG candidate includes this module and
+  its input-method plugin. Its published options are GPLv3 or commercial. New
+  build outputs exclude these unused optional files; the original is preserved.
+  The module must not be described as covered by LGPL alone.
 - OpenSSL: the observed candidate includes versions 3.0.18 and 3.6.4. The retained
   OpenSSL 3.0.18 Apache-2.0 text does not establish that all notices/source details
   of the second binary or Qt's other nested components have been verified.
 - PyInstaller: build/bootloader notices are included for reference. Its bootloader
   exception does not choose an application license or replace dependency duties.
+- The frozen archive also contains pytest, pluggy, iniconfig, colorama, packaging,
+  Pygments and setuptools (including vendored components). Their notices are
+  collected even though they are not scientific workflow dependencies.
+
+The separate filtered validation directory demonstrates the exclusion rule. It
+does not license UNDERLINE or remove LGPL duties from the remaining Qt libraries.
 
 The complete corresponding-source/installation-information route for Qt, nested
 Qt/PDF/image-format attributions, and Windows runtime redistribution terms still
