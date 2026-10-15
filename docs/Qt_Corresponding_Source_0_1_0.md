@@ -45,6 +45,8 @@ Qt PDF 的 PDFium/Chromium 嵌套内容没有由上述小目录完整覆盖；Me
 [Qt 分模块官方目录](https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/)和
 [Qt for Python 官方目录](https://download.qt.io/official_releases/QtForPython/pyside6/PySide6-6.11.1-src/)。
 这些来源替代整套 SDK 下载，但本身仍须确认完整对应关系、必要构建脚本和配置。
+552.1 MiB 是目前找到的官方完整分模块归档，不代表法律上的最小 PDF 源码集合。
+若制作更小的 PDF-only 源码子集，须先验证其构建完整性，不能为缩体积随意裁掉必要文件。
 
 ## 提供方案与最小剩余阻塞
 

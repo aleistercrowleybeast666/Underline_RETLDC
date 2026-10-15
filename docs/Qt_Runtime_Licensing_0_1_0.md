@@ -32,6 +32,10 @@ EXE SHA-256 为 `1db99b981f4000c5fff0afef3a422ea764710eee3bfe836f230228cdf6a6a81
 | Pdf | [Qt PDF](https://doc.qt.io/qt-6.11/qtpdf-index.html)明确提供 LGPLv3 路线，不是 GPL-only。保留 PDF 图像插件。 |
 | VirtualKeyboard | [官方说明](https://doc.qt.io/qt-6.11/qtvirtualkeyboard-index.html)：GPLv3 或商业。原包中唯一发现的模块级 GPL-only 开源选项。 |
 
+翻译数据另核对了精确 v6.11.1 的 `qttranslations/licenseRule.json`：默认文件类别包含
+LGPLv3 替代选项，`.pl` 工具另列 GPLv3 加 Qt 例外。不能仅因该仓库 LICENSES 文件名
+列表没有 LGPL 就把实带 QM 数据判成 GPL-only；规则和翻译 README 原文已保留。
+
 全部打包 DLL/PYD 的静态导入表中，VirtualKeyboard 唯一引用者是输入插件。
 源码没有 VirtualKeyboard/QML 输入功能，PYZ 没有其 Python 包装器。PyInstaller
 `utils/hooks/qt/_modules_info.py` 把 `platforminputcontexts` 挂在 QtGui，

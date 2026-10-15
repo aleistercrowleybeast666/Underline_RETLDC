@@ -953,6 +953,18 @@
         "url": "https://raw.githubusercontent.com/qt/qttranslations/v6.11.1/LICENSES/Qt-GPL-exception-1.0.txt",
         "bytes": 965,
         "sha256": "40678d338ce53cd93f8b22b281a2ecbcaa3ee65ce60b25ffb0c462b0530846b2"
+      },
+      {
+        "path": "licenseRule.json",
+        "url": "https://raw.githubusercontent.com/qt/qttranslations/v6.11.1/licenseRule.json",
+        "bytes": 2017,
+        "sha256": "bd3dd93fa56f54bd5ab78e4209f1dd7d2d27c41d65945db064e6e267b39c009c"
+      },
+      {
+        "path": "translations/README",
+        "url": "https://raw.githubusercontent.com/qt/qttranslations/v6.11.1/translations/README",
+        "bytes": 260,
+        "sha256": "88c5f8175c2e137aeb39d5bc3fd28d7290f43c3ce591c4b5ec925675d7070407"
       }
     ],
     "errors": []
