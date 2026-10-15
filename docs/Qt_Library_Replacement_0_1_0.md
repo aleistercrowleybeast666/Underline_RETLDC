@@ -49,7 +49,7 @@ GUI **220 项通过、退出 0**。便携示例也独立启动成功，原 EXE �
 冒称任意 C++ ABI 变体都兼容。原生库本来就是上述外部 DLL/PYD，应用没有签名/哈希锁。
 
 可复现方法：保留完整原目录，复制或在自有运行目录准备同一 `_internal`/`plugins`。
-使用本次构建的 Python **3.14** 与 PyInstaller **6.21**，运行：
+使用本次验证的 Python **3.14.0** 与 PyInstaller **6.22.0**，运行：
 
 ```powershell
 .venv\Scripts\python.exe scripts\reassemble_qt_binding.py --exe path\Underline_RETLDC.exe --module PySide6.support --replacement docs\third_party\qt-6.11.1\reassembly_example.py --output own-copy\Underline_RETLDC_modified.exe

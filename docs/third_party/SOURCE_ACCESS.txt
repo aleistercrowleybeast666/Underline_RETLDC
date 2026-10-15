@@ -5,8 +5,14 @@ Contains an exact tracked application-source snapshot and original Qt/PySide
 6.11.1 archives plus Mesa 11.2.2 source and license/reassembly evidence.
 SOURCE_MANIFEST.json records original member hashes and version provenance.
 
+This source snapshot accompanies the existing FFT_Apache code baseline; its
+SOURCE_MANIFEST.json identifies the precise committed snapshot and candidate
+EXE hash. Pending, uncommitted FFT changes are excluded. If final application
+code changes, regenerate the companion and checksums before distribution.
+
 Proposed public delivery (not yet uploaded): the same GitHub v0.1.0 Release as
-Underline_RETLDC_0_1_0_Windows_Portable.zip, with SHA256SUMS.txt.
+the final accepted binary asset, with SHA256SUMS.txt. The final binary filename
+is not settled; historical portable assets are preserved.
 Planned source asset URL:
 https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/download/v0.1.0/Underline_RETLDC_0_1_0_Corresponding_Sources.zip
 

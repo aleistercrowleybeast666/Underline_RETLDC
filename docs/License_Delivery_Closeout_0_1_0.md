@@ -41,17 +41,23 @@ CArchive 条目均独立验证为原字节。修改模块实际执行，完整 G
 
 ## 可交付资产与用户动作
 
-准备 `Underline_RETLDC_0_1_0_Windows_Portable.zip`（只更新许可/文档，EXE 不变）和
-`Underline_RETLDC_0_1_0_Corresponding_Sources.zip`，另附 `SHA256SUMS_0_1_0.txt`。
-旧 FFT_Apache ZIP 与更早候选保留。单一源码 ZIP 内含五份原始 Qt/PySide 6.11.1
-归档、补充 Mesa 官方源码、完整跟踪应用源码快照、构建/重组脚本、校验清单和证明。
-源码不展开 SDK；完成成员校验后移除任务下载的外部原归档，D 盘只留一套源码内容。
+独立源码交付为 `Underline_RETLDC_0_1_0_Corresponding_Sources.zip`，另附
+`.zip.sha256`、`SHA256SUMS_0_1_0_Sources.txt` 和 `.validation.json`。单一源码 ZIP
+内含五份原始 Qt/PySide 6.11.1 归档、补充 Mesa 官方源码、完整已提交应用源码快照、
+构建/重组脚本、校验清单和证明。应用快照从 Git 对象读取；暂停中的未提交 FFT 改动
+不得混入。内部 `SOURCE_MANIFEST.json` 记录快照提交、对应旧候选 EXE 哈希及全部成员哈希。
+源码不展开 SDK；完成成员校验后只保留 ZIP 中唯一一套原归档，原下载目录留下索引。
+
+本步骤不构建或改写任何程序。现有 FFT_Apache 和更早候选保留；旧的通用文件名
+`Underline_RETLDC_0_1_0_Windows_Portable.zip` 已被历史候选占用，不覆盖它。
+FFT 行为确认、最终程序构建与验收完成后，才确定新二进制资产名，并同步其匹配源码快照。
 
 源文件版本、官方校验值及每个归档成员正文哈希全部保留。Mesa API 归档固定提交，
 正文 SHA 是实测值，未冒充官方另行发布的校验值。发布方应在同一 Release 同时提供
 二进制、源码及校验表，并下载复核；计划链接见 `third_party/SOURCE_ACCESS.txt`。
 
-尚待用户决定/执行：人工 Windows IME 验收（未测）；最终发布动作授权；获授权后
-推送、创建 tag/Release 并上传这些已准备的资产，验证公开源码下载和哈希。
+尚待用户决定/执行：FFT 行为选择及相应程序验收；人工 Windows IME 验收（未测）；
+最终发布动作授权。新程序若改变，须更新来源包及校验清单。获授权后才推送、创建
+tag/Release 并上传匹配资产，验证公开源码下载和哈希。
 没有新的大 SDK 下载、额外环境或工作树；没有推送、打 tag 或发布。材料与可替换路径
 已实物准备，不将“尚未取得某种格式的 SBOM”单独当作必须等待的技术动作。
