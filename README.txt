@@ -12,7 +12,8 @@ https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.0.4
 公开下载入口：https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases
 最新本地候选为 FFT_Apache，仍待用户验收；旧 PlotSVG 保留，均不是已发布版本。
 后续 FFT/工作区间与 Apache 许可候选另存为 FFT_Apache，不覆盖 PlotSVG；对应源码
-位于 dist/Underline_RETLDC_0_1_0_Qt_Sources（五份官方 6.11.1 原归档，共 71.21 MiB）。
+已整理为 dist/Underline_RETLDC_0_1_0_Corresponding_Sources.zip，包含五份官方 6.11.1
+原归档（共 71.21 MiB）、Mesa 精确源码、应用源码和重组工具；不重复保留外部原归档。
 
 原创项目代码采用 Apache License 2.0，完整文本见根目录 LICENSE，与 SilverStar 相同。
 暂不新增个人版权行；LICENSE 附录的 Copyright [yyyy] [name of copyright owner] 是标准示例，
@@ -25,7 +26,7 @@ THIRD_PARTY_NOTICES.txt，发布材料核查见 docs/Licensing_Review_0_1_0.md�
 --------------
 
 便携包用户：公开 v0.0.4 使用 Underline_RETLDC_0_0_4_Windows_Portable.zip；本地待验收候选为
-dist/Underline_RETLDC_0_1_0_FFT_Apache_Windows_Portable.zip。完整解压所选 ZIP，在解压得到的
+dist/Underline_RETLDC_0_1_0_Windows_Portable.zip（许可材料收尾版，EXE 不变）。完整解压所选 ZIP，在解压得到的
 Underline_RETLDC 文件夹中双击 Underline_RETLDC.exe；无需安装 Python。保留整个文件夹，
 不要单独移动 EXE。以下 Python 步骤仅用于从源码运行。
 
@@ -647,3 +648,5 @@ CSV 的独立 X/Y 列保留每条曲线的采样时间；共享 X 列仅按行�
 pyqtgraph SVG 渲染器把闭合命令 Z 当作坐标而失败；应用内兼容适配现保留该命令，沿用
 原有视窗裁剪、变换和参数。详细验证及仍未定位的原生异常见 docs/Plot_SVG_Acceptance_0_1_0.md。
 详情和第三方许可见 docs/I18N.md 与 docs/third_party/pyqtgraph_LICENSE.txt。
+
+许可材料收尾与源码交付验证：docs/License_Delivery_Closeout_0_1_0.md。

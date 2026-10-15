@@ -28,8 +28,8 @@ Linux、debug 构建或不匹配的 Qt/PySide/Shiboken 组合。系统运行库�
 它，不能改原始数据、时间戳、单位或工程科学配置来使检查通过。
 
 替换后检查启动、普通输入/中文输入、绘图、语言、PNG/CSV/SVG 等实际使用路径。
-修改件的结果应有自己的验证记录，不能沿用原二进制的通过结论。当前测试只证明原
-供应商库及两文件排除目录正常，不证明任意修改库都兼容；真实 Windows IME 人工
+修改件的结果应有自己的验证记录，不能沿用原二进制的通过结论。当前原候选的 220 项冻结回归通过；库 Python 部分的重组验证如下。
+这些结果不证明任意修改库都兼容；真实 Windows IME 人工
 验收尚未进行。
 
 ## PYZ 中的 Python 绑定部分
@@ -41,8 +41,24 @@ PySide6/shiboken6 的部分 Python 包代码在 EXE 的 `PYZ.pyz` 内，单独�
 
 仓库已有 `打包.bat` 和许可收集脚本；PySide 对应源码含构建/生成脚本，模块子集是
 Core、Gui、Widgets、Network、OpenGL、OpenGLWidgets、Svg、Test。
-但本轮没有构建修改版绑定并重冻验证，因此这仍是交付前待核对项，不能声称仅有脚本
-名称或上游链接就已经满足全部替换/对应源码义务。
+已实际验证 `scripts/reassemble_qt_binding.py`：从官方 6.11.1 归档取得
+`PySide6.support` 源码，添加仅写验证标记的修改后重新组合 PYZ；其余 **1791 个**
+压缩模块及其他 CArchive 条目逐字节保持一致。修改版 EXE 确实执行该库模块，完整
+GUI **220 项通过、退出 0**。便携示例也独立启动成功，原 EXE 和供应商库保持原哈希。
+这验证了 PYZ 中 Python 库部分的替换途径；没有重编 Qt/PySide 的 C++ 库，不把该测试
+冒称任意 C++ ABI 变体都兼容。原生库本来就是上述外部 DLL/PYD，应用没有签名/哈希锁。
+
+可复现方法：保留完整原目录，复制或在自有运行目录准备同一 `_internal`/`plugins`。
+使用本次构建的 Python **3.14** 与 PyInstaller **6.21**，运行：
+
+```powershell
+.venv\Scripts\python.exe scripts\reassemble_qt_binding.py --exe path\Underline_RETLDC.exe --module PySide6.support --replacement docs\third_party\qt-6.11.1\reassembly_example.py --output own-copy\Underline_RETLDC_modified.exe
+```
+
+输出必须不存在且与输入不同；不得对原候选或已签名 EXE 原地写入。运行修改版后，
+同目录生成 `qt-binding-replacement.json`，可确认 `modified_library_executed=true`。
+示例保留 Qt 原版权/SPDX，并标明演练修改。脚本及示例随应用源码交付，证明在
+`third_party/qt-6.11.1/binding-reassembly-proof.json`；真实 IME 人工验收仍未进行。
 
 本文件没有发出长期源码提供承诺。待完成的材料、精确来源/体积和候选计划见
 [对应源码准备](Qt_Corresponding_Source_0_1_0.md)。

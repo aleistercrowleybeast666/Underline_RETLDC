@@ -1,3 +1,8 @@
+# 许可材料收尾
+
+软件 OpenGL 来源、精确旧版版权文件和 Qt Python 重新组合已完成实物验证，
+见 [收尾记录](License_Delivery_Closeout_0_1_0.md)。以下是此前阶段证据。
+
 # 最终 FFT/Apache 候选
 
 最终冻结 GUI 220 项通过，中/英文启动退出 0。相对原 PlotSVG，518 个运行文件字节

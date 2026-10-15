@@ -1,0 +1,33 @@
+{
+  "original_candidate_unchanged": true,
+  "original_candidate_sha256": "6506a3aeb6378aa092fc46a61d182e4c7c415e52ad1dc3bdb1a2b069dd274113",
+  "modified_exe_sha256": "0ecc453ab9186bfe7c2fb02e35e8649ba26602e67647b7c524bab64af57a2ba8",
+  "modified_module": "PySide6.support",
+  "upstream_source_version": "6.11.1",
+  "module_replacement_executed": {
+    "replacement_executed": true,
+    "frozen": true,
+    "module": "PySide6.support",
+    "origin": "D:\\Temp\\Underline_RETLDC_v010_validation\\plot-chinese-work\\license-closeout\\binding-probe\\_internal\\PySide6\\support\\__init__.py"
+  },
+  "other_compressed_pyz_entries_verified": 1791,
+  "other_carchive_entries_verified": true,
+  "full_gui_checks": 220,
+  "exit_code": 0,
+  "native_cpp_recompiled": false,
+  "native_runtime_shared_read_only": true,
+  "portable_example": {
+    "exit_code": 0,
+    "marker": {
+      "modified_library_executed": true,
+      "frozen": true
+    },
+    "source_sha256": "d0938c70632911d1d73794080f05499622d0a1022704e871e04a0f763baad001"
+  },
+  "build_python": "3.14.0",
+  "pyinstaller": "6.22.0",
+  "safety_checks": {
+    "refuses_original_overwrite": true,
+    "refuses_unrelated_modules": true
+  }
+}

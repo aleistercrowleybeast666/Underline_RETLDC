@@ -22,7 +22,7 @@ qtshadertools。旧 PlotSVG 包原字节保持不变。冻结 GUI 在九文件�
 
 ## 五份官方精确版本源码
 
-以下 6.11.1 原始 tar.xz 归档各保留一份，不放入 Git、不展开 SDK、不再套重复源码 ZIP。
+以下 6.11.1 原始 tar.xz 归档各保留一份，不放入 Git、不展开 SDK；最终移入单一源码 ZIP，保留原 tar.xz 成员字节。
 正文大小及 SHA-256 必须均匹配官方镜像元数据，才标记为下载完成。执行状态、完整 URL、
 哈希和本地路径见 `third_party/qt-6.11.1/corresponding-sources.json`。
 
@@ -50,14 +50,27 @@ qtshadertools。旧 PlotSVG 包原字节保持不变。冻结 GUI 在九文件�
 组件的完整构建对应关系。本地 wheel 没有匹配的供应商构建配置/SBOM；不能用邻近 SDK
 的 SBOM 替代。[Qt SBOM 文档](https://doc.qt.io/qt-6.11/sbom.html)说明其依赖具体构建。
 
-仍保留的软件 OpenGL `opengl32sw.dll` 含 Mesa 11.2.2、LLVM 3.6.2 版本字符串，
-不是 Qt 6.11.1 模块源码的一部分；精确供应商构建归属及嵌套版权材料仍需补齐。
+软件 OpenGL 的代码图像已与 Qt 官方两份历史 Mesa 11.2.2 包匹配；
+Mesa 11.2.2 官方源码、许可证和 721 段原始版权块，以及 LLVM 3.6.2 主许可/嵌套版权
+已实物取得并保留，见 `third_party/software-opengl/manifest.json`。这是一份保守源码级
+版权清单，不把其中每项都说成编译进 Windows 库的组件。
 Windows/VC 运行库也按供应商条款单独核对。不能把这些归属问题隐藏在“已下载 Qt 源码”中。
 
 Qt DLL/PYD 是外部动态库，但部分 Python 绑定在 PYZ 中。仓库与 pyside-setup 提供
-生成/构建/冻结脚本；修改绑定后的重建、重冻结仍未实测，操作边界见
+生成/构建/冻结脚本；Python 库部分重新组合并运行完整 GUI 的验证已通过；C++ 库没有重新编译，操作边界见
 [库替换说明](Qt_Library_Replacement_0_1_0.md)。
 
 源码当前仅本地保存，未公开托管、上传或作出长期书面提供承诺。公开发布前仍需确定
 实际可获的二进制、匹配源码、必要构建信息和许可材料的提供方式。文件清单、源码下载
 或 GUI 通过均不单独构成完整法律合规证明。没有推送、打 tag 或发布 Release。
+
+## 最终源码提供方案
+
+计划 Release 附带 `Underline_RETLDC_0_1_0_Corresponding_Sources.zip`：五份 Qt/PySide
+原始压缩归档、补充的 Mesa 11.2.2 官方固定提交源码、精确应用源码快照、重组工具及
+许可证据均在其中。原 tar.xz/gz 字节不改，不再次展开 SDK。校验完成后只保留 ZIP 中
+唯一一套归档，不在 D 盘留下重复源码。每个成员的大小/哈希在 `SOURCE_MANIFEST.json`。
+
+拟随同一 `v0.1.0` Release 上传二进制 ZIP、源码 ZIP 和 SHA256SUMS。现在没有上传，
+不能把计划 URL 当成已提供；实际发布授权及资产上传完成后才算该提供方案已执行。
+这是一份交付包方案，不额外作出三年书面提供承诺。

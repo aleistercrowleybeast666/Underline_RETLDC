@@ -1,0 +1,161 @@
+{
+  "candidate_path": "_internal/PySide6/opengl32sw.dll",
+  "candidate_sha256": "4a7d90f91fdecb5df7b426bc2d05974b8d7ffa450af2d1f93f3eca05800718da",
+  "candidate_bytes": 20639544,
+  "mesa_version": "11.2.2",
+  "llvm_version": "3.6.2",
+  "origin": {
+    "candidate": {
+      "normalized_image_sha256": "d303dd60bbf11418063f4bb72292e481ca1e88d84915fbd049a21666b92c0ee0",
+      "sections": {
+        ".text": "39880e8a7f5ca7e58e7aa0a635508842dace554d77f62267cb2927e48d951307",
+        ".rdata": "bfb5d97db84e01d1a4582b95a2fa089ea1d4334197fb6255c5ad2ddc68728190",
+        ".data": "92d30b6c15da74da87b4c3b895c3e8a60011a8148aba544411ba880adead4994",
+        ".pdata": "d76fecd0034546cb4ee93b89731499d7fbe090bd902b85ea8e37dbf5f8f6ab38",
+        ".gfids": "a5b43c1bda6b3849d8f0ce54e9a963c0bd9db7126628299015c46683a9cc6678",
+        ".tls": "4c6474903705cb450bb6434c29e8854f17d8324efca1fdb9ee9008599060883a",
+        "_RDATA": "1c959b16af1c1954ed8e22d0f900399174496c17c34dcbbde3393b8a0930ac9e",
+        ".reloc": "bbb9a7cd9f484b2e2e45681562013b59925909a6d4361b1a71b56bc8207bf0ee"
+      },
+      "timestamp": 1465899728,
+      "certificate_size": 12088
+    },
+    "official_archives": [
+      {
+        "normalized_image_sha256": "d303dd60bbf11418063f4bb72292e481ca1e88d84915fbd049a21666b92c0ee0",
+        "sections": {
+          ".text": "39880e8a7f5ca7e58e7aa0a635508842dace554d77f62267cb2927e48d951307",
+          ".rdata": "bfb5d97db84e01d1a4582b95a2fa089ea1d4334197fb6255c5ad2ddc68728190",
+          ".data": "92d30b6c15da74da87b4c3b895c3e8a60011a8148aba544411ba880adead4994",
+          ".pdata": "d76fecd0034546cb4ee93b89731499d7fbe090bd902b85ea8e37dbf5f8f6ab38",
+          ".gfids": "a5b43c1bda6b3849d8f0ce54e9a963c0bd9db7126628299015c46683a9cc6678",
+          ".tls": "4c6474903705cb450bb6434c29e8854f17d8324efca1fdb9ee9008599060883a",
+          "_RDATA": "1c959b16af1c1954ed8e22d0f900399174496c17c34dcbbde3393b8a0930ac9e",
+          ".reloc": "bbb9a7cd9f484b2e2e45681562013b59925909a6d4361b1a71b56bc8207bf0ee"
+        },
+        "timestamp": 1465899728,
+        "certificate_size": 5752,
+        "archive": "opengl32sw-64-mesa_11_2_2-signed.7z",
+        "same_code_sections": true,
+        "same_unsigned_image": true
+      },
+      {
+        "normalized_image_sha256": "d303dd60bbf11418063f4bb72292e481ca1e88d84915fbd049a21666b92c0ee0",
+        "sections": {
+          ".text": "39880e8a7f5ca7e58e7aa0a635508842dace554d77f62267cb2927e48d951307",
+          ".rdata": "bfb5d97db84e01d1a4582b95a2fa089ea1d4334197fb6255c5ad2ddc68728190",
+          ".data": "92d30b6c15da74da87b4c3b895c3e8a60011a8148aba544411ba880adead4994",
+          ".pdata": "d76fecd0034546cb4ee93b89731499d7fbe090bd902b85ea8e37dbf5f8f6ab38",
+          ".gfids": "a5b43c1bda6b3849d8f0ce54e9a963c0bd9db7126628299015c46683a9cc6678",
+          ".tls": "4c6474903705cb450bb6434c29e8854f17d8324efca1fdb9ee9008599060883a",
+          "_RDATA": "1c959b16af1c1954ed8e22d0f900399174496c17c34dcbbde3393b8a0930ac9e",
+          ".reloc": "bbb9a7cd9f484b2e2e45681562013b59925909a6d4361b1a71b56bc8207bf0ee"
+        },
+        "timestamp": 1465899728,
+        "certificate_size": 12432,
+        "archive": "opengl32sw-64-mesa_11_2_2-signed_sha256.7z",
+        "same_code_sections": true,
+        "same_unsigned_image": true
+      }
+    ]
+  },
+  "normalization": "PE bytes before the certificate table; zero OptionalHeader.CheckSum and IMAGE_DIRECTORY_ENTRY_SECURITY",
+  "official_archives": [
+    {
+      "url": "https://download.qt.io/development_releases/prebuilt/llvmpipe/windows/opengl32sw-64-mesa_11_2_2-signed.7z",
+      "sha256": "e2927d195699ef03685f38a64009b4c791d85f066a7d0ca580540eacb5b50a3d"
+    },
+    {
+      "url": "https://download.qt.io/development_releases/prebuilt/llvmpipe/windows/opengl32sw-64-mesa_11_2_2-signed_sha256.7z",
+      "sha256": "c61f801c1760aa24b02c7a8354323cddf368b86f8f5c34b50b3b224f7d728afd"
+    }
+  ],
+  "notices": [
+    {
+      "file": "Qt_published_Mesa_MIT.txt",
+      "url": "https://doc.qt.io/qtcreator/qtcreator-binary-attribution-llvmpipe.html",
+      "scope": "Qt-published software OpenGL notice; not proof of every Mesa 11.2.2 compiled file header",
+      "bytes": 1061,
+      "sha256": "8b1be87d56c59aa71004cf45e9947e8c3707a4c1c53ab0cf586b24a513e34ba4"
+    },
+    {
+      "file": "LLVM_3.6.2_LICENSE.TXT",
+      "url": "https://raw.githubusercontent.com/llvm-mirror/llvm/19ade095e8c3ea61f84b71074433309f0c7c7b3b/LICENSE.TXT",
+      "scope": "LLVM 3.6 release branch; ARM notice conditional, not asserted compiled",
+      "bytes": 3281,
+      "sha256": "e3bc36440fc927c62d5cc24efeefe225a14d4e34ffeb0c92e430625cce9ee444"
+    },
+    {
+      "file": "LLVM_3.6_SUPPORT_COPYRIGHT.regex",
+      "url": "https://raw.githubusercontent.com/llvm-mirror/llvm/19ade095e8c3ea61f84b71074433309f0c7c7b3b/lib/Support/COPYRIGHT.regex",
+      "scope": "LLVM 3.6 release branch; ARM notice conditional, not asserted compiled",
+      "bytes": 2718,
+      "sha256": "0424e57d4303164dc59a8509c20dae0518b853692e5c2b0e98b11816fdbc97c7"
+    },
+    {
+      "file": "LLVM_3.6_SUPPORT_MD5.cpp",
+      "url": "https://raw.githubusercontent.com/llvm-mirror/llvm/19ade095e8c3ea61f84b71074433309f0c7c7b3b/lib/Support/MD5.cpp",
+      "scope": "LLVM 3.6 release branch; ARM notice conditional, not asserted compiled",
+      "bytes": 9148,
+      "sha256": "19edb938505f839ba5d2d96c26d5db454542cc9d22d277652f5085c62d0ac792"
+    },
+    {
+      "file": "LLVM_3.6_SUPPORT_MD5.h",
+      "url": "https://raw.githubusercontent.com/llvm-mirror/llvm/19ade095e8c3ea61f84b71074433309f0c7c7b3b/include/llvm/Support/MD5.h",
+      "scope": "LLVM 3.6 release branch; ARM notice conditional, not asserted compiled",
+      "bytes": 1975,
+      "sha256": "f7db858aba5c9ee861b8a8e8b80f4c943f712ca4c15fad4bc2bd002a589bb1d4"
+    },
+    {
+      "file": "LLVM_3.6_ARM_LICENSE.TXT",
+      "url": "https://raw.githubusercontent.com/llvm-mirror/llvm/19ade095e8c3ea61f84b71074433309f0c7c7b3b/lib/Target/ARM/LICENSE.TXT",
+      "scope": "LLVM 3.6 release branch; ARM notice conditional, not asserted compiled",
+      "bytes": 2764,
+      "sha256": "28cbd5f6dac844fc3d94e879dba83c3ca87328ece8e0d388284f8cec6a042a97"
+    },
+    {
+      "file": "Mesa_11.2.2_license.html",
+      "bytes": 3763,
+      "sha256": "288ddfae338be168ef2492c21de42ee2f5c8ebc5a734b4e58b37007141bc2d6d",
+      "url": "https://gitlab.freedesktop.org/api/v4/projects/mesa%2Fmesa/repository/archive.tar.gz?sha=3a9f6283f435f90ca1a2901be39ec9d629c95bb6"
+    },
+    {
+      "file": "Mesa_11.2.2_COPYRIGHT_NOTICES.txt",
+      "bytes": 1076972,
+      "sha256": "3675396c00908047840dbebddffb4277ae46b6f69062cf22751df19704f9c634",
+      "url": "https://gitlab.freedesktop.org/api/v4/projects/mesa%2Fmesa/repository/archive.tar.gz?sha=3a9f6283f435f90ca1a2901be39ec9d629c95bb6"
+    },
+    {
+      "file": "BSL-1.0.txt",
+      "bytes": 1340,
+      "sha256": "3abd6471b9a9a08d65ce771143f8e278bb4c1aeb10c1c2d476935a6b049653f5",
+      "url": "https://raw.githubusercontent.com/qt/qtbase/v6.11.1/LICENSES/BSL-1.0.txt"
+    }
+  ],
+  "remaining": "No matching build-concluded SBOM supplied; source-wide notices are retained without claiming all source components compiled.",
+  "llvm_source_commit": "19ade095e8c3ea61f84b71074433309f0c7c7b3b",
+  "llvm_version_evidence": [
+    "set(LLVM_VERSION_MAJOR 3)",
+    "set(LLVM_VERSION_MINOR 6)",
+    "set(LLVM_VERSION_PATCH 2)",
+    "  set(PACKAGE_VERSION \"${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}.${LLVM_VERSION_PATCH}\")",
+    "set(CPACK_PACKAGE_VERSION_MAJOR ${LLVM_VERSION_MAJOR})",
+    "set(CPACK_PACKAGE_VERSION_MINOR ${LLVM_VERSION_MINOR})"
+  ],
+  "mesa_source": {
+    "url": "https://gitlab.freedesktop.org/api/v4/projects/mesa%2Fmesa/repository/archive.tar.gz?sha=3a9f6283f435f90ca1a2901be39ec9d629c95bb6",
+    "tag": "mesa-11.2.2",
+    "commit": "3a9f6283f435f90ca1a2901be39ec9d629c95bb6",
+    "bytes": 10656080,
+    "sha256": "1687ef183c5b33160580c16960f22d08a5baaf8268ef92174e4765dab190339a",
+    "local_container": "dist/Underline_RETLDC_0_1_0_Corresponding_Sources.zip",
+    "archive_member": "upstream/mesa/mesa-11.2.2-source.tar.gz"
+  },
+  "mesa_source_version_verified": "11.2.2",
+  "mesa_notice_catalogue": {
+    "unique_comment_blocks": 721,
+    "text_files_scanned": 4408,
+    "scope": "Source-wide superset; generated without executing upstream code",
+    "comment_bytes_preserved": true
+  }
+}

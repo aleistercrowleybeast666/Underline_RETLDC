@@ -62,3 +62,12 @@ The source catalogue is not a build-concluded SBOM. The reduced runtime needs fi
 Qt/PySide 6.11.1 source archives (74,666,284 bytes); their actual downloaded-body
 verification and local location are recorded in corresponding-sources.json.
 Source download is distinct from public hosting or a completed redistribution review.
+
+Software OpenGL closeout:
+The opengl32sw.dll code image matches Qt's official Mesa 11.2.2 builds after
+excluding signing/checksum fields; file signatures/hashes are not conflated.
+Exact Mesa 11.2.2 license/source notices, LLVM 3.6.2 UIUC and nested notices,
+and the Boost license are retained in docs/third_party/software-opengl/.
+The notice catalogue is a conservative source-wide superset, not a compiled SBOM.
+The Qt Python reassembly example retains Qt's original license and copyright.
+Corresponding-source asset plan and local access: docs/third_party/SOURCE_ACCESS.txt.
