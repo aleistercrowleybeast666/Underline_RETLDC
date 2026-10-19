@@ -15,7 +15,7 @@ SYNTHETIC_CLOCK_SHIFT_S = 2.0
 
 def main() -> None:
     folder = Path(__file__).resolve().parent
-    source = folder / "TEST_SD(1).TXT"
+    source = folder / "TEST_SD.TXT"
     if hashlib.sha256(source.read_bytes()).hexdigest() != SOURCE_SHA256:
         raise ValueError("The original record does not match the documented SHA-256")
     data = np.loadtxt(source, delimiter=",")

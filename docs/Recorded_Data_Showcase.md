@@ -4,15 +4,17 @@
 
 通过实验记录与模拟参考数据，体验导入、时间平移、独立计算、FFT 和导出。橙线为实验记录，绿虚线为平滑模拟参考数据。
 
-## 三步体验
+## 体验
+
+数据可以从任意本地目录导入，无需放进程序目录或仓库。[查看从试车记录目录导入的界面](assets/record-calibration-estimate.png)。
 
 1. 下载并完整解压 [v0.1.0 Windows 便携版](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.1.0)。
-2. 将下表三份必需文件保存在同一目录。在 GitHub 文件页点击 **Download raw file**，保留文件名。
-3. **从该目录启动应用**，再打开 `record_showcase.retldc.json`，进入“推力”。
+2. 将下表三份必需文件保存在任意可写目录，保持它们在同一目录。在 GitHub 文件页点击 **Download raw file**，保留文件名。
+3. 使用现成工程时，**从这个目录启动应用**，再打开 `record_showcase.retldc.json`，进入“推力”。也可正常启动应用，从记录原有的位置手动导入 TXT 和参考 CSV。
 
 | 文件 | 内容 |
 |---|---|
-| [TEST_SD(1).TXT](../examples/record_showcase/TEST_SD%281%29.TXT) | 必需；原始记录，18180 点 |
+| [TEST_SD.TXT](../examples/record_showcase/TEST_SD.TXT) | 必需；原始记录，18180 点 |
 | [synthetic_smooth_reference.csv](../examples/record_showcase/synthetic_smooth_reference.csv) | 必需；平滑模拟参考 |
 | [record_showcase.retldc.json](../examples/record_showcase/record_showcase.retldc.json) | 必需；已配置的工程 |
 | [线性换算配置](../examples/record_showcase/peak_estimate.calibration.json) · [参考生成脚本](../examples/record_showcase/generate_reference.py) | 可选；复现本例的数据处理 |
@@ -24,7 +26,7 @@ Set-Location 'D:\MyExamples\record_showcase'
 & 'D:\Tools\Underline_RETLDC\Underline_RETLDC.exe'
 ```
 
-v0.1.0 按启动工作目录查找非主来源的相对路径，因此需要上面的启动方式。从源码运行时，可在示例目录用仓库已有 venv 执行仓库 `main.py`。
+上面的启动方式用于现成工程中的相对文件引用：v0.1.0 按启动工作目录查找非主来源。直接导入文件不受同目录要求限制。从源码运行时，可用仓库已有 venv 执行仓库 `main.py`。
 
 ## 移动时间轴与对齐曲线
 
@@ -96,6 +98,6 @@ FFT 显示 `abs(rFFT(y)/N)` 模值，非 PSD；非等间隔时钟出图沿用线
 
 ## English walkthrough
 
-Save the TXT, reference CSV and project JSON together. Launch v0.1.0 with that folder as the working directory, open the project, then use the slider or offset field to shift the reference curve. Align Test Starts finds the two starts automatically; you can fine-tune afterwards.
+Records can be imported directly from any local folder. To open the prepared project, save `TEST_SD.TXT`, the reference CSV and project JSON together, then launch v0.1.0 with that folder as the working directory. Use the slider or offset field to shift the reference curve. Align Test Starts finds the two starts automatically; you can fine-tune afterwards.
 
 Detect the test interval or drag its boundaries, switch metric sources and Calculate, inspect FFT with linear or logarithmic axes, then export experimental results. The green curve is a smooth synthetic reference for this demonstration. Processing settings and source hashes are recorded above; screenshots are actual Qt offscreen renders.

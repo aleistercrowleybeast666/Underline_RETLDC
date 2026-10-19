@@ -3,7 +3,7 @@
 火箭发动机试车数据的离线解析、校准、分析与导出工具。
 Offline rocket-engine test data decoding, calibration, analysis and export.
 
-**[下载 Windows 便携版](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/download/v0.1.0/Underline_RETLDC_0_1_0_Windows_Portable.zip)** · [三步体验](docs/Recorded_Data_Showcase.md) · [使用手册](README.txt) · [发布文章](https://www.kechuang.org/t/91966) · [English](#english-quick-start)
+**[下载 Windows 便携版](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/download/v0.1.0/Underline_RETLDC_0_1_0_Windows_Portable.zip)** · [体验](docs/Recorded_Data_Showcase.md) · [使用手册](README.txt) · [发布文章](https://www.kechuang.org/t/91966) · [English](#english-quick-start)
 
 **对照实验记录与模拟参考。** 橙线为一台固态燃料火箭发动机的实验记录，绿虚线为平滑模拟参考数据。
 
@@ -24,17 +24,19 @@ Offline rocket-engine test data decoding, calibration, analysis and export.
 
 *中文界面截图（Qt 离屏渲染）。[查看操作指南与示例数据说明](docs/Recorded_Data_Showcase.md)。*
 
-## 下载与开始
+## 体验
 
 当前稳定版 **v0.1.0 · 2026-10-15**。下载便携 ZIP，对照 [Release 正文](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.1.0) 的 SHA-256 校验，完整解压后运行 `Underline_RETLDC.exe`，无需安装 Python。
 
-**无硬件体验：** 按[示例指引](docs/Recorded_Data_Showcase.md)保存 TXT、参考 CSV 和工程 JSON → 从示例目录启动应用并打开工程 → 平移曲线、切换指标、查看 FFT 或导出结果。[下载示例文件](examples/record_showcase)。
+按[示例指引](docs/Recorded_Data_Showcase.md)将 TXT、参考 CSV 和工程 JSON 保存到任意可写目录，即可打开工程体验平移曲线、独立计算、FFT 和导出。[下载示例文件](examples/record_showcase)。
+
+分析已有记录时，可直接从任意本地目录导入，原始文件无需放进程序目录或仓库。
 
 Release 另附[对应源码包](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/download/v0.1.0/Underline_RETLDC_0_1_0_Corresponding_Sources.zip)，包含第三方原始归档；校验值在 Release 正文，没有单独的 `SHA256SUMS.txt` 附件。
 
 ## English quick start
 
-Download the [Windows portable ZIP](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.1.0), verify its SHA-256, extract the whole folder and run `Underline_RETLDC.exe`. For a hardware-free tour, follow the [sample walkthrough](docs/Recorded_Data_Showcase.md#english-walkthrough).
+Download the [Windows portable ZIP](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.1.0), verify its SHA-256, extract the whole folder and run `Underline_RETLDC.exe`. Follow the [sample walkthrough](docs/Recorded_Data_Showcase.md#english-walkthrough), or import existing records directly from any local folder.
 
 Shift the reference curve with the slider or offset field, align test starts automatically, then fine-tune. Detect the test interval or drag its boundaries, switch metric sources, inspect FFT with linear or logarithmic axes, and export experimental results. The smooth reference is synthetic; sample processing details are recorded in the walkthrough. Screenshots are actual Qt offscreen renders.
 

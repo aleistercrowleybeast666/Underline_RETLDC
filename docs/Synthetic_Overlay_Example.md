@@ -1,4 +1,4 @@
-# 无硬件叠图示例 / Synthetic overlay example
+# 叠图示例 / Synthetic overlay example
 
 [返回首页](../README.md) · [完整手册](../README.txt) · [来源计算说明](Theoretical_Curves.md)
 

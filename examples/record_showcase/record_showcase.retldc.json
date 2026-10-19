@@ -94,13 +94,13 @@
   ],
   "software_version": "0.1.0",
   "source": {
-    "path": "TEST_SD(1).TXT",
+    "path": "TEST_SD.TXT",
     "sha256": "7325935683d8380681a804c338b8fe8ebbe1539d5dc3211cc55743303c038e8f"
   },
   "sources": [
     {
       "source_id": "source_1",
-      "path": "TEST_SD(1).TXT",
+      "path": "TEST_SD.TXT",
       "sha256": "7325935683d8380681a804c338b8fe8ebbe1539d5dc3211cc55743303c038e8f",
       "parser": {
         "id": "builtin.parser.tr_f",
@@ -197,7 +197,7 @@
       "stream_id": "stream_1",
       "source_id": "source_1",
       "time_offset_s": 0.0,
-      "name": "TEST_SD(1).TXT"
+      "name": "TEST_SD.TXT"
     },
     {
       "stream_id": "stream_2",
