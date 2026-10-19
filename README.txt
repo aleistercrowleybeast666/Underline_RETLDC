@@ -4,23 +4,23 @@ Underline RETLDC 0.1.0
 Rocket Engine Test Log Decode and Compute.
 
 Windows 便携包无需安装 Python：完整解压后运行 Underline_RETLDC.exe，保留整个文件夹。
-源码版本为 0.1.0；本次已完成用户验收并准备发布包。GitHub Release 及资产由用户另行
-创建、上传，推送代码或标签本身不代表二进制已经可下载。
+v0.1.0 已于 2026-10-15 发布，Windows 便携包与对应源码包可在 GitHub Release 下载。
+简洁导航与入门示例见仓库 README.md；本文件保留完整操作手册。
 
 版本与下载：https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases
 代码与文档：https://github.com/aleistercrowleybeast666/Underline_RETLDC
 问题反馈：https://github.com/aleistercrowleybeast666/Underline_RETLDC/issues
 
-在 Releases 页面选择对应 v0.1.0 资产；如尚未列出，请等待该版本资产上传。正式文件名：
+正式发布：https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.1.0
+该版本有两个附件，正式文件名：
   Underline_RETLDC_0_1_0_Windows_Portable.zip
   Underline_RETLDC_0_1_0_Corresponding_Sources.zip
-  SHA256SUMS.txt
-本地待上传文件位于 dist/release_0_1_0/。旧候选包保留，不作为本次正式上传文件。
+SHA-256 列在 Release 正文中；该版本没有独立的 SHA256SUMS.txt 下载附件。
 
 
 一、快速开始（Windows 便携包）
 ----------------------------
-1. 下载对应版本的 Windows Portable ZIP 和 SHA256SUMS.txt，核对 SHA-256。
+1. 下载对应版本的 Windows Portable ZIP，对照 Release 正文核对 SHA-256。
    PowerShell 示例：
    Get-FileHash .\Underline_RETLDC_0_1_0_Windows_Portable.zip -Algorithm SHA256
 2. 完整解压 ZIP，在 Underline_RETLDC 文件夹中双击 Underline_RETLDC.exe。
@@ -141,7 +141,7 @@ Plugin API v1：docs/Plugin_API.md；扩展指引：新增解析器_PROMPT.txt�
 与便携包同时提供 Corresponding_Sources ZIP：匹配标签的应用源码、构建/重组工具、
 精确依赖版本及五份 Qt/PySide 6.11.1 原始归档，另含 Mesa 11.2.2 固定提交源码和软件
 OpenGL/LLVM 许可材料。六份上游原始压缩归档合计 85,322,364 字节，不展开 SDK。
-内部清单逐成员记录哈希，SHA256SUMS.txt 校验两个交付 ZIP。GitHub 自动生成的应用
+内部清单逐成员记录哈希，Release 正文提供两个交付 ZIP 的 SHA-256。GitHub 自动生成的应用
 Source code ZIP 不包含这些第三方归档，不能代替该对应源码包。
 
 Qt/PySide 的 Python 绑定重组途径已实际运行验证；原生 C++ 库未重新编译。源码提供
@@ -164,18 +164,23 @@ docs/Qt_Library_Replacement_0_1_0.md、docs/License_Delivery_Closeout_0_1_0.md�
 SciPy 1.18.0、PyInstaller 6.22.0。来源包 BUILD_DEPENDENCIES.json 保存实际版本。
 打包.bat 在 pytest 或 Ruff 失败时停止，不继续 PyInstaller。
 
-验证记录：348 项 pytest、57 项针对性检查、源码/冻结 GUI 各 244 项、中英文启动及
+发布前验证记录：348 项 pytest、57 项针对性检查、源码/冻结 GUI 各 244 项、中英文启动及
 仓库外解压启动通过；真实 TEST_SD 与其合成参考的全段/工作区间 FFT 已逐点比对。
 这些验证对应已记录的数据与软件路径，不构成传感器、发动机或现场硬件认证。
 Windows IME 人工专项验收未运行。完整边界见 docs/FFT_Restored_Acceptance_0_1_0.md。
+
+发布后展示复核的全量 pytest 遇到 Windows 原生堆异常 0xc0000374，
+没有完整汇总；相关理论工作流单项隔离重跑 1 passed，根因未定。单项通过不能作为
+该次全量通过，也不替代上述发布前记录。本次文档复核未修改程序或诊断该异常。
 
 
 English quick start
 -------------------
 Underline RETLDC is an offline rocket-engine test-log decoder and calculator.
-For Windows, download the matching Portable ZIP from Releases when the v0.1.0 assets
-are available, verify SHA256SUMS.txt, extract the complete folder and run
+For Windows, download the published v0.1.0 Portable ZIP from Releases, verify its
+SHA-256 against the release body, extract the complete folder and run
 Underline_RETLDC.exe. Python is not required for the portable application.
+There is no separate SHA256SUMS.txt attachment for this release.
 
 Experimental and theoretical sources share the existing parsers and mappings.
 Theory overlays and its results live in the existing workspaces. Display alignment

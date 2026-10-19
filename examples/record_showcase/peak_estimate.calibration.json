@@ -1,0 +1,13 @@
+{
+  "schema": "underline-retldc-calibration/1",
+  "name": "峰值估算展示（非设备标定）",
+  "quantity": "force",
+  "input_unit": "raw",
+  "output_unit": "N",
+  "model": {
+    "id": "builtin.calibration.linear",
+    "version": "1.0.0",
+    "parameters": {"K": 0.49, "B": 0.0}
+  },
+  "notes": "用户确认时间为秒、第二列为原始值，并给出约919.7N的最大推力。1877×0.49=919.73N；0.49仅为本展示的峰值估算系数，没有设备标定来源，不能证明50克力/单位。B=0，极性+1，未扣静止偏置、未做基线或自重补偿。原记录与实验抖动保持不变；结果不是经标定的净推力或性能证明。"
+}

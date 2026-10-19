@@ -1,0 +1,3 @@
+# Source hashes in example Projects require byte-identical data after clone/download.
+*.csv -text whitespace=cr-at-eol
+*.TXT -text whitespace=cr-at-eol

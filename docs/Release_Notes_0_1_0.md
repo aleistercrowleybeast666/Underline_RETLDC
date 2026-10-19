@@ -18,19 +18,24 @@
 - 项目原创代码采用标准 Apache-2.0；保留第三方许可，提供匹配源码及 Qt/PySide、
   Mesa 原始归档、依赖版本和库重组证据。
 
-验证：348 项 pytest、57 项针对性检查、源码及冻结 GUI 各 244 项、中英文启动和
+发布前验证：348 项 pytest、57 项针对性检查、源码及冻结 GUI 各 244 项、中英文启动和
 仓库外解压启动通过；实际 TEST_SD 与合成参考的全段/工作区间 FFT 已逐点比对。
 这些是软件与指定数据路径的检查，不构成传感器或现场硬件认证。Windows IME 人工
 专项未运行，原生 C++ 库未重新编译。
 
+发布后展示复核的全量 pytest 遇到 Windows 原生堆异常 `0xc0000374`，
+无完整汇总；相关理论工作流单项隔离重跑 `1 passed`，根因未定。该单项结果不能
+写作该次全量通过。以上发布前结果来自[既有验收记录](FFT_Restored_Acceptance_0_1_0.md)。
+
 FFT 使用 `abs(rFFT(y)/N)`，不是 PSD 或补乘 2 的单边幅值。有限但有时间空档的数据
 沿用线性插值出图，频谱不能代表空档内实测信息；请检查提示并优先使用连续试车区间。
+FFT 不能单独证明共振、发动机稳定性或确定振动原因。
 
-附件应同时提供：
+v0.1.0 已于 2026-10-15 发布：[GitHub Release](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.1.0)。实际附件为：
 
 - `Underline_RETLDC_0_1_0_Windows_Portable.zip`
 - `Underline_RETLDC_0_1_0_Corresponding_Sources.zip`
-- `SHA256SUMS.txt`
 
-下载后完整解压便携包，使用 SHA-256 清单核对两个归档。GitHub 自动生成的应用源码
+下载后完整解压便携包，使用 Release 正文的 SHA-256 核对两个归档；没有独立的
+`SHA256SUMS.txt` 附件。GitHub 自动生成的应用源码
 下载不含对应源码附件中的第三方归档。详细用法见仓库 README.txt。
