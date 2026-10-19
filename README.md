@@ -5,7 +5,7 @@ Offline rocket-engine test data decoding, calibration, analysis and export.
 
 **[下载 Windows 便携版](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/download/v0.1.0/Underline_RETLDC_0_1_0_Windows_Portable.zip)** · [三步体验](docs/Recorded_Data_Showcase.md) · [使用手册](README.txt) · [发布文章](https://www.kechuang.org/t/91966) · [English](#english-quick-start)
 
-**实验记录与模拟参考放在一起看。** 橙线为用户提供的实验记录，绿虚线为用于演示的平滑模拟参考。
+**实验记录与模拟参考放在一起看。** 橙线为一台固态燃料火箭发动机的实验记录，绿虚线为用于演示的平滑模拟参考。
 
 ![推力曲线叠图：左侧滑动条与偏移输入框用于时间平移，右侧切换指标来源](docs/assets/record-overlay-estimate.png)
 
