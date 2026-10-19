@@ -1,102 +1,101 @@
-# 原始记录与平滑合成参考 / Recorded-data showcase
+# 曲线对齐、FFT 与导出 / Recorded-data walkthrough
 
-[返回首页](../README.md) · [完整手册](../README.txt) · [来源计算边界](Theoretical_Curves.md)
+[返回首页](../README.md) · [使用手册](../README.txt) · [发布文章](https://www.kechuang.org/t/91966)
 
-原始 `TEST_SD(1).TXT` 由数据提供者提供并授权本次公开展示：第一列为秒，第二列为原始值。**原文件和实验抖动保持不变。`0.49 N/raw` 仅根据提供者所述“最大推力大概 919.7 N”作展示估算；平滑参考由记录趋势生成，不是真实理论预测，不用于性能证明或工程推断。**
+用一份用户提供的实验记录，走一遍导入、时间平移、分别计算、FFT 和导出。橙线为实验记录，绿虚线为用于演示的平滑模拟参考。
 
 ## 三步体验
 
-1. 下载 v0.1.0 [Windows 便携包](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.1.0)，完整解压。按 Release 正文核对 SHA-256。
-2. 在自己的可写目录保存下面三份必需文件，保持文件名和同目录关系。在 GitHub 文件页使用 **Download raw file**；不必下载大型对应源码包。
-3. **从该示例目录启动应用**，再用“文件 → 打开工程”打开 `record_showcase.retldc.json`，进入“推力”。这是 v0.1.0 非主来源相对路径的要求；不能只在任意已启动窗口里打开 JSON。
+1. 下载并完整解压 [v0.1.0 Windows 便携版](https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases/tag/v0.1.0)。
+2. 将下表三份必需文件保存在同一目录。在 GitHub 文件页点击 **Download raw file**，保留文件名。
+3. **从该目录启动应用**，再打开 `record_showcase.retldc.json`，进入“推力”。
 
-| 文件 | 用途 |
+| 文件 | 内容 |
 |---|---|
-| [TEST_SD(1).TXT](../examples/record_showcase/TEST_SD%281%29.TXT) | 必需；原始两列记录，18180 点，未改写 |
-| [synthetic_smooth_reference.csv](../examples/record_showcase/synthetic_smooth_reference.csv) | 必需；18180 点平滑合成参考，独立来源与合成时钟 |
-| [record_showcase.retldc.json](../examples/record_showcase/record_showcase.retldc.json) | 必需；已保存映射、估算换算、区间、显示对齐与两类完成状态 |
-| [peak_estimate.calibration.json](../examples/record_showcase/peak_estimate.calibration.json) | 可选；显式记录估算系数与局限，供手动导入复现 |
-| [generate_reference.py](../examples/record_showcase/generate_reference.py) | 可选；固定方法重建参考，使用仓库已有 NumPy/SciPy 环境 |
+| [TEST_SD(1).TXT](../examples/record_showcase/TEST_SD%281%29.TXT) | 必需；原始记录，18180 点 |
+| [synthetic_smooth_reference.csv](../examples/record_showcase/synthetic_smooth_reference.csv) | 必需；平滑模拟参考 |
+| [record_showcase.retldc.json](../examples/record_showcase/record_showcase.retldc.json) | 必需；已配置的工程 |
+| [线性换算配置](../examples/record_showcase/peak_estimate.calibration.json) · [参考生成脚本](../examples/record_showcase/generate_reference.py) | 可选；复现本例的数据处理 |
 
-PowerShell 示例，将 EXE 路径替换为实际位置：
+例如在 PowerShell 中启动，替换为自己的目录：
 
 ```powershell
 Set-Location 'D:\MyExamples\record_showcase'
 & 'D:\Tools\Underline_RETLDC\Underline_RETLDC.exe'
 ```
 
-源码用户同样从示例目录，用仓库已有 `.venv\Scripts\python.exe` 执行仓库 `main.py`。无需另建环境。重开会校验源文件哈希并按保存配置重算已完成结果；不要编辑原始文件来绕过校验。
+v0.1.0 按启动工作目录查找非主来源的相对路径，因此需要上面的启动方式。源码用户可在示例目录用仓库已有 venv 执行仓库 `main.py`。
 
-## 估算比例和零点处理
+## 移动时间轴与对齐曲线
 
-原始最大值为 `1877 raw`，出现在 `153.384567 s`。`919.7 / 1877 ≈ 0.489984`，本例按用户同意的整比例使用：
+**平移前：** 显示时间偏移为 `0 s`，两条曲线在横轴上错开。
 
-```text
-F_est = 0.49 × raw + 0 N
-推力极性 = +1；修正 = 不启用
-```
+![平移前，偏移输入框为0秒，滑动条和自动对齐按钮均可见](assets/record-before-alignment.png)
 
-这使显示峰值为 `919.73 N`，**不能反推证明设备采用 50 克力/单位或已有真实标定**。软件的“校准/已修正”是既有工作流名称，不构成对该系数的认证。
+有三种调整方式：
 
-本例不做去皮或基线扣除。选定 PRE `[145,151] s` 的中位数为 `34 raw`（估算 `16.66 N`），POST `[160,170] s` 为 `19 raw`（估算 `9.31 N`）。这些偏置保留在曲线和积分中；不能把其差值当作推进剂消耗，也不能把图中数值视作已去零净推力。没有填入推进剂质量、总质量、直径或长度，比冲保持“不可用”。
+- **拖动滑动条**：移动参考曲线，快速比较峰值位置和曲线形状。
+- **输入偏移秒数**：精确设置平移量，负值向左、正值向右。
+- **对齐试车起点**：按当前实验起点和参考数据检测到的起点自动对齐，随后仍可微调。
 
-![原数据单位保持 raw；线性估算 K=0.49、B=0，质量和尺寸不补造，真实 Qt 中文离屏图](assets/record-calibration-estimate.png)
+本例自动对齐得到 `-1.631973 s`（[自动对齐截图](assets/record-auto-alignment.png)）。再拖动滑动条或在输入框填入 `-2 s`，得到下图。点击“恢复原时序”可清除显示平移。
 
-## 对齐与分别计算
+![自动对齐后再手动微调为-2秒，曲线移动后与实验记录叠加](assets/record-overlay-estimate.png)
 
-工程的实验 ACTIVE_TEST 为演示选定的 `[152.50,154.80] s`，PRE/POST 如上；可在原试车区间控件修改。它不是对真实燃烧起止的认证。原文件仍保留完整 `3.114664–199.875595 s` 记录。
+平移只改变图上的位置，原始时间和计算区间不变。重复点击自动对齐不会累加偏移。
 
-合成参考把原时间列加 `2 s`，只为演示独立时钟。其计算区间明确保存为 `[154.50,156.80] s`，与实验使用同一原记录窗口；它不继承实验分段。新建理论来源默认用完整记录，不能把手动重建后的全段结果直接与这里的区间结果比较。
+## 选择试车区间，分别计算结果
 
-![显示平移为零时，原记录估算曲线与合成参考尚未对齐；真实 Qt 离屏图](assets/record-before-alignment.png)
+试车区间可自动识别，也可拖动两侧边界或输入起止时刻调整。本工程选用 `[152.50,154.80] s`；切换“仅分析工作区间”即可集中查看这一段。
 
-点击“对齐试车起点”使用当前实验手动起点和参考独立检测起点，本次得到 `-1.631973 s`。它不必等于人为时钟差的 `-2 s`，因为参考已被平滑且检测方法按活动阈值找起点。重复点击不累加；可继续手动微调或“恢复原时序”。**显示对齐不是拟合，不改变科学时间、区间、数组或积分。**
+在结果区选择“实验”或“理论”，点击同一个顶部“计算分析结果”按钮。发动机物理参数在工程中填写一次，两类来源分别计算。[查看参考来源的结果表](assets/record-reference-metrics.png)。
 
-![橙线保留实验抖动，虚线为合成参考；结果来源为实验，质量缺失时比冲不可用](assets/record-overlay-estimate.png)
-
-在结果区切换“实验 / 理论”，使用同一个顶部“计算分析结果”按钮。两类计算读取同一工程物理参数；本例这些参数均缺失，不借演示名义填入质量。理论的下拉名称只是软件来源角色，其通道名也标注“合成参考·非预测”。
-
-![切换到理论来源，只改变独立结果表；合成参考不是经验证的物理模型](assets/record-reference-metrics.png)
-
-| 演示估算量 | 原记录估算 | 平滑合成参考 |
+| 指标 | 实验记录 | 模拟参考 |
 |---|---:|---:|
-| 所选区间时长 / s | 2.30 | 2.30 |
+| 区间时长 / s | 2.30 | 2.30 |
 | 峰值 / N | 919.73 | 894.915307 |
-| 区间梯形积分 / N·s | 1545.896136 | 1493.648280 |
+| 总冲 / N·s | 1545.896136 | 1493.648280 |
 | 比冲 | 不可用 | 不可用 |
 
-数值差来自合成平滑方法与采样积分，不能用来证明发动机性能、理论一致性或模型误差。
+本例未提供推进剂质量，所以不显示比冲。数据换算与参考生成方法见末尾说明。
 
-## 工作区间 FFT 与实验导出
+## FFT：查看频率成分和局部峰值
 
-图表菜单中打开“仅分析工作区间”、FFT 和“去均值”，即可得到下图。退出 FFT / 关闭区间开关可恢复时域与全段。原记录全段有 4 个超过 `5×中位 Δt` 的时间空档；有限递增非等间隔时钟仍按 pyqtgraph 既有规则做等点数线性插值后 FFT，不能把插值视为新增实测信息。
+在图表菜单打开 FFT，查看选定区间中的频率成分。X、Y 轴都可以切换对数坐标，让宽频段中强弱不同的成分和局部峰值更容易看清。
 
-![所选工作区间、去均值后的 FFT，真实 Qt 中文离屏图；不是 PSD 或共振证明](assets/record-interval-fft.png)
+下图使用实验记录的工作区间，开启“去均值”和 X/Y 双对数：横轴为频率 **Hz**，纵轴为 FFT 模值，当前推力通道的单位为 **N**。对数视图只显示正频率和正模值，不包含 0。
 
-纵轴是 `abs(rFFT(y)/N)` 模值，不是 PSD 或补乘 2 的单边幅值。频谱不证明共振、发动机稳定性或振动原因；平滑合成参考也不能验证这些结论。
+![实验工作区间的FFT双对数图，横轴频率Hz、纵轴FFT模值N](assets/record-fft-loglog.png)
 
-顶部“导出”仍用实验主流程，即使结果区当前选择“理论”。本次实际输出并核对了 `thrust_data_ZH.csv` 和 `thrust_curve_ZH.png`；CSV 的 213 行逐点对应原区间内的 `0.49 × raw`，没有被参考曲线替换。导出时间以 `152.50 s` 为零点，首个保留样本约在 `0.009841 s`，不补造零时刻样本。正式 PNG 不含合成叠图；保存当前叠图请用图表右键 Export。
+也可切回[线性坐标视图](assets/record-interval-fft.png)，或关闭 FFT 回到时域曲线。
 
-![实际实验 CSV 与正式 PNG 导出选项；未填写 ENG 所需发动机参数](assets/record-export-options.png)
+## 导出实验结果
 
-本例不演示 ENG → OpenRocket 导入，兼容演示尚未验证。缺少相应元数据，不为此补造参数。
+顶部“导出”可输出实验 CSV、正式曲线 PNG 和报告。统一导出使用实验主流程；保存包含参考曲线的当前叠图，可用图表右键 Export。
 
-## 参考生成方法与来源核验
+![实验CSV和正式PNG导出选项](assets/record-export-options.png)
 
-对原始第二列创建一个新数组：先做 **31 点中值滤波**，再做 **高斯平滑 `sigma=20` 点、`truncate=4`、边界 `nearest`**，最后乘 `0.49`。参数按点数定义；它是趋势派生的合成曲线，不是独立理论模型。原时间列仅在合成文件中加 `2 s`；不重采样或改写实测数组，输出保留六位小数。
+本例实际导出的 CSV 含 213 个区间内样本，时间以 `152.50 s` 为零点；首个样本在约 `0.009841 s`。即使结果区选中参考来源，正式导出也仍对应实验记录。
 
-在示例目录运行仓库 venv 的 Python 执行 `generate_reference.py` 可重建；脚本先核验原始哈希，避免把别的文件当成本例。
-原始 TXT 和合成 CSV 按固定原字节保存，示例目录的 Git 属性保护它们不被自动转换行尾。
+## 数据说明
+
+记录由用户提供，第一列为秒，第二列为原始值。工程使用线性配置 **`K=0.49 N/raw`、`B=0`、极性 `+1`**；比例来自用户提供的约 `919.7 N` 峰值与原始峰值 `1877` 的对应关系，不是设备标定记录。[查看换算配置界面](assets/record-calibration-estimate.png)。
+
+未扣除静止偏置，也未启用自重变化修正。PRE `[145,151] s` 的中位数为 `34 raw`，POST `[160,170] s` 为 `19 raw`，这些偏置仍留在曲线和积分中。原始文件、实验抖动和完整时间记录均保留。
+
+模拟参考对一个新数组做 **31 点中值滤波 → 高斯平滑（sigma=20 点，truncate=4，nearest 边界）→ 乘上述比例**，并将时间列加 `2 s`，输出六位小数。它由记录趋势生成，用于演示叠图，不是独立物理模型的理论预测。生成脚本可用仓库已有 NumPy/SciPy 环境重建，文件行尾固定以保持哈希一致。
+
+实验计算区间为 `[152.50,154.80] s`，参考的独立科学区间为 `[154.50,156.80] s`；显示平移不改这两个区间。新建参考来源默认使用完整记录，手动重建时应留意计算区间。
 
 | 文件 | SHA-256 |
 |---|---|
 | 原始 TXT | `7325935683d8380681a804c338b8fe8ebbe1539d5dc3211cc55743303c038e8f` |
-| 平滑合成参考 CSV | `f51da844814ad9562415522a3fce113d3098af742220ee4afcf8ed7e73140a27` |
+| 模拟参考 CSV | `f51da844814ad9562415522a3fce113d3098af742220ee4afcf8ed7e73140a27` |
 
-截图使用与 v0.1.0 标签一致的未修改源码、现有 venv 和真实 Qt 控件离屏渲染，加载本机中文字体；没有拼造界面、捕获私人桌面或制作桌面录屏。当前提供六张截图，没有视频。此次验证了来源哈希、数组保持、对齐不累加、显示平移不改指标、独立结果、正式实验导出和工程重开；不等于全量测试通过，历史 Windows 原生堆异常仍未归因。
+FFT 显示 `abs(rFFT(y)/N)` 模值，非 PSD；非等间隔时钟出图沿用线性插值。频谱峰值提供观察线索，其物理原因需结合工况判断。截图为 v0.1.0 真实 Qt 中文界面离屏渲染，目前没有视频；ENG → OpenRocket 导入演示尚未验证。
 
 ## English walkthrough
 
-Download the three required TXT/CSV/project files together. Launch v0.1.0 **with their folder as the working directory**, then open `record_showcase.retldc.json`. The original record has seconds and raw sensor values. The user supplied an approximate 919.7 N peak; `0.49 N/raw`, offset zero and positive polarity are explicitly an illustrative peak-based estimate, not verified sensor calibration. Baseline offsets remain; no weight correction or propellant mass is invented. Isp stays unavailable.
+Save the TXT, reference CSV and project JSON together. Launch v0.1.0 with that folder as the working directory, open the project, then use the slider or offset field to shift the reference curve. Align Test Starts finds the two starts automatically; you can fine-tune afterwards.
 
-The smooth reference is derived from a new array using a 31-sample median filter followed by a Gaussian with sigma 20 samples, nearest boundaries and truncate 4. Its clock is shifted by +2 s. It is synthetic, not an independent physical prediction, performance proof or engineering inference. Use Align Test Starts, switch metric sources and Calculate, inspect active-interval FFT, or export the experimental CSV/PNG. Display alignment never changes scientific inputs. Screenshots are actual Qt offscreen renders; there is no desktop recording or verified OpenRocket import demonstration.
+Detect the test interval or drag its boundaries, switch metric sources and Calculate, inspect FFT with linear or logarithmic axes, then export experimental results. The green curve is a smooth synthetic reference for this demonstration. Processing settings and source hashes are recorded above; screenshots are actual Qt offscreen renders.
