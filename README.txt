@@ -5,7 +5,7 @@ Rocket Engine Test Log Decode and Compute.
 
 Windows 便携包无需安装 Python：完整解压后运行 Underline_RETLDC.exe，保留整个文件夹。
 v0.1.0 已于 2026-10-15 发布，Windows 便携包与对应源码包可在 GitHub Release 下载。
-简洁导航与入门示例见仓库 README.md；本文件保留完整操作手册。
+快速导航与入门示例见 README.md；以下为完整操作手册。
 
 版本与下载：https://github.com/aleistercrowleybeast666/Underline_RETLDC/releases
 代码与文档：https://github.com/aleistercrowleybeast666/Underline_RETLDC
@@ -27,7 +27,8 @@ SHA-256 列在 Release 正文中；该版本没有独立的 SHA256SUMS.txt 下�
    建议使用有写入权限的位置，例如 D:\Tools\Underline_RETLDC；无需管理员权限。
 3. 在“工程”页导入数据，确认来源类型为“实验数据”或“理论数据”。原文件始终只读。
 4. 核对解析结果、时间来源、物理量和单位，确认实验主通道；需要时设置校准。
-5. 进入推力、燃烧室压力、温度或数据浏览器，检测试车区间并人工确认起止时间。
+5. 在推力或燃烧室压力页自动识别试车区间，也可拖动边界或输入起止时刻调整。
+   温度与数据浏览器使用同一工程区间。
 6. 填写必要发动机参数，点击顶部“计算分析结果”，核对结果后导出。
    工程可在任意阶段保存；临时分析也可直接导出，无须先保存工程。
 
@@ -51,11 +52,11 @@ SHA-256 列在 Release 正文中；该版本没有独立的 SHA256SUMS.txt 下�
 
 新通道默认 Identity（已经校准/不额外变换），不代表软件证明了传感器标定准确。
 raw/count/ADC 需要合适的校准及物理单位，才能用于 SI 总冲、比冲或 ENG。
-新工程推力修正默认“不启用”；推力极性独立生效。可选自重/基线补偿需由用户明确
-选择并确认安装含义。校准、极性与补偿属于不同阶段。
+新工程推力修正默认“不启用”；推力极性独立生效。自重/基线补偿可按安装方式和
+分析需要选择。校准、极性与补偿属于不同阶段。
 
 实验推力与室压编辑同一套工程 PRE/ACTIVE_TEST/POST 区间，温度读取该区间。
-自动检测仅为建议，用户保留最终区间控制。总冲使用实际时间戳作梯形积分；比冲只用
+自动识别的区间可手动调整。总冲使用实际时间戳作梯形积分；比冲只用
 推进剂质量，质量缺失或无效时比冲不可用，其他有足够输入的指标仍可计算。
 发动机总质量不能替代推进剂质量，基线推导的等效质量变化不等于精确推进剂消耗。
 
@@ -160,7 +161,7 @@ docs/Qt_Library_Replacement_0_1_0.md、docs/License_Delivery_Closeout_0_1_0.md�
   .\.venv\Scripts\python.exe -m pytest
   .\.venv\Scripts\python.exe -m ruff check .
 
-本次已验收程序使用 Python 3.14.0、Qt/PySide6 6.11.1、pyqtgraph 0.14.0、NumPy 2.5.2、
+v0.1.0 发布构建使用 Python 3.14.0、Qt/PySide6 6.11.1、pyqtgraph 0.14.0、NumPy 2.5.2、
 SciPy 1.18.0、PyInstaller 6.22.0。来源包 BUILD_DEPENDENCIES.json 保存实际版本。
 打包.bat 在 pytest 或 Ruff 失败时停止，不继续 PyInstaller。
 
@@ -171,7 +172,7 @@ Windows IME 人工专项验收未运行。完整边界见 docs/FFT_Restored_Acce
 
 发布后展示复核的全量 pytest 遇到 Windows 原生堆异常 0xc0000374，
 没有完整汇总；相关理论工作流单项隔离重跑 1 passed，根因未定。单项通过不能作为
-该次全量通过，也不替代上述发布前记录。本次文档复核未修改程序或诊断该异常。
+该次全量通过，也不替代上述发布前记录。
 
 
 English quick start

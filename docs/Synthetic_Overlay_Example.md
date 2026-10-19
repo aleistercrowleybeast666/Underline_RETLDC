@@ -2,10 +2,10 @@
 
 [返回首页](../README.md) · [完整手册](../README.txt) · [来源计算说明](Theoretical_Curves.md)
 
-**两条曲线都是本次新建的合成教学数据，不是实测，也不是物理模型的理论预测。**
+**两条曲线均为合成教学数据，不是实测，也不是物理模型的理论预测。**
 `experimental` / `theoretical` 只是本例用于演示的来源角色。平滑参考曲线由下述函数直接生成，没有从实测数据拟合或平滑得到。
 
-本例适用于已发布的 v0.1.0。示例和截图是发布后补充的仓库展示文件，旧便携包不含它们。没有复制第三方或权限未明的试车记录；新增 CSV、工程与界面截图随仓库 Apache-2.0 许可提供，第三方界面组件仍适用各自许可。
+本例适用于 v0.1.0，示例文件需单独下载。CSV、工程与界面截图随仓库 Apache-2.0 许可提供，第三方界面组件适用各自许可。
 
 ## 文件
 
@@ -30,7 +30,7 @@ CSV 只含 `Time (s),F (N)`，UTF-8、逗号分隔，第一行表头、第二行
 5. 在“工程”把新来源改成“理论数据”，加入 `synthetic_reference.csv`，使用同一列映射。不要让它替代实验主推力。
 6. 在推力页勾选理论曲线，将“显示时间平移”设为 `-2 s`。该数值是本例人为设置的时钟差；“对齐试车起点”会使用检测结果，未必恰好等于 -2 s。
 7. 用顶部“计算分析结果”计算实验指标；在结果区“指标来源”切到理论后再用同一按钮计算。理论默认使用完整科学记录 `[2,8]` s；它不继承实验 `[1,5]` s 的区间。两个平均值的时间分母不同，不能当作同区间比较。
-8. 保存到自己的工程文件。顶部统一导出使用实验主流程；要保留虚线参考与显示平移，使用图表右键 Export 的当前图 PNG / SVG 路径。本例没有填写 ENG 所需的完整发动机元数据，不能直接演示 ENG；ENG → OpenRocket 实际导入兼容演示留待后续验证，不补造参数。
+8. 保存工程。顶部统一导出使用实验主流程；要保留虚线参考与显示平移，使用图表右键 Export 的当前图 PNG / SVG 路径。ENG 导出需要完整的发动机元数据，本例未配置这些参数。
 
 参考积分结果：实验 `[1,5]` s 总冲约 **349.968773 N·s**，参考完整 `[2,8]` s 总冲约 **349.479167 N·s**。这些只是六位小数 CSV 采样点的梯形积分，不是发动机性能结论。缺有效推进剂质量时 Isp 应保持不可用。
 
@@ -45,7 +45,7 @@ Set-Location 'D:\MyExamples\synthetic_overlay'
 & 'D:\Tools\Underline_RETLDC\Underline_RETLDC.exe'
 ```
 
-然后使用“文件 → 打开工程”选择该目录下的 `synthetic_overlay.retldc.json`，进入推力页。源码用户可从该目录用仓库已有 `.venv\Scripts\python.exe` 执行仓库的 `main.py`；不要另建环境。也可随时采用路线一，按绝对路径重新导入 CSV 后保存自己的工程。
+然后使用“文件 → 打开工程”选择该目录下的 `synthetic_overlay.retldc.json`，进入推力页。从源码运行时，可从该目录用仓库已有 `.venv\Scripts\python.exe` 执行仓库的 `main.py`。也可采用路线一，按绝对路径导入 CSV 后保存工程。
 
 工程已保存两类来源的完成状态；重开会从校验通过的 CSV 和保存的配置重算结果。显示平移 -2 s 不改变理论的 2–8 s 科学时间、原始数组或积分。不要编辑 CSV 后绕过哈希检查。
 
@@ -76,4 +76,4 @@ Download all three files in [examples/synthetic_overlay](../examples/synthetic_o
 
 Use +1 polarity, Identity calibration and no correction. The demonstration Project propellant mass is 0.2 kg. The experimental ACTIVE_TEST is 1–5 s; the theory calculation uses its independent full 2–8 s record. Set the shared theory display shift to -2 s, and calculate each source using the toolbar action and metric-source selector. Display shifts never change scientific timestamps or integrals. Unified exports use the experimental workflow; use the plot's context-menu image export for the visible overlay.
 
-This example omits the complete motor metadata required for ENG export. An actual ENG import demonstration in OpenRocket remains a follow-up; no compatibility validation is claimed.
+ENG export requires complete motor metadata, which is not configured in this example.
