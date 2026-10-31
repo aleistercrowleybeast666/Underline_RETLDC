@@ -1,0 +1,14 @@
+{
+  "valid": [
+    "valid_synthetic.tdmotor.json",
+    "valid_positive.tdmotor.json"
+  ],
+  "invalid": {
+    "invalid_mass.tdmotor.json": "MASS",
+    "invalid_clock.tdmotor.json": "CLOCK",
+    "invalid_length.tdmotor.json": "LENGTH",
+    "invalid_version.tdmotor.json": "VERSION",
+    "invalid_bool_mass.tdmotor.json": "NUMBER",
+    "invalid_digest.tdmotor.json": "DIGEST"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema_id": "underline.motor-test-package/1",
+  "owner_repository": "https://github.com/aleistercrowleybeast666/Underline_RETLDC.git",
+  "schema": "contracts/motor-test-package/v1/schema.json",
+  "schema_sha256": "402f5ccacc2a2fc036739af819a95b4e3d5d3bdef072cc9daa87c0597b6fb440",
+  "validator": "plugins/exporters/treediagram_motor/contract.py",
+  "validator_sha256": "ea4eaaf4e38587e44678a3bd05fef476fda2329c49596ce7201cbbbba0479988",
+  "fixtures": {
+    "invalid_bool_mass.tdmotor.json": "56b0a8082abc3567dca40b6740dc3baa621885d4b268bc501a9d86c50c57cda4",
+    "invalid_clock.tdmotor.json": "5a8324e13196dd4a314547a1cc77f880682fa632c1daa38917ad499bd8cad116",
+    "invalid_digest.tdmotor.json": "9d50448559b3454004cba2834f55bcf5f872f1568e5baf143e949ae4e5a56cf6",
+    "invalid_length.tdmotor.json": "9cedfb2d410d687c68f16eb302ec77cde5a1e40df2893b1e21daf0fed5ea4f11",
+    "invalid_mass.tdmotor.json": "d536c5d9ca467ef195753bf8479a888888a42ce6732abeff34ea7d12b62eb81f",
+    "invalid_version.tdmotor.json": "1ea69347de7f02df4cb84d9f7faaa286a8aaa92e91e3b549d132125bc644888c",
+    "synthetic.csv": "aad867fbbb51ce9c9c0e5e2ee1c9bc36004d353a437adc6ff34d6e5ff0377c32",
+    "synthetic.retldc.json": "8b74f5426e4ea10a66c7306b8ee0edcb29e2e811a5727b82fe0ecc935da0ea66",
+    "synthetic_positive.retldc.json": "aa7a8cd83052ab28720693deaeb2c02f49ea174a59631172efe2db6a34725684",
+    "valid_positive.tdmotor.json": "66c6232d0ccec6ceaabdec9186e9059a2f16dc9eeedea0c94221f06a8ceaed96",
+    "valid_synthetic.tdmotor.json": "6b8ea90658017c9419c4344022ed41d7d8ab90f6dfeb52fa608893ccf976467a",
+    "vectors.json": "55287d865bd817c34099c47820f6213bafa51ef884d7f69edbf93a183581ec96"
+  },
+  "fixture_license": "Apache-2.0; original synthetic data; no physical measurement or calibration claim"
+}

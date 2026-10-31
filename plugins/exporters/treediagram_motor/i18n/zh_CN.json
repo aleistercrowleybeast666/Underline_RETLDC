@@ -1,0 +1,5 @@
+{
+  "exporter.treediagram_motor.name": "TreeDiagram 发动机试车数据",
+  "export.treediagram_motor": "TreeDiagram 发动机数据 (.tdmotor.json)",
+  "export.capability.source_identity_ready": "请重新导入来源以建立记录身份"
+}

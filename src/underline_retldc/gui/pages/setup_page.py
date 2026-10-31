@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any
 
 from PySide6.QtCore import Signal
@@ -50,6 +51,7 @@ class SetupPage(QWidget):
         self._calibrations: tuple[Any, ...] = ()
         self._channels: dict[str, Channel] = {}
         self._display_preferences: dict[str, str] = {}
+        self._calibration_provenance: dict[str, Any] = {}
 
         self.channel_group = QGroupBox()
         channel_layout = QFormLayout(self.channel_group)
@@ -326,6 +328,7 @@ class SetupPage(QWidget):
             self.calibration_form.set_values(previous_values)
 
     def _schema_update(self, _index: int | None = None) -> None:
+        self._calibration_provenance = {}
         plugin_id = self.calibration_id()
         plugin = next(
             (
@@ -396,7 +399,7 @@ class SetupPage(QWidget):
         if channel is None:
             raise ValueError("Select a Channel before configuring Calibration")
         output_channel_id = Calibration_OutputChannelId(channel)
-        return {
+        config = {
             "input_channel_id": input_channel_id,
             "output_channel_id": output_channel_id,
             "quantity": quantity,
@@ -407,6 +410,16 @@ class SetupPage(QWidget):
             "display_unit": interpretation["display_unit"],
             "semantic_role": interpretation["semantic_role"],
         }
+        if self._calibration_provenance:
+            provenance = deepcopy(self._calibration_provenance)
+            origin = provenance.get("origin_document", {})
+            provenance["parameters_modified"] = (
+                origin.get("model", {}).get("parameters") != values
+                or origin.get("output_unit") != unit
+                or origin.get("quantity") != quantity
+            )
+            config["calibration_provenance"] = provenance
+        return config
 
     def set_calibration_config(self, plugin_id: str, config: dict[str, Any]) -> None:
         index = self.calibration_combo.findData(plugin_id)
@@ -414,6 +427,7 @@ class SetupPage(QWidget):
             self.calibration_combo.setCurrentIndex(index)
         parameters = config.get("parameters", {})
         self._schema_update()
+        self._calibration_provenance = deepcopy(config.get("calibration_provenance", {}))
         self.calibration_form.set_values(
             {
                 **dict(parameters),
@@ -451,6 +465,7 @@ class SetupPage(QWidget):
                 "parameters": dict(document.parameters),
                 "quantity": document.quantity,
                 "unit": document.output_unit,
+                "calibration_provenance": {"origin_document": document.to_dict()},
             },
         )
 

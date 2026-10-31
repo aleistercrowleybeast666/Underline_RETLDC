@@ -1,0 +1,8 @@
+{
+  "plugin_id": "builtin.exporter.treediagram_motor",
+  "plugin_type": "exporter",
+  "api_version": "1",
+  "version": "1.0.0",
+  "entry": "plugin:TreeDiagramMotorExporter",
+  "name": "TreeDiagram motor test package"
+}

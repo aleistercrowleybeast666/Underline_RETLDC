@@ -1,0 +1,435 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/aleistercrowleybeast666/Underline_RETLDC/contracts/motor-test-package/v1/schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_id": {
+      "const": "underline.motor-test-package/1"
+    },
+    "schema_version": {
+      "const": 1,
+      "type": "integer"
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "application": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "application_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "exporter_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "exporter_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "plugin_api_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "application",
+        "application_version",
+        "exporter_id",
+        "exporter_version",
+        "plugin_api_version"
+      ]
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "motor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "propellant_mass_kg": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "total_mass_kg": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "diameter_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "length_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "propellant_mass_kg",
+        "total_mass_kg",
+        "diameter_m",
+        "length_m"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "stream_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "channel_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "final_channel_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "file_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "kind": {
+          "const": "experimental"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "source_id",
+        "stream_id",
+        "channel_id",
+        "final_channel_id",
+        "file_name",
+        "kind",
+        "sha256"
+      ]
+    },
+    "processing_chain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stage": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "api_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "input": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "output": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "config": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "stage",
+          "id",
+          "version",
+          "api_version",
+          "input",
+          "output",
+          "source_sha256",
+          "config"
+        ]
+      },
+      "minItems": 3,
+      "maxItems": 32
+    },
+    "calibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "unknown",
+            "estimated",
+            "documented"
+          ]
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "status",
+        "notes"
+      ]
+    },
+    "time": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "local_to_project_offset_s": {
+          "type": "number"
+        },
+        "ignition_project_s": {
+          "type": "number"
+        },
+        "active_test_project_s": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "export_time_reference": {
+          "const": "ignition"
+        }
+      },
+      "required": [
+        "local_to_project_offset_s",
+        "ignition_project_s",
+        "active_test_project_s",
+        "export_time_reference"
+      ]
+    },
+    "evidence_curve": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "time_s": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 250000
+        },
+        "thrust_n": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 250000
+        }
+      },
+      "required": [
+        "time_s",
+        "thrust_n"
+      ]
+    },
+    "simulation_curve": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "time_s": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 250000
+            },
+            "thrust_n": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 250000
+            },
+            "source_sample_indices": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": -1
+              },
+              "minItems": 2,
+              "maxItems": 250000
+            },
+            "inserted_boundary_indices": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "minItems": 0,
+              "maxItems": 2
+            },
+            "interpolation": {
+              "const": "piecewise_linear"
+            },
+            "maximum_gap_s": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "time_s",
+            "thrust_n",
+            "source_sample_indices",
+            "inserted_boundary_indices",
+            "interpolation",
+            "maximum_gap_s"
+          ]
+        }
+      ]
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "severity": {
+            "enum": [
+              "warning",
+              "error",
+              "info"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "code",
+          "path",
+          "severity",
+          "message"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 128
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "total_impulse_ns": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "total_impulse_ns"
+      ]
+    },
+    "content_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_id",
+    "schema_version",
+    "producer",
+    "project",
+    "motor",
+    "source",
+    "processing_chain",
+    "calibration",
+    "time",
+    "evidence_curve",
+    "simulation_curve",
+    "diagnostics",
+    "metrics",
+    "content_sha256"
+  ]
+}

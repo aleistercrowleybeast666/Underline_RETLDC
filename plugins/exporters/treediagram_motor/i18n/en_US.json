@@ -1,0 +1,5 @@
+{
+  "exporter.treediagram_motor.name": "TreeDiagram motor test package",
+  "export.treediagram_motor": "TreeDiagram motor data (.tdmotor.json)",
+  "export.capability.source_identity_ready": "Reimport the source to establish its recorded identity"
+}

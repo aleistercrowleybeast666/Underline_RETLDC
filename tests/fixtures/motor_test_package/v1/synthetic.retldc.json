@@ -1,0 +1,172 @@
+{
+  "schema": "underline-retldc-project/2",
+  "source_analyses": {},
+  "software_version": "0.1.0",
+  "source": {
+    "path": "synthetic.csv",
+    "sha256": "aad867fbbb51ce9c9c0e5e2ee1c9bc36004d353a437adc6ff34d6e5ff0377c32"
+  },
+  "sources": [
+    {
+      "source_id": "bench",
+      "path": "synthetic.csv",
+      "sha256": "aad867fbbb51ce9c9c0e5e2ee1c9bc36004d353a437adc6ff34d6e5ff0377c32",
+      "parser": {
+        "id": "builtin.parser.tr_f",
+        "version": "1.0.0",
+        "api_version": "1",
+        "config": {
+          "time_unit": "s",
+          "invalid_row_policy": "error"
+        }
+      },
+      "source_kind": "experimental",
+      "display_transform": {
+        "shift_s": 0.0,
+        "zero_start": false,
+        "hidden_curve_ids": [],
+        "detected_test": null
+      }
+    }
+  ],
+  "streams": [
+    {
+      "stream_id": "loadcell",
+      "source_id": "bench",
+      "time_offset_s": 0.0,
+      "name": null
+    }
+  ],
+  "parser": {
+    "id": "builtin.parser.tr_f",
+    "version": "1.0.0",
+    "api_version": "1",
+    "config": {
+      "time_unit": "s",
+      "invalid_row_policy": "error"
+    }
+  },
+  "calibration": {
+    "id": "builtin.calibration.linear",
+    "version": "1.0.0",
+    "api_version": "1",
+    "config": {
+      "parameters": {
+        "K": 2.0,
+        "B": 0.0
+      },
+      "quantity": "force",
+      "unit": "N",
+      "input_channel_id": "thrust_raw",
+      "output_channel_id": "force_n"
+    }
+  },
+  "processors": [
+    {
+      "id": "builtin.processor.vertical_linear_baseline",
+      "version": "1.0.0",
+      "api_version": "1",
+      "config": {
+        "enabled": true,
+        "input_channel_id": "thrust_oriented",
+        "regions": {
+          "pre": [
+            0.0,
+            0.4
+          ],
+          "burn": [
+            0.5,
+            2.5
+          ],
+          "post": [
+            2.6,
+            3.0
+          ]
+        }
+      }
+    }
+  ],
+  "regions": {
+    "pre": [
+      0,
+      0.4
+    ],
+    "active_test": [
+      0.5,
+      2.5
+    ],
+    "post": [
+      2.6,
+      3
+    ]
+  },
+  "channels": {
+    "bench/loadcell/thrust_raw": {
+      "channel_id": "thrust_raw",
+      "quantity": "force",
+      "data_unit": "raw",
+      "unit_source": "plugin_declared",
+      "source_id": "bench",
+      "stream_id": "loadcell",
+      "display_unit": null,
+      "semantic_role": null,
+      "calibration": {
+        "id": "builtin.calibration.linear",
+        "version": "1.0.0",
+        "api_version": "1",
+        "config": {
+          "parameters": {
+            "K": 2.0,
+            "B": 0.0
+          },
+          "quantity": "force",
+          "unit": "N",
+          "input_channel_id": "thrust_raw",
+          "output_channel_id": "force_n"
+        }
+      },
+      "output_channel_id": "force_n"
+    }
+  },
+  "primary_channels": {
+    "thrust": {
+      "source_id": "bench",
+      "stream_id": "loadcell",
+      "channel_id": "thrust_raw"
+    },
+    "chamber_pressure": null,
+    "temperature_channels": []
+  },
+  "thrust_polarity": -1,
+  "reference_pressure_pa": 101325.0,
+  "pressure_reference_visible": true,
+  "processing_metadata": {},
+  "analyzer": {
+    "id": "builtin.analyzer.thrust",
+    "version": "1.0.0",
+    "api_version": "1",
+    "config": {
+      "channel_id": "thrust_processed",
+      "ignition": 0.5,
+      "burnout": 2.5
+    }
+  },
+  "motor_metadata": {
+    "motor_designation": "SYNTHETIC-200Ns",
+    "propellant_mass_kg": 0.15,
+    "total_motor_mass_kg": 0.4,
+    "diameter_mm": 50.0,
+    "length_mm": 200.0
+  },
+  "plot_views": {},
+  "plot_analysis_active_only": false,
+  "export_settings": {},
+  "workflow_state": {
+    "parsed": true,
+    "calibrated": true,
+    "processed": true,
+    "analyzed": true
+  },
+  "locale": "zh_CN",
+  "diagnostics": []
+}

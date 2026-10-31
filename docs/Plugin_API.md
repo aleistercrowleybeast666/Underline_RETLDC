@@ -220,6 +220,7 @@ builtin.exporter.chamber_pressure_png
 builtin.exporter.temperature_csv
 builtin.exporter.temperature_png
 builtin.exporter.openrocket_eng
+builtin.exporter.treediagram_motor
 ```
 
 Exporters receive the already parsed/processed Dataset and optional AnalysisResult. They never
@@ -265,6 +266,13 @@ default IDs are persisted separately so user choices survive later refreshes and
 Each Exporter still validates its declared requirements at execution, including
 Quantity, Unit, ACTIVE_TEST segmentation, and motor metadata where applicable. ENG does not expose
 or require a separate final-curve confirmation setting.
+
+The motor-test exporter additionally requires `source_identity_ready`, established at the real
+parser boundary. `app.export_snapshot.ExportSnapshot_Build` resolves the actual Primary binding,
+derived Channel graph and Source hash, and freezes nested provenance before a worker starts.
+`ExportSnapshot.Config_Copy()` supplies the ordinary v1 config mapping; no v1 signature changes.
+`app.project_pipeline.ProjectPipeline` owns the shared GUI/headless project replay. See the
+[motor-test contract](TreeDiagram_Export_Contract.md) for curve, identity and error semantics.
 
 ## Manifest, roots, and discovery
 

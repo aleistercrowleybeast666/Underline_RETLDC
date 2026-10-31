@@ -1,5 +1,11 @@
 # Underline RETLDC
 
+源码新增 **TreeDiagram 发动机数据导出**：沿用现有“导出”对话框生成
+`motor.tdmotor.json`，保留实际推力样本、科学时间、处理来源和已知发动机参数。
+也可无 GUI 执行 `python -m underline_retldc.cli export 工程.json motor.tdmotor.json`。
+详见[格式、示例与运行方法](docs/TreeDiagram_Export_Contract.md)。此项属于当前源码，
+不表示下方历史 v0.1.0 便携发布包已更新。原有界面与 ENG 导出继续保留。
+
 面向火箭发动机台架试车记录的离线桌面工具，支持推力、燃烧室压力与温度数据的导入、校准、分析和导出。可用于固体火箭发动机静态试车数据处理与推力曲线分析。
 An offline desktop tool for importing, calibrating, analyzing and exporting rocket-engine static fire test data, including thrust, chamber pressure and temperature. Suitable for solid rocket motor test records and thrust curve analysis.
 

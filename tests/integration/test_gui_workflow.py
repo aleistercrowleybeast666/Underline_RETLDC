@@ -405,7 +405,7 @@ def test_gui_initializes_measurement_workspaces_and_switches_locale(
         checkbox.sizeHint().width()
         for checkbox in window.export_dialog.exporter_checks.values()
     ) <= window.export_dialog.exporter_scroll.viewport().width()
-    assert len(window.export_dialog.exporter_checks) == 9
+    assert len(window.export_dialog.exporter_checks) == 10
     assert all(
         not checkbox.isEnabled()
         for checkbox in window.export_dialog.exporter_checks.values()
@@ -1340,8 +1340,8 @@ def test_raw_identity_analysis_keeps_relative_results_but_disables_eng(
     assert not eng.isChecked()
     for plugin_id, checkbox in window.export_dialog.exporter_checks.items():
         group_id = window.export_dialog.export_group_id(plugin_id)
-        if group_id in {"overall", "thrust"} and plugin_id != (
-            "builtin.exporter.openrocket_eng"
+        if group_id in {"overall", "thrust"} and plugin_id not in (
+            "builtin.exporter.openrocket_eng", "builtin.exporter.treediagram_motor"
         ):
             assert checkbox.isEnabled() and checkbox.isChecked()
         elif plugin_id != "builtin.exporter.openrocket_eng":
@@ -2373,6 +2373,7 @@ def test_export_capabilities_group_sorting_and_one_time_defaults(
         "segmentation_ready",
         "physical_force",
         "chamber_pressure_ready",
+        "source_identity_ready",
     )
     dialog.set_completed_capability_ids(capabilities)
     for option in dialog._options:

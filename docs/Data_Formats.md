@@ -221,6 +221,7 @@ thrust_curve_ZH.png / thrust_curve_EN.png
 chamber_pressure_curve_ZH.png / chamber_pressure_curve_EN.png
 temperature_curve_ZH.png / temperature_curve_EN.png
 motor.eng
+motor.tdmotor.json
 ```
 
 ENG remains locale-neutral and receives no language suffix. Existing files are atomically
@@ -235,6 +236,14 @@ per-temperature-channel metrics
 when those measurements exist. TXT, thrust PNG, and ENG shift
 ignition to `t = 0`; export-only endpoint interpolation may add ignition/burnout points and is
 disclosed in ExportResult metadata and TXT.
+
+## Motor-test package
+
+Current source exports the locale-neutral motor-test package through the existing plugin dialog.
+It preserves signed evidence and records a separate bounded-interpolation simulation curve;
+unknown physical metadata remains null. GUI and CLI share one immutable primary-input snapshot.
+See [TreeDiagram Export Contract](TreeDiagram_Export_Contract.md) for the authoritative v1 schema,
+digest, error codes, limits and synthetic fixtures. This is independent of the project schema.
 
 ## v0.0.4 confident preset application
 

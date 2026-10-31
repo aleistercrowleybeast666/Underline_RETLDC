@@ -27,6 +27,7 @@ packaging = [
 
 [project.scripts]
 underline-retldc = "underline_retldc.app.application:main"
+underline-retldc-cli = "underline_retldc.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

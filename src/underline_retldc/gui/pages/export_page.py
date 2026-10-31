@@ -427,7 +427,10 @@ class ExportDialog(QDialog):
                     checkbox.setToolTip(
                         t(
                             "export.requires_capabilities",
-                            capabilities=", ".join((*missing, *missing_capabilities)),
+                            capabilities=", ".join(
+                                t(f"export.capability.{key}", key)
+                                for key in (*missing, *missing_capabilities)
+                            ),
                         )
                     )
                 else:

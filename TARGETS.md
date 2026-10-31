@@ -1,5 +1,12 @@
 # TARGETS.md — Underline_RETLDC Project Targets
 
+Current source also implements the TreeDiagram motor-test bridge through the existing Exporter
+Plugin API, without changing the GUI layout or navigation. The immutable export snapshot and
+project replay are shared by GUI and CLI. The formal v1 format, bounded validation, scientific
+policies and synthetic interoperability fixtures are specified in
+[TreeDiagram Export Contract](docs/TreeDiagram_Export_Contract.md). This scope is engine test data,
+not whole-vehicle CAD or inertia export.
+
 ## 1. Project Identity
 
 Project directory:
