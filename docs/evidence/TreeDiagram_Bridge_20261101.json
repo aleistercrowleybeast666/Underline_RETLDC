@@ -1,0 +1,428 @@
+{
+  "date": "2026-11-01",
+  "scope": "Underline motor bridge; Host and offscreen Qt; no hardware qualification",
+  "baseline_commit": "f913c376daf9cb7ebedfd584069866fe510aa30c",
+  "tested_commit": "e4001bf730692f58071a1df4d1efad756bd84379",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]",
+  "dependencies": {
+    "numpy": "2.5.2",
+    "scipy": "1.18.0",
+    "PySide6": "6.11.1",
+    "pytest": "9.1.1",
+    "ruff": "0.16.2"
+  },
+  "pre_fix_provenance": {
+    "baseline_commit": "f913c376daf9cb7ebedfd584069866fe510aa30c",
+    "path": "src/underline_retldc/gui/main_window.py::_export_execute",
+    "actual_input_sha256": "aad867fbbb51ce9c9c0e5e2ee1c9bc36004d353a437adc6ff34d6e5ff0377c32",
+    "selected_unrelated_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "baseline_export_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "fixed_export_sha256": "aad867fbbb51ce9c9c0e5e2ee1c9bc36004d353a437adc6ff34d6e5ff0377c32",
+    "baseline_parser": {
+      "delimiter": ";",
+      "time_unit": "ms"
+    },
+    "fixed_parser": {
+      "time_unit": "s",
+      "invalid_row_policy": "error"
+    }
+  },
+  "pre_fix_path": {
+    "baseline_commit": "f913c376daf9cb7ebedfd584069866fe510aa30c",
+    "project": "D:\\python_software\\Underline_RETLDC\\examples\\synthetic_overlay\\synthetic_overlay.retldc.json",
+    "cwd": "D:\\python_software\\Underline_RETLDC",
+    "baseline_error": "Project Source is missing: D:\\python_software\\Underline_RETLDC\\synthetic_reference.csv",
+    "fixed_sources": [
+      "D:\\python_software\\Underline_RETLDC\\examples\\synthetic_overlay\\synthetic_experimental.csv",
+      "D:\\python_software\\Underline_RETLDC\\examples\\synthetic_overlay\\synthetic_reference.csv"
+    ]
+  },
+  "development_runs": [
+    {
+      "file": "pytest.log",
+      "sha256": "d7a7a8ce31f4f0bdbe78fae1869dcf30300e84f7a58d169320d680e88e37c3e2",
+      "source": "intermediate working snapshot; not attributed to final commit",
+      "failed_tests": [
+        "FAILED tests/integration/test_gui_workflow.py::test_gui_initializes_measurement_workspaces_and_switches_locale",
+        "FAILED tests/integration/test_gui_workflow.py::test_gui_imports_multiple_sources_with_independent_project_time",
+        "FAILED tests/integration/test_gui_workflow.py::test_raw_identity_analysis_keeps_relative_results_but_disables_eng",
+        "FAILED tests/integration/test_gui_workflow.py::test_export_capabilities_group_sorting_and_one_time_defaults",
+        "FAILED tests/integration/test_source_alignment.py::test_test_start_alignment_shared_slider_roles_and_reopen",
+        "FAILED tests/integration/test_theory_overlay.py::test_theory_import_overlay_alignment_reopen_and_removal",
+        "FAILED tests/integration/test_theory_overlay.py::test_theory_only_import_and_legacy_reopen",
+        "FAILED tests/integration/test_theory_overlay.py::test_secondary_experiment_selection_does_not_relabel_the_primary_dataset_on_reopen",
+        "FAILED tests/integration/test_theory_overlay.py::test_one_physical_file_two_origins_with_real_compensation_and_reopen[theoretical-True]",
+        "FAILED tests/integration/test_theory_overlay.py::test_one_physical_file_two_origins_with_real_compensation_and_reopen[experimental-True]"
+      ],
+      "summary": "10 failed, 338 passed, 2 warnings in 502.22s (0:08:22)"
+    },
+    {
+      "file": "gui-retest.log",
+      "sha256": "101af15097f462c2ba1b52663548bf391a376d1872448c87f3f2cd34df66372a",
+      "source": "intermediate working snapshot; not attributed to final commit",
+      "failed_tests": [
+        "FAILED tests/integration/test_gui_workflow.py::test_gui_initializes_measurement_workspaces_and_switches_locale",
+        "FAILED tests/integration/test_gui_workflow.py::test_raw_identity_analysis_keeps_relative_results_but_disables_eng",
+        "FAILED tests/integration/test_gui_workflow.py::test_export_capabilities_group_sorting_and_one_time_defaults"
+      ],
+      "summary": "3 failed, 50 passed in 149.04s (0:02:29)"
+    },
+    {
+      "file": "full-final.log",
+      "sha256": "2a20009b9bc52dd913a40e913f5c0d9972fc6b5447075bacc1ac376da3da598c",
+      "source": "intermediate working snapshot; not attributed to final commit",
+      "failed_tests": [],
+      "summary": "376 passed in 770.58s (0:12:50)"
+    }
+  ],
+  "final_suite": {
+    "status": "passed",
+    "tested_runtime_commit": "e4001bf730692f58071a1df4d1efad756bd84379",
+    "command": ".venv/Scripts/python.exe -u -m pytest -q -p no:cacheprovider --basetemp=.work/0.1.0-motor-bridge-20261101/frozen-final",
+    "exit_code": 0,
+    "complete_stdout": "........................................................................ [ 18%]\r\n........................................................................ [ 37%]\r\n........................................................................ [ 56%]\r\n........................................................................ [ 75%]\r\n........................................................................ [ 94%]\r\n...................                                                      [100%]\r\n379 passed in 850.77s (0:14:10)\r\n",
+    "stdout_sha256": "3903e1b580174dee6f4f7655c3f0bc0f8e74273ab689a95138738bed07a963f9",
+    "runtime_source_changes_during_run": false,
+    "metadata_note": "Schema working-file EOL normalized to already-committed LF and manifest hash corrected; no schema semantic or runtime code changes"
+  },
+  "targeted": {
+    "command": ".venv/Scripts/python.exe -m pytest -q -p no:cacheprovider tests/integration/test_motor_bridge.py --basetemp=.work/0.1.0-motor-bridge-20261101/targeted-final",
+    "exit_code": 0,
+    "stdout": "31 passed in 20.67s"
+  },
+  "smoke": [
+    {
+      "command": ".venv/Scripts/python.exe main.py --smoke-test --locale zh_CN --theme dark",
+      "environment": {
+        "QT_QPA_PLATFORM": "offscreen",
+        "QT_SCALE_FACTOR": "1.25",
+        "UNDERLINE_NATIVE_DIAGNOSTICS_DIR": ".work\\0.1.0-motor-bridge-20261101\\smoke-zh-dark"
+      },
+      "exit_code": 0,
+      "phases": [
+        {
+          "phase": "diagnostics.ready",
+          "monotonic_s": 32023.878766,
+          "thread_id": 22408
+        },
+        {
+          "phase": "application.begin",
+          "monotonic_s": 32023.8789376,
+          "thread_id": 22408,
+          "locale": "zh_CN",
+          "theme": "dark"
+        },
+        {
+          "phase": "qapplication.begin",
+          "monotonic_s": 32023.8791196,
+          "thread_id": 22408
+        },
+        {
+          "phase": "qapplication.ready",
+          "monotonic_s": 32023.9300247,
+          "thread_id": 22408
+        },
+        {
+          "phase": "mainwindow.begin",
+          "monotonic_s": 32023.9383043,
+          "thread_id": 22408
+        },
+        {
+          "phase": "mainwindow.ready",
+          "monotonic_s": 32028.9019699,
+          "thread_id": 22408
+        },
+        {
+          "phase": "window.shown",
+          "monotonic_s": 32028.9637033,
+          "thread_id": 22408
+        },
+        {
+          "phase": "bounded.locale.begin",
+          "monotonic_s": 32029.631466,
+          "thread_id": 22408,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.context_menu.begin",
+          "monotonic_s": 32030.1795405,
+          "thread_id": 22408,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.context_menu.ready",
+          "monotonic_s": 32030.289635,
+          "thread_id": 22408,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.export_dialog.ready",
+          "monotonic_s": 32030.5192363,
+          "thread_id": 22408,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.svg.ready",
+          "monotonic_s": 32030.8129322,
+          "thread_id": 22408,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.export.ready",
+          "monotonic_s": 32030.8144481,
+          "thread_id": 22408,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.locale.begin",
+          "monotonic_s": 32030.81454,
+          "thread_id": 22408,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.context_menu.begin",
+          "monotonic_s": 32031.2833658,
+          "thread_id": 22408,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.context_menu.ready",
+          "monotonic_s": 32031.4115538,
+          "thread_id": 22408,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.export_dialog.ready",
+          "monotonic_s": 32031.5823746,
+          "thread_id": 22408,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.svg.ready",
+          "monotonic_s": 32031.796491,
+          "thread_id": 22408,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.export.ready",
+          "monotonic_s": 32031.7978342,
+          "thread_id": 22408,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.complete",
+          "monotonic_s": 32031.9772019,
+          "thread_id": 22408
+        },
+        {
+          "phase": "event_loop.exit",
+          "monotonic_s": 32032.4649308,
+          "thread_id": 22408,
+          "result": 0
+        },
+        {
+          "phase": "window.closed",
+          "monotonic_s": 32032.4675689,
+          "thread_id": 22408
+        },
+        {
+          "phase": "diagnostics.close",
+          "monotonic_s": 32032.4676504,
+          "thread_id": 22408
+        }
+      ]
+    },
+    {
+      "command": ".venv/Scripts/python.exe main.py --smoke-test --locale en_US --theme light",
+      "environment": {
+        "QT_QPA_PLATFORM": "offscreen",
+        "QT_SCALE_FACTOR": "1",
+        "UNDERLINE_NATIVE_DIAGNOSTICS_DIR": ".work\\0.1.0-motor-bridge-20261101\\smoke-en-light"
+      },
+      "exit_code": 0,
+      "phases": [
+        {
+          "phase": "diagnostics.ready",
+          "monotonic_s": 32071.8632623,
+          "thread_id": 11564
+        },
+        {
+          "phase": "application.begin",
+          "monotonic_s": 32071.8634421,
+          "thread_id": 11564,
+          "locale": "en_US",
+          "theme": "light"
+        },
+        {
+          "phase": "qapplication.begin",
+          "monotonic_s": 32071.8738873,
+          "thread_id": 11564
+        },
+        {
+          "phase": "qapplication.ready",
+          "monotonic_s": 32072.0596601,
+          "thread_id": 11564
+        },
+        {
+          "phase": "mainwindow.begin",
+          "monotonic_s": 32072.0743056,
+          "thread_id": 11564
+        },
+        {
+          "phase": "mainwindow.ready",
+          "monotonic_s": 32077.9583951,
+          "thread_id": 11564
+        },
+        {
+          "phase": "window.shown",
+          "monotonic_s": 32078.0130931,
+          "thread_id": 11564
+        },
+        {
+          "phase": "bounded.locale.begin",
+          "monotonic_s": 32079.166206,
+          "thread_id": 11564,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.context_menu.begin",
+          "monotonic_s": 32080.3561243,
+          "thread_id": 11564,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.context_menu.ready",
+          "monotonic_s": 32080.5636461,
+          "thread_id": 11564,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.export_dialog.ready",
+          "monotonic_s": 32080.9547741,
+          "thread_id": 11564,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.svg.ready",
+          "monotonic_s": 32081.6060675,
+          "thread_id": 11564,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.export.ready",
+          "monotonic_s": 32081.6076754,
+          "thread_id": 11564,
+          "locale": "zh_CN"
+        },
+        {
+          "phase": "bounded.locale.begin",
+          "monotonic_s": 32081.6077684,
+          "thread_id": 11564,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.context_menu.begin",
+          "monotonic_s": 32082.1118743,
+          "thread_id": 11564,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.context_menu.ready",
+          "monotonic_s": 32082.2333697,
+          "thread_id": 11564,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.export_dialog.ready",
+          "monotonic_s": 32082.4867426,
+          "thread_id": 11564,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.svg.ready",
+          "monotonic_s": 32082.7974306,
+          "thread_id": 11564,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.export.ready",
+          "monotonic_s": 32082.7989955,
+          "thread_id": 11564,
+          "locale": "en_US"
+        },
+        {
+          "phase": "bounded.complete",
+          "monotonic_s": 32082.8678757,
+          "thread_id": 11564
+        },
+        {
+          "phase": "event_loop.exit",
+          "monotonic_s": 32083.3785695,
+          "thread_id": 11564,
+          "result": 0
+        },
+        {
+          "phase": "window.closed",
+          "monotonic_s": 32083.3827378,
+          "thread_id": 11564
+        },
+        {
+          "phase": "diagnostics.close",
+          "monotonic_s": 32083.3828321,
+          "thread_id": 11564
+        }
+      ]
+    }
+  ],
+  "contract_manifest": {
+    "schema_id": "underline.motor-test-package/1",
+    "owner_repository": "https://github.com/aleistercrowleybeast666/Underline_RETLDC.git",
+    "schema": "contracts/motor-test-package/v1/schema.json",
+    "schema_sha256": "23b484e42ed2245c2547562969ade6327222c46eaf83954dcffdd6750f3ce3d2",
+    "validator": "plugins/exporters/treediagram_motor/contract.py",
+    "validator_sha256": "ea4eaaf4e38587e44678a3bd05fef476fda2329c49596ce7201cbbbba0479988",
+    "fixtures": {
+      "invalid_bool_mass.tdmotor.json": "56b0a8082abc3567dca40b6740dc3baa621885d4b268bc501a9d86c50c57cda4",
+      "invalid_clock.tdmotor.json": "5a8324e13196dd4a314547a1cc77f880682fa632c1daa38917ad499bd8cad116",
+      "invalid_digest.tdmotor.json": "9d50448559b3454004cba2834f55bcf5f872f1568e5baf143e949ae4e5a56cf6",
+      "invalid_length.tdmotor.json": "9cedfb2d410d687c68f16eb302ec77cde5a1e40df2893b1e21daf0fed5ea4f11",
+      "invalid_mass.tdmotor.json": "d536c5d9ca467ef195753bf8479a888888a42ce6732abeff34ea7d12b62eb81f",
+      "invalid_version.tdmotor.json": "1ea69347de7f02df4cb84d9f7faaa286a8aaa92e91e3b549d132125bc644888c",
+      "synthetic.csv": "aad867fbbb51ce9c9c0e5e2ee1c9bc36004d353a437adc6ff34d6e5ff0377c32",
+      "synthetic.retldc.json": "8b74f5426e4ea10a66c7306b8ee0edcb29e2e811a5727b82fe0ecc935da0ea66",
+      "synthetic_positive.retldc.json": "aa7a8cd83052ab28720693deaeb2c02f49ea174a59631172efe2db6a34725684",
+      "valid_positive.tdmotor.json": "66c6232d0ccec6ceaabdec9186e9059a2f16dc9eeedea0c94221f06a8ceaed96",
+      "valid_synthetic.tdmotor.json": "6b8ea90658017c9419c4344022ed41d7d8ab90f6dfeb52fa608893ccf976467a",
+      "vectors.json": "55287d865bd817c34099c47820f6213bafa51ef884d7f69edbf93a183581ec96"
+    },
+    "fixture_license": "Apache-2.0; original synthetic data; no physical measurement or calibration claim"
+  },
+  "limitations": [
+    "No pressure/temperature auxiliary motor-package streams",
+    "No new EXE/release or Underline push",
+    "No hardware, calibration accuracy or flight validation",
+    "Historical unsaved calibration notes cannot be recovered"
+  ],
+  "scratch": {
+    "path": ".work\\0.1.0-motor-bridge-20261101",
+    "owner": "Underline bridge task 20261101",
+    "purpose": "pytest generated source copies, logs, bounded smoke outputs and CLI exports",
+    "cleanup": "none performed; no user input removed",
+    "file_count": 1923,
+    "total_bytes": 14674743,
+    "inventory": ".work/0.1.0-motor-bridge-20261101/inventory.json"
+  },
+  "schema_pin_correction": {
+    "original_worktree_crlf_hash": "402f5ccacc2a2fc036739af819a95b4e3d5d3bdef072cc9daa87c0597b6fb440",
+    "committed_lf_hash": "23b484e42ed2245c2547562969ade6327222c46eaf83954dcffdd6750f3ce3d2",
+    "reason": "New Git blob verification exposed CRLF worktree vs LF committed schema; normalize working file and fix metadata; schema semantics unchanged"
+  },
+  "final_integrity_checks": {
+    "git_diff_check_exit_code": 0,
+    "ruff_check_exit_code": 0,
+    "manifest_worktree_and_git_blob_hashes": "all match corrected manifest",
+    "cli_golden_bytes": "both exact matches",
+    "headless_module_import": "no Qt/pyqtgraph/GUI modules"
+  }
+}
