@@ -411,6 +411,7 @@ def test_calibration_document_notes_survive_gui_config(tmp_path, bundled_registr
     config = page.calibration_config()
     origin = config["calibration_provenance"]["origin_document"]
     assert origin["notes"] == document.notes
+    assert origin["qualification"] == "estimated"
     assert origin["model"]["parameters"] == {"K": 0.49, "B": 0.0}
     assert config["calibration_provenance"]["parameters_modified"] is False
     page.close()
@@ -428,3 +429,53 @@ def test_third_party_default_export_group_keeps_primary_processed_input(prepared
         other.dataset.channel("thrust_processed").values,
         session.processed_dataset.channel("thrust_processed").values,
     )
+
+
+def test_explicit_estimated_calibration_survives_replay_and_export(
+    prepared, bundled_registry,
+):
+    from underline_retldc.core.calibration import Calibration_Load
+
+    session, plugin = prepared
+    document = Project_Load(session.project_path)
+    origin = Calibration_Load(
+        Path(__file__).resolve().parents[2]
+        / "examples/record_showcase/peak_estimate.calibration.json"
+    ).to_dict()
+    channels = dict(document.channels)
+    key = "bench/loadcell/thrust_raw"
+    state = channels[key]
+    config = {
+        **state.calibration.config,
+        "parameters": dict(origin["model"]["parameters"]),
+        "calibration_provenance": {
+            "origin_document": origin,
+            "parameters_modified": False,
+        },
+    }
+    channels[key] = replace(state, calibration=replace(state.calibration, config=config))
+    Project_Save(replace(document, channels=channels), session.project_path)
+    replay = ProjectPipeline.Project_LoadSession(
+        session.project_path, bundled_registry, TaskContext()
+    )
+    package = _package(replay, plugin, bundled_registry)
+    assert package["calibration"]["status"] == "estimated"
+    assert origin["notes"] in package["calibration"]["notes"]
+    assert package["processing_chain"][1]["config"]["parameters"] == {"K": 0.49, "B": 0.0}
+
+
+def test_excess_samples_are_rejected_at_export_and_contract(prepared, bundled_registry):
+    session, plugin = prepared
+    contract = _contract(plugin)
+    snapshot = ExportSnapshot_Build(session, bundled_registry)
+    count = contract.MAX_SAMPLES + 1
+    dataset = Dataset(
+        time=np.arange(count, dtype=float),
+        channels={"out": Channel("out", "force", "N", np.ones(count), "processed")},
+    )
+    with pytest.raises(ValueError, match="LENGTH"):
+        plugin.Package_Build(dataset, {**snapshot.Config_Copy(), "channel_id": "out"})
+    package = _package(session, plugin, bundled_registry)
+    package["evidence_curve"]["time_s"] = list(range(count))
+    with pytest.raises(ValueError, match="LIMIT|LENGTH"):
+        contract.MotorPackage_Validate(package)

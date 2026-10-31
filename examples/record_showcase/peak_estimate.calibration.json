@@ -1,6 +1,7 @@
 {
   "schema": "underline-retldc-calibration/1",
   "name": "峰值估算展示（非设备标定）",
+  "qualification": "estimated",
   "quantity": "force",
   "input_unit": "raw",
   "output_unit": "N",
