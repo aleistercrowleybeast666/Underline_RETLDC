@@ -1,0 +1,10 @@
+{
+  "baseline_file": "collected-tests.log",
+  "current_file": "original381-collected.log",
+  "baseline_count": 381,
+  "current_count": 381,
+  "same_order_and_ids": true,
+  "excluded_only_new_file": "tests/integration/test_plot_owner_lifecycle.py",
+  "baseline_sha256": "c2a5c8ccbd1f753f2a1117ca339ae456a2aa99f82277d3115570a3bd26ffd3c6",
+  "current_sha256": "9399cc3cd29f2823a17ec8a50896e429401c0a55f79d5a02e7917f02ac19b754"
+}

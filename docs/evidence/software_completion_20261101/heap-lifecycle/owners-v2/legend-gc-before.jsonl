@@ -1,0 +1,51 @@
+{"kind": "main", "thread": 18472}
+{"kind": "created", "thread": 18472, "name": "0:item", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "0:curve", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "0:scatter", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "0:legend-sample", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "0:legend-label", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "0:legend-text", "owned_by_python": true}
+{"kind": "created", "thread": 18472, "name": "0:legend-document", "owned_by_python": false}
+{"kind": "destroyed", "thread": 18472, "name": "0:legend-text"}
+{"kind": "destroyed", "thread": 18472, "name": "0:legend-document"}
+{"kind": "destroyed", "thread": 18472, "name": "0:legend-label"}
+{"kind": "destroyed", "thread": 18472, "name": "0:legend-sample"}
+{"kind": "destroyed", "thread": 18472, "name": "0:curve"}
+{"kind": "destroyed", "thread": 18472, "name": "0:scatter"}
+{"kind": "destroyed", "thread": 18472, "name": "0:item"}
+{"kind": "worker-before-gc", "thread": 23596}
+{"kind": "worker-after-gc", "thread": 23596, "count": 5}
+{"kind": "created", "thread": 18472, "name": "1:item", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "1:curve", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "1:scatter", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "1:legend-sample", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "1:legend-label", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "1:legend-text", "owned_by_python": true}
+{"kind": "created", "thread": 18472, "name": "1:legend-document", "owned_by_python": false}
+{"kind": "destroyed", "thread": 18472, "name": "1:legend-text"}
+{"kind": "destroyed", "thread": 18472, "name": "1:legend-document"}
+{"kind": "destroyed", "thread": 18472, "name": "1:legend-label"}
+{"kind": "destroyed", "thread": 18472, "name": "1:legend-sample"}
+{"kind": "destroyed", "thread": 18472, "name": "1:curve"}
+{"kind": "destroyed", "thread": 18472, "name": "1:scatter"}
+{"kind": "destroyed", "thread": 18472, "name": "1:item"}
+{"kind": "worker-before-gc", "thread": 4564}
+{"kind": "worker-after-gc", "thread": 4564, "count": 0}
+{"kind": "created", "thread": 18472, "name": "2:item", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "2:curve", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "2:scatter", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "2:legend-sample", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "2:legend-label", "owned_by_python": false}
+{"kind": "created", "thread": 18472, "name": "2:legend-text", "owned_by_python": true}
+{"kind": "created", "thread": 18472, "name": "2:legend-document", "owned_by_python": false}
+{"kind": "destroyed", "thread": 18472, "name": "2:legend-text"}
+{"kind": "destroyed", "thread": 18472, "name": "2:legend-document"}
+{"kind": "destroyed", "thread": 18472, "name": "2:legend-label"}
+{"kind": "destroyed", "thread": 18472, "name": "2:legend-sample"}
+{"kind": "destroyed", "thread": 18472, "name": "2:curve"}
+{"kind": "destroyed", "thread": 18472, "name": "2:scatter"}
+{"kind": "destroyed", "thread": 18472, "name": "2:item"}
+{"kind": "worker-before-gc", "thread": 22188}
+{"kind": "worker-after-gc", "thread": 22188, "count": 0}
+{"kind": "alive", "thread": 18472, "objects": []}
+{"kind": "complete", "thread": 18472}

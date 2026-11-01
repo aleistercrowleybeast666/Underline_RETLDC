@@ -1,0 +1,6 @@
+src/underline_retldc/app/release_smoke.py
+src/underline_retldc/gui/plot_ui_i18n.py
+src/underline_retldc/gui/source_analysis_widget.py
+tests/integration/test_release_plot_lifecycle.py
+tests/integration/test_plot_owner_lifecycle.py
+docs/Architecture.md

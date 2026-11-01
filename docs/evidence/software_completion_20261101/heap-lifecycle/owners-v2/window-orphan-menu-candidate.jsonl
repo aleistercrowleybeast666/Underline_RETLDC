@@ -1,0 +1,260 @@
+{"kind": "top-level", "thread": 27268, "serial": 0, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 1, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 2, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 3, "name": "QScrollArea:", "parent": false, "owned_by_python": true, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 4, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 5, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 6, "name": "LocalizedPlotExportDialog:Form", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 7, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 8, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 9, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 10, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 11, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 12, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 13, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 14, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 15, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 16, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 17, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 18, "name": "QWidget:", "parent": false, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 19, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 20, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 21, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 22, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 23, "name": "ViewBoxMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 24, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 25, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 26, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 27, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 28, "name": "QWidget:", "parent": false, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 29, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 30, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 31, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 32, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 33, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 34, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 35, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 36, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 37, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 38, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 39, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 40, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 41, "name": "ExportDialog:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 42, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 43, "name": "LocalizedPlotExportDialog:Form", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 44, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 45, "name": "QScrollArea:", "parent": false, "owned_by_python": true, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 46, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 47, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 48, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 49, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 50, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 51, "name": "ViewBoxMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 52, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 53, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 54, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 55, "name": "QWidget:", "parent": false, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 56, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 57, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 58, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 59, "name": "QScrollArea:", "parent": false, "owned_by_python": true, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 60, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 61, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 62, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 63, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 64, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 65, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 66, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 67, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 68, "name": "MainWindow:", "parent": false, "owned_by_python": true, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 69, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 70, "name": "LocalizedPlotExportDialog:Form", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 71, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 72, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 73, "name": "ViewBoxMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 74, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 75, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 76, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 77, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 78, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 79, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 80, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 81, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 82, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 83, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 84, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 85, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 86, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 87, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 88, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 89, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 90, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 91, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 92, "name": "QScrollArea:", "parent": false, "owned_by_python": true, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 93, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 94, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 95, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 96, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 97, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 98, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 99, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 100, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 101, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 102, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 103, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 104, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 105, "name": "LocalizedPlotExportDialog:Form", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 106, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 107, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 108, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 109, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 110, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 111, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 112, "name": "QDialog:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 113, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 114, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 115, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 116, "name": "QWidget:", "parent": false, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 117, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 118, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 119, "name": "ViewBoxMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 120, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 121, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 122, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 123, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 124, "name": "QDialog:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 125, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 126, "name": "QFrame:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "top-level", "thread": 27268, "serial": 127, "name": "QMenu:", "parent": true, "owned_by_python": false, "visible": false}
+{"kind": "destroyed", "thread": 27268, "serial": 68}
+{"kind": "destroyed", "thread": 27268, "serial": 41}
+{"kind": "destroyed", "thread": 27268, "serial": 35}
+{"kind": "destroyed", "thread": 27268, "serial": 124}
+{"kind": "destroyed", "thread": 27268, "serial": 112}
+{"kind": "destroyed", "thread": 27268, "serial": 47}
+{"kind": "destroyed", "thread": 27268, "serial": 126}
+{"kind": "destroyed", "thread": 27268, "serial": 40}
+{"kind": "destroyed", "thread": 27268, "serial": 77}
+{"kind": "destroyed", "thread": 27268, "serial": 5}
+{"kind": "destroyed", "thread": 27268, "serial": 14}
+{"kind": "destroyed", "thread": 27268, "serial": 66}
+{"kind": "destroyed", "thread": 27268, "serial": 30}
+{"kind": "destroyed", "thread": 27268, "serial": 95}
+{"kind": "destroyed", "thread": 27268, "serial": 102}
+{"kind": "destroyed", "thread": 27268, "serial": 4}
+{"kind": "destroyed", "thread": 27268, "serial": 29}
+{"kind": "destroyed", "thread": 27268, "serial": 18}
+{"kind": "destroyed", "thread": 27268, "serial": 70}
+{"kind": "destroyed", "thread": 27268, "serial": 84}
+{"kind": "destroyed", "thread": 27268, "serial": 24}
+{"kind": "destroyed", "thread": 27268, "serial": 83}
+{"kind": "destroyed", "thread": 27268, "serial": 122}
+{"kind": "destroyed", "thread": 27268, "serial": 67}
+{"kind": "destroyed", "thread": 27268, "serial": 31}
+{"kind": "destroyed", "thread": 27268, "serial": 8}
+{"kind": "destroyed", "thread": 27268, "serial": 73}
+{"kind": "destroyed", "thread": 27268, "serial": 99}
+{"kind": "destroyed", "thread": 27268, "serial": 21}
+{"kind": "destroyed", "thread": 27268, "serial": 44}
+{"kind": "destroyed", "thread": 27268, "serial": 98}
+{"kind": "destroyed", "thread": 27268, "serial": 111}
+{"kind": "destroyed", "thread": 27268, "serial": 63}
+{"kind": "destroyed", "thread": 27268, "serial": 120}
+{"kind": "destroyed", "thread": 27268, "serial": 97}
+{"kind": "destroyed", "thread": 27268, "serial": 55}
+{"kind": "destroyed", "thread": 27268, "serial": 43}
+{"kind": "destroyed", "thread": 27268, "serial": 10}
+{"kind": "destroyed", "thread": 27268, "serial": 61}
+{"kind": "destroyed", "thread": 27268, "serial": 12}
+{"kind": "destroyed", "thread": 27268, "serial": 33}
+{"kind": "destroyed", "thread": 27268, "serial": 0}
+{"kind": "destroyed", "thread": 27268, "serial": 46}
+{"kind": "destroyed", "thread": 27268, "serial": 94}
+{"kind": "destroyed", "thread": 27268, "serial": 119}
+{"kind": "destroyed", "thread": 27268, "serial": 121}
+{"kind": "destroyed", "thread": 27268, "serial": 19}
+{"kind": "destroyed", "thread": 27268, "serial": 115}
+{"kind": "destroyed", "thread": 27268, "serial": 90}
+{"kind": "destroyed", "thread": 27268, "serial": 123}
+{"kind": "destroyed", "thread": 27268, "serial": 76}
+{"kind": "destroyed", "thread": 27268, "serial": 72}
+{"kind": "destroyed", "thread": 27268, "serial": 13}
+{"kind": "destroyed", "thread": 27268, "serial": 28}
+{"kind": "destroyed", "thread": 27268, "serial": 6}
+{"kind": "destroyed", "thread": 27268, "serial": 108}
+{"kind": "destroyed", "thread": 27268, "serial": 91}
+{"kind": "destroyed", "thread": 27268, "serial": 22}
+{"kind": "destroyed", "thread": 27268, "serial": 127}
+{"kind": "destroyed", "thread": 27268, "serial": 110}
+{"kind": "destroyed", "thread": 27268, "serial": 34}
+{"kind": "destroyed", "thread": 27268, "serial": 101}
+{"kind": "destroyed", "thread": 27268, "serial": 23}
+{"kind": "destroyed", "thread": 27268, "serial": 56}
+{"kind": "destroyed", "thread": 27268, "serial": 37}
+{"kind": "destroyed", "thread": 27268, "serial": 2}
+{"kind": "destroyed", "thread": 27268, "serial": 11}
+{"kind": "destroyed", "thread": 27268, "serial": 7}
+{"kind": "destroyed", "thread": 27268, "serial": 16}
+{"kind": "destroyed", "thread": 27268, "serial": 79}
+{"kind": "destroyed", "thread": 27268, "serial": 104}
+{"kind": "destroyed", "thread": 27268, "serial": 62}
+{"kind": "destroyed", "thread": 27268, "serial": 116}
+{"kind": "destroyed", "thread": 27268, "serial": 105}
+{"kind": "destroyed", "thread": 27268, "serial": 54}
+{"kind": "destroyed", "thread": 27268, "serial": 85}
+{"kind": "destroyed", "thread": 27268, "serial": 114}
+{"kind": "destroyed", "thread": 27268, "serial": 26}
+{"kind": "destroyed", "thread": 27268, "serial": 53}
+{"kind": "destroyed", "thread": 27268, "serial": 58}
+{"kind": "destroyed", "thread": 27268, "serial": 17}
+{"kind": "destroyed", "thread": 27268, "serial": 51}
+{"kind": "destroyed", "thread": 27268, "serial": 100}
+{"kind": "destroyed", "thread": 27268, "serial": 117}
+{"kind": "destroyed", "thread": 27268, "serial": 57}
+{"kind": "destroyed", "thread": 27268, "serial": 64}
+{"kind": "destroyed", "thread": 27268, "serial": 25}
+{"kind": "destroyed", "thread": 27268, "serial": 87}
+{"kind": "destroyed", "thread": 27268, "serial": 32}
+{"kind": "destroyed", "thread": 27268, "serial": 106}
+{"kind": "destroyed", "thread": 27268, "serial": 109}
+{"kind": "destroyed", "thread": 27268, "serial": 86}
+{"kind": "destroyed", "thread": 27268, "serial": 69}
+{"kind": "destroyed", "thread": 27268, "serial": 52}
+{"kind": "destroyed", "thread": 27268, "serial": 1}
+{"kind": "destroyed", "thread": 27268, "serial": 93}
+{"kind": "destroyed", "thread": 27268, "serial": 88}
+{"kind": "destroyed", "thread": 27268, "serial": 48}
+{"kind": "destroyed", "thread": 27268, "serial": 71}
+{"kind": "destroyed", "thread": 27268, "serial": 125}
+{"kind": "destroyed", "thread": 27268, "serial": 80}
+{"kind": "destroyed", "thread": 27268, "serial": 9}
+{"kind": "destroyed", "thread": 27268, "serial": 38}
+{"kind": "destroyed", "thread": 27268, "serial": 81}
+{"kind": "destroyed", "thread": 27268, "serial": 89}
+{"kind": "destroyed", "thread": 27268, "serial": 82}
+{"kind": "destroyed", "thread": 27268, "serial": 49}
+{"kind": "destroyed", "thread": 27268, "serial": 36}
+{"kind": "destroyed", "thread": 27268, "serial": 118}
+{"kind": "destroyed", "thread": 27268, "serial": 65}
+{"kind": "destroyed", "thread": 27268, "serial": 75}
+{"kind": "destroyed", "thread": 27268, "serial": 103}
+{"kind": "after-qt-close", "thread": 27268, "alive": [3, 45, 59, 92]}
+{"kind": "worker-before-gc", "thread": 8604}
+{"kind": "worker-after-gc", "thread": 8604, "collected": 4275}
+{"kind": "destroyed", "thread": 27268, "serial": 3}
+{"kind": "destroyed", "thread": 27268, "serial": 42}
+{"kind": "destroyed", "thread": 27268, "serial": 74}
+{"kind": "destroyed", "thread": 27268, "serial": 107}
+{"kind": "destroyed", "thread": 27268, "serial": 59}
+{"kind": "destroyed", "thread": 27268, "serial": 50}
+{"kind": "destroyed", "thread": 27268, "serial": 113}
+{"kind": "destroyed", "thread": 27268, "serial": 27}
+{"kind": "destroyed", "thread": 27268, "serial": 45}
+{"kind": "destroyed", "thread": 27268, "serial": 39}
+{"kind": "destroyed", "thread": 27268, "serial": 60}
+{"kind": "destroyed", "thread": 27268, "serial": 15}
+{"kind": "destroyed", "thread": 27268, "serial": 92}
+{"kind": "destroyed", "thread": 27268, "serial": 78}
+{"kind": "destroyed", "thread": 27268, "serial": 96}
+{"kind": "destroyed", "thread": 27268, "serial": 20}
+{"kind": "complete", "thread": 27268, "alive": []}

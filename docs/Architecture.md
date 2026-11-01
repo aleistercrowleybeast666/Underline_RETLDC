@@ -171,6 +171,18 @@ official shipped plugins and does not imply a `src/underline_retldc/builtin/` im
 It tracks name, progress, cancellation, success/failure, result, and exception. Algorithms receive
 a framework-neutral `TaskContext`, allowing a later worker-process implementation.
 
+Interactive plot rendering and its Qt resources stay on the GUI thread. Release validation's
+temporary ImageExporters explicitly give their complete Parameter tree Qt ownership and retire it
+with `deleteLater` in a context manager, including failure paths. pyqtgraph's logical Parameter
+parent is separate from QObject parenting; Python reference cycles must not leave these resources
+for collection by an unrelated parsing worker. This policy does not disable or redirect global GC.
+
+Plot context-menu roots also have their PlotWidget as a native Qt parent, with popup flags
+preserved. Hidden source-parameter editors have their SourceAnalysisWidget as a native parent
+even though they are outside its visible layout. A failed task can retain a window through its
+exception traceback; native GUI resources must retire with their owner while those Python
+wrappers remain reachable, before a later parsing worker collects the reference cycle.
+
 The GUI has five stable-ID primary workspaces. `Project` combines multi-Source selection and time
 offsets, Parser probing/schema configuration, parsing/quality diagnostics, per-Channel Quantity,
 Data Unit, Unit Source, Display Unit, Calibration configuration/JSON, and motor metadata. `Thrust`

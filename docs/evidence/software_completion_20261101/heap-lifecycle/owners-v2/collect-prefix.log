@@ -1,0 +1,11 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.1.1, pluggy-1.6.0 -- D:\python_software\Underline_RETLDC\.venv\Scripts\python.exe
+cachedir: .work\0.1.0-software-completion-20261101\collect-prefix-cache
+rootdir: D:\python_software\Underline_RETLDC
+configfile: pyproject.toml
+testpaths: tests
+collecting ... collected 381 items / 380 deselected / 1 selected
+
+tests/integration/test_theory_overlay.py::test_portable_source_workflow_uses_real_gui_and_generated_fixture PASSED [100%]
+
+================ 1 passed, 380 deselected in 69.52s (0:01:09) =================

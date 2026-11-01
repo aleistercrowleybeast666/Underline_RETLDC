@@ -1,0 +1,44 @@
+"""Bounded standalone exporter retirement probe against unchanged GUI."""
+import gc
+import json
+import os
+from pathlib import Path
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
+os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+import numpy as np
+from PySide6.QtCore import Qt, QEvent
+from PySide6.QtWidgets import QApplication
+from pyqtgraph.exporters import ImageExporter
+from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
+from underline_retldc.i18n.service import TranslationService
+
+out=Path(__file__).with_name('export-gc-before.jsonl')
+def record(kind, **values):
+    with out.open('a',encoding='utf8') as stream:
+        stream.write(json.dumps(dict(kind=kind,thread=threading.get_ident(),**values))+'\n')
+app=QApplication([])
+plot=AnalysisPlotWidget(TranslationService(), regions_movable=False)
+plot.add_series(np.arange(10.), np.arange(10.), name='probe')
+plot.show()
+app.processEvents()
+record('main')
+for index in range(3):
+    exporter=ImageExporter(plot.plot_widget.getPlotItem())
+    for name in ('width','height','antialias','background','invertValue'):
+        param=exporter.parameters().param(name)
+        param.destroyed.connect(lambda _obj=None,label=f'{index}:{name}':record('destroyed',name=label),Qt.ConnectionType.DirectConnection)
+    del param
+    exporter.export(toBytes=True)
+    del exporter
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        def collect():
+            record('worker-before')
+            count=gc.collect()
+            record('worker-after',collected=count)
+        executor.submit(collect).result()
+plot.close()
+plot.deleteLater()
+app.sendPostedEvents(None,QEvent.Type.DeferredDelete)
+record('complete')

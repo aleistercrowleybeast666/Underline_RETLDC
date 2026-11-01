@@ -1,0 +1,50 @@
+[
+  {
+    "kind": "raw executed diagnostic snapshot; not a maintained replay entry point",
+    "bytes": 2008,
+    "original_run_path": "D:/python_software/Underline_RETLDC/.work/0.1.0-software-completion-20261101/plot_gc_probe.py",
+    "sha256": "e88903c3be5b97113bba625ba652582fd43ca877f682f8f4193fc18b3ee75b18",
+    "original_archive_name": "plot_gc_probe.py",
+    "carrier": "plot_gc_probe.py.txt"
+  },
+  {
+    "kind": "raw executed diagnostic snapshot; not a maintained replay entry point",
+    "bytes": 1699,
+    "original_run_path": "D:/python_software/Underline_RETLDC/.work/0.1.0-software-completion-20261101/export_gc_probe.py",
+    "sha256": "2b265a37dfb89d93edbe64d576f038c540aa752beed4b5c0db8f388c64207e60",
+    "original_archive_name": "export_gc_probe.py",
+    "carrier": "export_gc_probe.py.txt"
+  },
+  {
+    "kind": "raw executed diagnostic snapshot; not a maintained replay entry point",
+    "bytes": 2047,
+    "original_run_path": "D:/python_software/Underline_RETLDC/.work/0.1.0-software-completion-20261101/dialog_export_gc_probe.py",
+    "sha256": "784d90637299815c495c8a145ad1974623977c5e268355d1b395cc3553438308",
+    "original_archive_name": "dialog_export_gc_probe.py",
+    "carrier": "dialog_export_gc_probe.py.txt"
+  },
+  {
+    "kind": "raw executed diagnostic snapshot; not a maintained replay entry point",
+    "bytes": 2937,
+    "original_run_path": "D:/python_software/Underline_RETLDC/.work/0.1.0-software-completion-20261101/trace_gui_gc.py",
+    "sha256": "c2ce7c9efe6d48eac0425037ea95612e04c0d09d7a65c52f8cd45a28cdec247a",
+    "original_archive_name": "trace_gui_gc.py",
+    "carrier": "trace_gui_gc.py.txt"
+  },
+  {
+    "kind": "raw executed diagnostic snapshot; not a maintained replay entry point",
+    "bytes": 1959,
+    "original_run_path": "D:/python_software/Underline_RETLDC/.work/0.1.0-software-completion-20261101/smoke_export_trace.py",
+    "sha256": "76d88856e9cd9821682fe2d2fcc96f8f83475a53ecc7075ef2ecdcd09319b3dc",
+    "original_archive_name": "smoke_export_trace.py",
+    "carrier": "smoke_export_trace.py.txt"
+  },
+  {
+    "kind": "raw executed diagnostic snapshot; not a maintained replay entry point",
+    "bytes": 2133,
+    "original_run_path": "D:/python_software/Underline_RETLDC/.work/0.1.0-software-completion-20261101/smoke_export_after.py",
+    "sha256": "15aea79c01ee658eff715729418b1522b5a01cdd62a6f49e7fec52ff315efd8d",
+    "original_archive_name": "smoke_export_after.py",
+    "carrier": "smoke_export_after.py.txt"
+  }
+]

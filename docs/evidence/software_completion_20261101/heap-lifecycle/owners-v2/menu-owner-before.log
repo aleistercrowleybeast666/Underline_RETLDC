@@ -1,0 +1,42 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+________ test_failed_task_window_retires_plot_menus_with_native_owner _________
+
+window = <[RuntimeError('libshiboken: Internal C++ object (MainWindow) already deleted.') raised in repr()] MainWindow object at 0x2d04ebf1800>
+
+    def test_failed_task_window_retires_plot_menus_with_native_owner(window: MainWindow) -> None:
+        """A retained failure traceback must not retain live GUI menus after owner deletion."""
+        plot = window.process_page.analysis_plot.plot_widget
+        item = plot.getPlotItem()
+        menus = (item.ctrlMenu, item.vb.menu)
+        assert all(menu.isWindow() for menu in menus)
+        assert all(menu.windowFlags() & Qt.WindowType.Popup for menu in menus)
+        retired: list[int] = []
+        gui_thread = get_ident()
+        for menu in menus:
+            menu.destroyed.connect(
+                lambda _object=None: retired.append(get_ident()), Qt.ConnectionType.DirectConnection,
+            )
+    
+        def operation(_context: TaskContext) -> None:
+            raise RuntimeError(type(window).__name__)
+    
+        handle = window.task_manager.submit("retained window failure", operation)
+        with pytest.raises(RuntimeError, match="MainWindow"):
+            handle.wait(timeout=5)
+        assert handle.exception is not None
+        window.task_manager.shutdown(wait=True, cancel_pending=True)
+        window.close()
+        window.deleteLater()
+        QApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        # Keep the real handle, traceback, window and menu wrappers alive deliberately.
+        # Native retirement must follow the GUI owner, not Python cycle collection.
+        assert not shiboken6.isValid(window)
+>       assert all(not shiboken6.isValid(menu) for menu in menus)
+E       assert False
+E        +  where False = all(<generator object test_failed_task_window_retires_plot_menus_with_native_owner.<locals>.<genexpr> at 0x000002D051055EE0>)
+
+tests\integration\test_plot_owner_lifecycle.py:43: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_plot_owner_lifecycle.py::test_failed_task_window_retires_plot_menus_with_native_owner
+1 failed in 17.43s

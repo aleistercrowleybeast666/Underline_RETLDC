@@ -1,0 +1,2 @@
+{"kind": "identity", "thread": 19868, "test": "", "head": "c1f8ac76f9bbcde1076ef9e48624c920ad161960", "diagnostic_monkeypatch": true, "global_gc_enabled": true, "note": "Tracks existing QObject wrappers; no production edits or GC suppression."}
+{"kind": "complete", "thread": 19868, "test": "", "exit_code": 2, "counts": {"watched": 0, "destroyed": 0, "foreign_destroyed": 0}}

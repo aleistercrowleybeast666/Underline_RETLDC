@@ -1,0 +1,5 @@
+{
+  "ProcessId": 10896,
+  "ParentProcessId": 12516,
+  "CommandLine": "C:\\Users\\chdxm\\AppData\\Local\\Programs\\Python\\Python314\\python.exe -m pytest --basetemp=.work/0.1.0-software-completion-20261101/native-debug-tests -o cache_dir=.work/0.1.0-software-completion-20261101/native-debug-cache -v"
+}

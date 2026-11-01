@@ -1,0 +1,24 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.1.1, pluggy-1.6.0 -- D:\python_software\Underline_RETLDC\.venv\Scripts\python.exe
+cachedir: .work\0.1.0-software-completion-20261101\prefix-dialogs-cache
+rootdir: D:\python_software\Underline_RETLDC
+configfile: pyproject.toml
+collecting ... collected 15 items
+
+tests/integration/test_export_selection.py::test_open_selects_all_available_and_reopen_resets_only_when_opened PASSED [  6%]
+tests/integration/test_export_selection.py::test_select_all_button_restores_available_choices_and_skips_locked_items PASSED [ 13%]
+tests/integration/test_export_selection.py::test_manual_uncheck_is_preserved_after_select_all_and_availability_refresh PASSED [ 20%]
+tests/integration/test_export_selection.py::test_empty_or_all_unavailable_disables_selection_and_export PASSED [ 26%]
+tests/integration/test_export_selection.py::test_window_system_restore_does_not_reset_manual_uncheck PASSED [ 33%]
+tests/integration/test_gui_lifecycle.py::test_close_waits_for_worker_without_delivering_gui_callback PASSED [ 40%]
+tests/integration/test_gui_lifecycle.py::test_close_cancels_pending_auto_import PASSED [ 46%]
+tests/integration/test_plugin_install_gui.py::test_qt_dialog_results_never_use_python_identity PASSED [ 53%]
+tests/integration/test_plugin_install_gui.py::test_plugin_security_confirmation_uses_clicked_standard_button PASSED [ 60%]
+tests/integration/test_plugin_install_gui.py::test_security_accept_starts_discovery_and_global_progress PASSED [ 66%]
+tests/integration/test_plugin_install_gui.py::test_security_cancel_does_not_start_discovery PASSED [ 73%]
+tests/integration/test_plugin_install_gui.py::test_confirmed_discovery_start_exception_is_reported PASSED [ 80%]
+tests/integration/test_plugin_install_gui.py::test_plugin_preview_uses_checkboxes_and_no_private_progress_bar PASSED [ 86%]
+tests/integration/test_plugin_install_gui.py::test_plugin_install_reuses_main_window_global_task_progress PASSED [ 93%]
+tests/integration/test_theory_overlay.py::test_portable_source_workflow_uses_real_gui_and_generated_fixture PASSED [100%]
+
+============================= 15 passed in 50.24s =============================

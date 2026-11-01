@@ -1,0 +1,58 @@
+"""Read-only bounded destruction-thread probe; no production monkeypatch."""
+import gc
+import json
+import os
+import sys
+import threading
+import weakref
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+from PySide6.QtCore import QEvent, Qt
+from PySide6.QtWidgets import QApplication
+import numpy as np
+import shiboken6
+from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
+from underline_retldc.i18n.service import TranslationService
+
+out = Path(__file__).with_name(sys.argv[1])
+events = []
+def record(kind, **values):
+    event = dict(kind=kind, thread=threading.get_ident(), **values)
+    events.append(event)
+    with out.open('a', encoding='utf8') as stream:
+        stream.write(json.dumps(event) + '\n')
+
+app = QApplication([])
+plot = AnalysisPlotWidget(TranslationService(), regions_movable=False)
+plot.show()
+app.processEvents()
+record('main')
+references = []
+def track(obj, name):
+    record('created', name=name, owned_by_python=shiboken6.ownedByPython(obj))
+    obj.destroyed.connect(lambda _obj=None: record('destroyed', name=name), Qt.ConnectionType.DirectConnection)
+    references.append((name, weakref.ref(obj)))
+
+for index in range(3):
+    item = plot.add_series(np.arange(10.), np.arange(10.), name='probe'+str(index))
+    track(item, str(index)+':item')
+    track(item.curve, str(index)+':curve')
+    track(item.scatter, str(index)+':scatter')
+    plot.clear_series()
+    del item
+    app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    with ThreadPoolExecutor(max_workers=1) as worker:
+        def collect():
+            record('worker-before-gc')
+            count = gc.collect()
+            record('worker-after-gc', count=count)
+        worker.submit(collect).result()
+    app.processEvents()
+record('alive', objects=[name for name, ref in references if ref() is not None])
+plot.close()
+plot.deleteLater()
+app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+gc.collect()
+record('complete')

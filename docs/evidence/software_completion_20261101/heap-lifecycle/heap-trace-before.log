@@ -1,0 +1,26 @@
+
+=================================== ERRORS ====================================
+___________ ERROR collecting tests/integration/test_entry_points.py ___________
+ImportError while importing test module 'D:\python_software\Underline_RETLDC\tests\integration\test_entry_points.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\importlib\__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\integration\test_entry_points.py:10: in <module>
+    import main as launcher
+E   ModuleNotFoundError: No module named 'main'
+============================== warnings summary ===============================
+.venv\Lib\site-packages\_pytest\cacheprovider.py:469
+  D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\cacheprovider.py:469: PytestCacheWarning: could not create cache path D:\python_software\Underline_RETLDC\.pytest_cache\v\cache\nodeids: [WinError 183] ���ļ��Ѵ���ʱ���޷��������ļ���: 'D:\\python_software\\Underline_RETLDC\\.pytest_cache\\v\\cache'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+.venv\Lib\site-packages\_pytest\cacheprovider.py:423
+  D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\cacheprovider.py:423: PytestCacheWarning: could not create cache path D:\python_software\Underline_RETLDC\.pytest_cache\v\cache\lastfailed: [WinError 183] ���ļ��Ѵ���ʱ���޷��������ļ���: 'D:\\python_software\\Underline_RETLDC\\.pytest_cache\\v\\cache'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR tests/integration/test_entry_points.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+2 warnings, 1 error in 2.35s

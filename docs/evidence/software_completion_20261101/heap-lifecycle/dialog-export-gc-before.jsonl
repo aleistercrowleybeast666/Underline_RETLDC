@@ -1,0 +1,23 @@
+{"kind": "main", "thread": 22076}
+{"kind": "worker-before", "thread": 5388}
+{"kind": "worker-after", "thread": 5388, "collected": 0}
+{"kind": "worker-before", "thread": 17800}
+{"kind": "worker-after", "thread": 17800, "collected": 0}
+{"kind": "worker-before", "thread": 28504}
+{"kind": "worker-after", "thread": 28504, "collected": 0}
+{"kind": "complete", "thread": 22076}
+{"kind": "destroyed", "thread": 22076, "name": "0:height"}
+{"kind": "destroyed", "thread": 22076, "name": "2:width"}
+{"kind": "destroyed", "thread": 22076, "name": "1:width"}
+{"kind": "destroyed", "thread": 22076, "name": "1:background"}
+{"kind": "destroyed", "thread": 22076, "name": "0:width"}
+{"kind": "destroyed", "thread": 22076, "name": "0:antialias"}
+{"kind": "destroyed", "thread": 22076, "name": "0:background"}
+{"kind": "destroyed", "thread": 22076, "name": "0:invertValue"}
+{"kind": "destroyed", "thread": 22076, "name": "1:height"}
+{"kind": "destroyed", "thread": 22076, "name": "1:antialias"}
+{"kind": "destroyed", "thread": 22076, "name": "1:invertValue"}
+{"kind": "destroyed", "thread": 22076, "name": "2:height"}
+{"kind": "destroyed", "thread": 22076, "name": "2:antialias"}
+{"kind": "destroyed", "thread": 22076, "name": "2:background"}
+{"kind": "destroyed", "thread": 22076, "name": "2:invertValue"}

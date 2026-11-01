@@ -1,0 +1,49 @@
+"""Read-only native ownership inventory after closing one ordinary MainWindow."""
+import gc
+import json
+import os
+from pathlib import Path
+import threading
+import weakref
+from concurrent.futures import ThreadPoolExecutor
+
+os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+from PySide6.QtCore import QEvent, Qt
+from PySide6.QtWidgets import QApplication
+import shiboken6
+from underline_retldc.app.settings import SettingsService
+from underline_retldc.gui.main_window import MainWindow
+from underline_retldc.i18n.service import TranslationService
+
+root = Path(__file__).resolve().parents[2]
+work = Path(__file__).with_name('window-orphan')
+work.mkdir(exist_ok=True)
+stream = Path(__file__).with_name('window-orphan.jsonl').open('w', encoding='utf8', buffering=1)
+def record(kind, **fields):
+    stream.write(json.dumps(dict(kind=kind, thread=threading.get_ident(), **fields))+'\n')
+
+app = QApplication([])
+window = MainWindow(TranslationService('en_US'), SettingsService(work/'settings.ini'),
+                    project_root=work, bundled_plugin_directory=root/'plugins',
+                    user_plugin_directory=work/'user_plugins')
+refs = []
+for serial, widget in enumerate(app.topLevelWidgets()):
+    label = type(widget).__qualname__ + ':' + widget.objectName()
+    record('top-level', serial=serial, name=label, parent=widget.parent() is not None,
+           owned_by_python=shiboken6.ownedByPython(widget), visible=widget.isVisible())
+    widget.destroyed.connect(lambda _object=None, token=serial: record('destroyed', serial=token), Qt.ConnectionType.DirectConnection)
+    refs.append((serial, weakref.ref(widget)))
+del widget
+window.task_manager.shutdown(wait=True, cancel_pending=True)
+window.close()
+window.deleteLater()
+app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+app.processEvents()
+record('after-qt-close', alive=[serial for serial, ref in refs if ref() is not None and shiboken6.isValid(ref())])
+del window
+with ThreadPoolExecutor(max_workers=1) as worker:
+    def collect():
+        record('worker-before-gc')
+        record('worker-after-gc', collected=gc.collect())
+    worker.submit(collect).result()
+record('complete', alive=[serial for serial, ref in refs if ref() is not None and shiboken6.isValid(ref())])

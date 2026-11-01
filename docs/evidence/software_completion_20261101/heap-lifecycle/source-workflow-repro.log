@@ -1,0 +1,16 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.1.1, pluggy-1.6.0 -- D:\python_software\Underline_RETLDC\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\python_software\Underline_RETLDC
+configfile: pyproject.toml
+collecting ... collected 1 item
+
+tests/integration/test_theory_overlay.py::test_portable_source_workflow_uses_real_gui_and_generated_fixture PASSED
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\_pytest\cacheprovider.py:469
+  D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\cacheprovider.py:469: PytestCacheWarning: could not create cache path D:\python_software\Underline_RETLDC\.pytest_cache\v\cache\nodeids: [WinError 183] 当文件已存在时，无法创建该文件。: 'D:\\python_software\\Underline_RETLDC\\.pytest_cache\\v\\cache'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 1 passed, 1 warning in 27.40s ========================

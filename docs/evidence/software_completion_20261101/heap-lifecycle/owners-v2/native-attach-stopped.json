@@ -1,0 +1,10 @@
+{
+  "utc": "2026-11-01T06:04:28.5597261Z",
+  "reason": "Root requested ending task-owned diagnostic snapshot to implement proven native owner fixes; partial run is not full-suite evidence",
+  "process": {
+    "ProcessId": 26996,
+    "ParentProcessId": 25492,
+    "CreationDate": "2026-11-01T13:56:49.205691+08:00",
+    "CommandLine": "\"D:\\python_software\\Underline_RETLDC\\.venv\\Scripts\\python.exe\" -m pytest --basetemp=.work/0.1.0-software-completion-20261101/native-attach-tests -o cache_dir=.work/0.1.0-software-completion-20261101/native-attach-cache -q"
+  }
+}

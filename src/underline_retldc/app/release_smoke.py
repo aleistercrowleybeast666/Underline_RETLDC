@@ -15,7 +15,7 @@ from xml.sax.saxutils import escape
 
 import numpy as np
 from pyqtgraph.exporters import CSVExporter, ImageExporter, SVGExporter
-from PySide6.QtCore import QPoint, Qt, QTimer
+from PySide6.QtCore import QObject, QPoint, Qt, QThread, QTimer
 from PySide6.QtGui import QShowEvent
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtTest import QTest
@@ -80,9 +80,9 @@ def ReleaseSmoke_BoundedPlotCheck(window: MainWindow, diagnostics: NativeDiagnos
         exporter.parameters()["columnMode"] = "(x,y,y,y) for all plots"
         exporter.export(str(directory / f"bounded_{locale}.csv"))
         dialog.selectBox.hide()
-        image = ImageExporter(plot.plot_widget.getPlotItem())
-        image.parameters()["width"] = 400
-        assert image.export(toBytes=True).save(str(directory / f"bounded_{locale}.png"))
+        with _temporary_image_exporter(plot.plot_widget.getPlotItem()) as image:
+            image.parameters()["width"] = 400
+            assert image.export(toBytes=True).save(str(directory / f"bounded_{locale}.png"))
         row = next(index for index in range(dialog.ui.formatList.count())
                    if dialog.ui.formatList.item(index).expClass == SVGExporter)
         dialog.ui.formatList.setCurrentRow(row)
@@ -96,6 +96,29 @@ def ReleaseSmoke_BoundedPlotCheck(window: MainWindow, diagnostics: NativeDiagnos
         diagnostics.phase("bounded.export.ready", locale=locale)
     window._locale_select(original_locale)
     diagnostics.phase("bounded.complete")
+
+
+@contextmanager
+def _temporary_image_exporter(item: Any) -> Iterator[ImageExporter]:
+    """Retire temporary export parameters on their owning GUI event loop."""
+    application = QApplication.instance()
+    if application is None or QThread.currentThread() != application.thread():
+        raise RuntimeError("Temporary plot export must run on the GUI thread")
+    exporter = ImageExporter(item)
+    parameters = exporter.parameters()
+    # Parameter.parent()/children() describe a Python model, not Qt ownership.
+    # Its signal/reference cycles otherwise survive into a later worker's GC.
+    QObject.setParent(parameters, application)
+    try:
+        pending = [parameters]
+        while pending:
+            owner = pending.pop()
+            for child in owner.children():
+                QObject.setParent(child, owner)
+                pending.append(child)
+        yield exporter
+    finally:
+        parameters.deleteLater()
 
 
 @contextmanager
@@ -321,8 +344,9 @@ def _plot_analysis_check(
               np.array_equal(curve._datasetMapped.x, baseline[0])
               and np.array_equal(curve._datasetMapped.y, baseline[1]))
         option.setChecked(False)
-    image = ImageExporter(plot.plot_widget.getPlotItem()).export(toBytes=True)
-    check("fft_png_export", image.save(str(output / "fft_active_interval.png")))
+    with _temporary_image_exporter(plot.plot_widget.getPlotItem()) as exporter:
+        image = exporter.export(toBytes=True)
+        check("fft_png_export", image.save(str(output / "fft_active_interval.png")))
     check("fft_preserves_science", window.session.analysis_result is science[0]
           and window.session.processing_result is science[1])
     window._plot_analysis_scope_changed(False)
@@ -447,11 +471,11 @@ def _plot_language_check(
         for curve in plot.listDataItems()
     ))
     dialog.selectBox.hide()
-    image = ImageExporter(item)
-    image.parameters()["width"] = 800
-    rendered = image.export(toBytes=True)
-    check("plot_png_export", not rendered.isNull() and rendered.width() == 800
-          and rendered.save(str(output / "plot_overlay.png")))
+    with _temporary_image_exporter(item) as image:
+        image.parameters()["width"] = 800
+        rendered = image.export(toBytes=True)
+        check("plot_png_export", not rendered.isNull() and rendered.width() == 800
+              and rendered.save(str(output / "plot_overlay.png")))
     svg_row = next(index for index in range(dialog.ui.formatList.count())
                    if dialog.ui.formatList.item(index).expClass == SVGExporter)
     dialog.ui.formatList.setCurrentRow(svg_row)

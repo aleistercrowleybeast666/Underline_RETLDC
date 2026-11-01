@@ -1,0 +1,16 @@
+{
+  "window-orphan-failure": {
+    "foreign_count": 24,
+    "foreign_classes": {
+      "ViewBoxMenu:": 4,
+      "QMenu:": 12,
+      "QFrame:": 8
+    },
+    "after_qt_close": 48
+  },
+  "window-orphan-after": {
+    "foreign_count": 0,
+    "foreign_classes": {},
+    "after_qt_close": 0
+  }
+}

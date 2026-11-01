@@ -6,3 +6,4 @@ LICENSE -text
 contracts/motor-test-package/v1/** text eol=lf
 plugins/exporters/treediagram_motor/contract.py text eol=lf
 tests/fixtures/motor_test_package/v1/** -text whitespace=cr-at-eol
+docs/evidence/software_completion_20261101/** -text

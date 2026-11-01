@@ -1,0 +1,5 @@
+{
+  "TimeCreated": "2026-11-01T13:11:47.005107+08:00",
+  "Id": 1000,
+  "Message": "出错应用程序名称： python.exe，版本： 3.14.150.1013，时间戳： 0x68e4e95f\r\n出错模块名称： ntdll.dll， 版本： 10.0.26100.9711，时间戳： 0x5fd39a05\r\n异常代码： 0xc0000374\r\n错误偏移： 0x0000000000118095\r\n出错进程 ID： 0x5908\r\n出错应用程序开始时间： 0x1DD69BEA0A98B19\r\nFaulting 应用程序路径： C:\\Users\\chdxm\\AppData\\Local\\Programs\\Python\\Python314\\python.exe\r\nFaulting 模块路径： C:\\WINDOWS\\SYSTEM32\\ntdll.dll\r\nReport ID： a047594a-44f5-46d1-8a67-af3f14085bb0\r\nFaulting 包全名： \r\nFaulting 程序包相对应用程序 ID：  个"
+}

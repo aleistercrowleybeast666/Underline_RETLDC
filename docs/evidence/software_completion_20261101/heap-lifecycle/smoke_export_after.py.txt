@@ -1,0 +1,47 @@
+"""Actual existing source-workflow test with temporary-exporter lifecycle telemetry."""
+import gc
+import json
+import os
+from pathlib import Path
+import sys
+import threading
+
+os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT))
+import pytest
+from PySide6.QtCore import Qt
+from underline_retldc.app import release_smoke
+from underline_retldc.core.task import TaskManager
+
+stream=Path(__file__).with_name('smoke-export-after.jsonl').open('w',encoding='utf8',buffering=1)
+def record(kind,**fields):
+    stream.write(json.dumps(dict(kind=kind,thread=threading.get_ident(),**fields))+'\n')
+factory=release_smoke.ImageExporter
+serial=0
+def exporter(item):
+    global serial
+    serial+=1
+    result=factory(item)
+    for parameter in [result.parameters(),*result.parameters().children()]:
+        label=f'{serial}:{parameter.name()}'
+        record('created',name=label)
+        parameter.destroyed.connect(lambda _object=None,name=label:record('destroyed',name=name),Qt.ConnectionType.DirectConnection)
+    return result
+release_smoke.ImageExporter=exporter
+submit=TaskManager.submit
+def submit_observed(self,name,operation):
+    def observed(context):
+        record('task-start',name=name)
+        count=gc.collect()
+        record('controlled-worker-gc',collected=count)
+        return operation(context)
+    return submit(self,name,observed)
+TaskManager.submit=submit_observed
+record('identity',source='c1f8ac76f9bbcde1076ef9e48624c920ad161960 plus scoped lifetime patch', release_smoke_sha256='b090c5d030ec86d68663f8325a4a7efd00c2f18bc6588d0b9e0551b73a5966e5',
+       diagnostic_monkeypatch=True,controlled_worker_gc=True,global_gc_enabled=gc.isenabled())
+result=pytest.main(['tests/integration/test_theory_overlay.py::test_portable_source_workflow_uses_real_gui_and_generated_fixture','-q',
+    '--basetemp='+str(Path(__file__).with_name('smoke-export-after-tests')),
+    '-o','cache_dir='+str(Path(__file__).with_name('smoke-export-after-cache'))])
+record('complete',exit_code=int(result))
+raise SystemExit(result)

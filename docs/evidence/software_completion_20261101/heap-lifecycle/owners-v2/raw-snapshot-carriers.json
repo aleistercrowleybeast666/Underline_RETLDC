@@ -1,0 +1,51 @@
+[
+  {
+    "original_run_path": "D:\\python_software\\Underline_RETLDC\\.work\\0.1.0-software-completion-20261101\\parameter_gc_trace.py",
+    "carrier": "parameter_gc_trace.py.txt",
+    "sha256": "c5d9328a1527ae665f746d1b747e99b4719812b246fbeec5541e79a780299596",
+    "bytes": 2083,
+    "kind": "raw executed diagnostic snapshot, not a maintained replay entry point"
+  },
+  {
+    "original_run_path": "D:\\python_software\\Underline_RETLDC\\.work\\0.1.0-software-completion-20261101\\legend_gc_probe.py",
+    "carrier": "legend_gc_probe.py.txt",
+    "sha256": "31c4c36dbffa1d230984a9ede62fde6c672801c69ca57f91ba2b47c444854c0c",
+    "bytes": 2285,
+    "kind": "raw executed diagnostic snapshot, not a maintained replay entry point"
+  },
+  {
+    "original_run_path": "D:\\python_software\\Underline_RETLDC\\.work\\0.1.0-software-completion-20261101\\window_orphan_probe.py",
+    "carrier": "window_orphan_probe.py.txt",
+    "sha256": "452abc12d3e44b8cc16212d7bb1e61bcf0c6660557e2ad4e7baf7cb20012d691",
+    "bytes": 2233,
+    "kind": "raw executed diagnostic snapshot, not a maintained replay entry point"
+  },
+  {
+    "original_run_path": "D:\\python_software\\Underline_RETLDC\\.work\\0.1.0-software-completion-20261101\\window_orphan_failure_probe.py",
+    "carrier": "window_orphan_failure_probe.py.txt",
+    "sha256": "2df43f97234ae035312b2d61e081112294b8a19e630f08c4d3503cf1a585a804",
+    "bytes": 2481,
+    "kind": "raw executed diagnostic snapshot, not a maintained replay entry point"
+  },
+  {
+    "original_run_path": "D:\\python_software\\Underline_RETLDC\\.work\\0.1.0-software-completion-20261101\\window_orphan_candidate_probe.py",
+    "carrier": "window_orphan_candidate_probe.py.txt",
+    "sha256": "e30fb3fb2fa4e8fdc99c12d3305392fba044f345376a326fb4101753b9628e00",
+    "bytes": 2845,
+    "kind": "raw executed diagnostic snapshot, not a maintained replay entry point"
+  },
+  {
+    "original_run_path": "D:\\python_software\\Underline_RETLDC\\.work\\0.1.0-software-completion-20261101\\window_orphan_after_probe.py",
+    "carrier": "window_orphan_after_probe.py.txt",
+    "sha256": "acfe74d121e0effcee98b6f7eb36ab4e56324b1292772d2f2bdd065762086be5",
+    "bytes": 2479,
+    "kind": "raw executed diagnostic snapshot, not a maintained replay entry point"
+  },
+  {
+    "original_run_path": "D:\\python_software\\Underline_RETLDC\\.work\\0.1.0-software-completion-20261101\\native_pytest_v2.py",
+    "carrier": "native_pytest_v2.py.txt",
+    "sha256": "7928eab72d1a5ec7fa00c782a8d28d0f0560a2082bb377a030408ca1399cf0c1",
+    "bytes": 704,
+    "kind": "raw executed diagnostic snapshot, not a maintained replay entry point"
+  }
+]

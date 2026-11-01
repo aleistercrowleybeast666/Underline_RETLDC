@@ -1,0 +1,80 @@
+"""Diagnostic-only QObject destruction telemetry for the unchanged full suite."""
+import gc
+import json
+import os
+from pathlib import Path
+import sys
+import threading
+import weakref
+
+os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
+from PySide6.QtCore import QObject, Qt
+import shiboken6
+import pytest
+from underline_retldc.gui.main_window import MainWindow
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))  # Match python -m pytest's ordinary repository import path.
+OUT = Path(__file__).with_name('heap-trace-v2.jsonl')
+stream = OUT.open('w', encoding='utf8', buffering=1)
+main_thread = threading.get_ident()
+seen = {}
+test_name = ''
+counts = {'watched': 0, 'destroyed': 0, 'foreign_destroyed': 0}
+
+def record(kind, **fields):
+    stream.write(json.dumps(dict(kind=kind, thread=threading.get_ident(), test=test_name, **fields))+'\n')
+
+def destroyed(identity, name):
+    counts['destroyed'] += 1
+    if threading.get_ident() != main_thread:
+        counts['foreign_destroyed'] += 1
+        record('foreign-destroyed', identity=identity, name=name)
+
+def watch():
+    assert threading.get_ident() == main_thread
+    for obj in gc.get_objects():
+        if not isinstance(obj, QObject) or not shiboken6.isValid(obj):
+            continue
+        identity = id(obj)
+        prior = seen.get(identity)
+        if prior is not None and prior() is obj:
+            continue
+        name = type(obj).__module__+'.'+type(obj).__qualname__
+        seen[identity] = weakref.ref(obj)
+        counts['watched'] += 1
+        obj.destroyed.connect(
+            lambda _obj=None, ident=identity, label=name: destroyed(ident, label),
+            Qt.ConnectionType.DirectConnection,
+        )
+
+original = MainWindow._task_start
+def start(self, *args, **kwargs):
+    watch()
+    record('task-start', name=str(args[0] if args else kwargs.get('name')))
+    return original(self, *args, **kwargs)
+MainWindow._task_start = start
+
+def collection(phase, info):
+    if threading.get_ident() != main_thread:
+        record('worker-gc-'+phase, **info)
+gc.callbacks.append(collection)
+
+class TracePlugin:
+    def pytest_runtest_setup(self, item):
+        global test_name
+        test_name = item.nodeid
+        record('test-start')
+    def pytest_runtest_teardown(self, item, nextitem):
+        watch()
+        record('test-teardown', counts=dict(counts))
+
+record('identity', head='c1f8ac76f9bbcde1076ef9e48624c920ad161960', diagnostic_monkeypatch=True,
+       global_gc_enabled=gc.isenabled(), note='Tracks existing QObject wrappers; no production edits or GC suppression.')
+try:
+    result = pytest.main(['-q', '--basetemp='+str(Path(__file__).with_name('heap-trace-tests')),
+                         '-o', 'cache_dir='+str(Path(__file__).with_name('heap-trace-cache'))], plugins=[TracePlugin()])
+    record('complete', exit_code=int(result), counts=counts)
+    raise SystemExit(result)
+finally:
+    gc.callbacks.remove(collection)

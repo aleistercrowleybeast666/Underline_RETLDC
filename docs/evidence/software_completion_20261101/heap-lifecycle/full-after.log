@@ -1,0 +1,63 @@
+........................................................................ [ 18%]
+........................................................................ [ 37%]
+Windows fatal exception: code 0xc0000374
+
+Current thread 0x000016d4 (most recent call first):
+  Garbage-collecting
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\xml\etree\ElementTree.py", line 1301 in feed
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\xml\etree\ElementTree.py", line 1251 in iterator
+  File "D:\python_software\Underline_RETLDC\plugins\parsers\generic_xlsx\plugin.py", line 200 in _rows_read
+  File "D:\python_software\Underline_RETLDC\plugins\parsers\generic_xlsx\plugin.py", line 238 in _table_read
+  File "D:\python_software\Underline_RETLDC\plugins\parsers\generic_xlsx\plugin.py", line 280 in parse
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\app\source_input.py", line 28 in Source_ParseVerified
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\app\project_pipeline.py", line 499 in _project_pipeline_recompute
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\app\project_pipeline.py", line 347 in _project_recompute
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\gui\main_window.py", line 3653 in operation
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\core\task.py", line 115 in run
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\concurrent\futures\thread.py", line 73 in run
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\concurrent\futures\thread.py", line 86 in run
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\concurrent\futures\thread.py", line 119 in _worker
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\threading.py", line 1023 in run
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\threading.py", line 1081 in _bootstrap_inner
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\threading.py", line 1043 in _bootstrap
+
+Thread 0x00007728 (most recent call first):
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\app\release_smoke.py", line 138 in _wait
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\app\release_smoke.py", line 730 in _source_workflow_check
+  File "D:\python_software\Underline_RETLDC\tests\integration\test_theory_overlay.py", line 911 in test_portable_source_workflow_uses_real_gui_and_generated_fixture
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\python.py", line 167 in pytest_pyfunc_call
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\python.py", line 1707 in runtest
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\runner.py", line 184 in pytest_runtest_call
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\runner.py", line 250 in <lambda>
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\runner.py", line 361 in from_call
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\runner.py", line 249 in call_and_report
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\runner.py", line 139 in runtestprotocol
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\runner.py", line 118 in pytest_runtest_protocol
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\main.py", line 408 in pytest_runtestloop
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\main.py", line 384 in _main
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\main.py", line 330 in wrap_session
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\main.py", line 377 in pytest_cmdline_main
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\config\__init__.py", line 229 in _main
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\config\__init__.py", line 253 in _console_main
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\pytest\__main__.py", line 9 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
+
+Current thread's C stack trace (most recent call first):
+  <cannot get C stack on this system>
+..................................

@@ -1,0 +1,64 @@
+
+************* Preparing the environment for Debugger Extensions Gallery repositories **************
+   ExtensionRepository : Implicit
+   UseExperimentalFeatureForNugetShare : true
+   AllowNugetExeUpdate : true
+   NonInteractiveNuget : true
+   AllowNugetMSCredentialProviderInstall : true
+   AllowParallelInitializationOfLocalRepositories : true
+   EnableRedirectToChakraJsProvider : false
+
+   -- Configuring repositories
+      ----> Repository : LocalInstalled, Enabled: true
+      ----> Repository : UserExtensions, Enabled: true
+
+>>>>>>>>>>>>> Preparing the environment for Debugger Extensions Gallery repositories completed, duration 0.000 seconds
+
+************* Waiting for Debugger Extensions Gallery to Initialize **************
+
+>>>>>>>>>>>>> Waiting for Debugger Extensions Gallery to Initialize completed, duration 0.031 seconds
+   ----> Repository : UserExtensions, Enabled: true, Packages count: 0
+   ----> Repository : LocalInstalled, Enabled: true, Packages count: 0
+
+Microsoft (R) Windows Debugger Version 10.0.29547.1002 AMD64
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+CommandLine: C:\Users\chdxm\AppData\Local\Programs\Python\Python314\python.exe -c "print(123)"
+Unable to add extension DLL: ntsdexts
+Unable to add extension DLL: uext
+Unable to add extension DLL: exts
+
+************* Path validation summary **************
+Response                         Time (ms)     Location
+Deferred                                       srv*
+Symbol search path is: srv*
+Executable search path is: 
+
++------------------------------------------------------------------------+
+| This target supports Hardware-enforced Stack Protection. A HW based    |
+| "Shadow Stack" may be available to assist in debugging and analysis.   |
+| See aka.ms/userhsp for more info.                                      |
+|                                                                        |
+| dps @ssp                                                               |
+|                                                                        |
++------------------------------------------------------------------------+
+
+ModLoad: 00007ff7`f3d60000 00007ff7`f3d7a000   python.exe
+ModLoad: 00007ffa`068c0000 00007ffa`06b28000   ntdll.dll
+ModLoad: 00007ffa`06620000 00007ffa`066eb000   C:\WINDOWS\System32\KERNEL32.DLL
+ModLoad: 00007ffa`03b90000 00007ffa`03f91000   C:\WINDOWS\System32\KERNELBASE.dll
+ModLoad: 00007ffa`04220000 00007ffa`0436c000   C:\WINDOWS\System32\ucrtbase.dll
+ModLoad: 00007ff9`24fc0000 00007ff9`256b2000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\python314.dll
+ModLoad: 00007ff9`d0780000 00007ff9`d079e000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\VCRUNTIME140.dll
+ModLoad: 00007ffa`051c0000 00007ffa`05241000   C:\WINDOWS\System32\WS2_32.dll
+ModLoad: 00007ffa`06760000 00007ffa`06878000   C:\WINDOWS\System32\RPCRT4.dll
+ModLoad: 00007ffa`05050000 00007ffa`0510c000   C:\WINDOWS\System32\ADVAPI32.dll
+ModLoad: 00007ff9`fc160000 00007ff9`fc16b000   C:\WINDOWS\SYSTEM32\VERSION.dll
+ModLoad: 00007ffa`04790000 00007ffa`04839000   C:\WINDOWS\System32\msvcrt.dll
+ModLoad: 0000022f`0ce40000 0000022f`0cee9000   C:\WINDOWS\System32\msvcrt.dll
+ModLoad: 00007ffa`03990000 00007ffa`039ba000   C:\WINDOWS\SYSTEM32\bcrypt.dll
+ModLoad: 00007ffa`05780000 00007ffa`05828000   C:\WINDOWS\System32\sechost.dll
+(52f8.3a20): Break instruction exception - code 80000003 (first chance)
+ModLoad: 00007ffa`04160000 00007ffa`0420c000   C:\WINDOWS\System32\bcryptprimitives.dll
+ModLoad: 00007ffa`02750000 00007ffa`0276b000   C:\WINDOWS\SYSTEM32\kernel.appcore.dll
+DEBUGGEE_EXITED

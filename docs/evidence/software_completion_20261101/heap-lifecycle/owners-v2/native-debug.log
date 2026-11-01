@@ -1,0 +1,151 @@
+
+************* Preparing the environment for Debugger Extensions Gallery repositories **************
+   ExtensionRepository : Implicit
+   UseExperimentalFeatureForNugetShare : true
+   AllowNugetExeUpdate : true
+   NonInteractiveNuget : true
+   AllowNugetMSCredentialProviderInstall : true
+   AllowParallelInitializationOfLocalRepositories : true
+   EnableRedirectToChakraJsProvider : false
+
+   -- Configuring repositories
+      ----> Repository : LocalInstalled, Enabled: true
+      ----> Repository : UserExtensions, Enabled: true
+
+>>>>>>>>>>>>> Preparing the environment for Debugger Extensions Gallery repositories completed, duration 0.000 seconds
+
+************* Waiting for Debugger Extensions Gallery to Initialize **************
+
+>>>>>>>>>>>>> Waiting for Debugger Extensions Gallery to Initialize completed, duration 0.015 seconds
+   ----> Repository : UserExtensions, Enabled: true, Packages count: 0
+   ----> Repository : LocalInstalled, Enabled: true, Packages count: 0
+
+Microsoft (R) Windows Debugger Version 10.0.29547.1002 AMD64
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+CommandLine: C:\Users\chdxm\AppData\Local\Programs\Python\Python314\python.exe -m pytest --basetemp=.work/0.1.0-software-completion-20261101/native-debug-tests -o cache_dir=.work/0.1.0-software-completion-20261101/native-debug-cache -v
+Unable to add extension DLL: ntsdexts
+Unable to add extension DLL: uext
+Unable to add extension DLL: exts
+
+************* Path validation summary **************
+Response                         Time (ms)     Location
+Deferred                                       srv*
+Symbol search path is: srv*
+Executable search path is: 
+
++------------------------------------------------------------------------+
+| This target supports Hardware-enforced Stack Protection. A HW based    |
+| "Shadow Stack" may be available to assist in debugging and analysis.   |
+| See aka.ms/userhsp for more info.                                      |
+|                                                                        |
+| dps @ssp                                                               |
+|                                                                        |
++------------------------------------------------------------------------+
+
+ModLoad: 00007ff7`f3d60000 00007ff7`f3d7a000   python.exe
+ModLoad: 00007ffa`068c0000 00007ffa`06b28000   ntdll.dll
+ModLoad: 00007ffa`06620000 00007ffa`066eb000   C:\WINDOWS\System32\KERNEL32.DLL
+ModLoad: 00007ffa`03b90000 00007ffa`03f91000   C:\WINDOWS\System32\KERNELBASE.dll
+ModLoad: 00007ffa`04220000 00007ffa`0436c000   C:\WINDOWS\System32\ucrtbase.dll
+ModLoad: 00007ff9`24fc0000 00007ff9`256b2000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\python314.dll
+ModLoad: 00007ff9`d0780000 00007ff9`d079e000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\VCRUNTIME140.dll
+ModLoad: 00007ffa`051c0000 00007ffa`05241000   C:\WINDOWS\System32\WS2_32.dll
+ModLoad: 00007ffa`06760000 00007ffa`06878000   C:\WINDOWS\System32\RPCRT4.dll
+ModLoad: 00007ff9`fc160000 00007ff9`fc16b000   C:\WINDOWS\SYSTEM32\VERSION.dll
+ModLoad: 00007ffa`05050000 00007ffa`0510c000   C:\WINDOWS\System32\ADVAPI32.dll
+ModLoad: 00007ffa`04790000 00007ffa`04839000   C:\WINDOWS\System32\msvcrt.dll
+ModLoad: 00000225`e1480000 00000225`e1529000   C:\WINDOWS\System32\msvcrt.dll
+ModLoad: 00007ffa`03990000 00007ffa`039ba000   C:\WINDOWS\SYSTEM32\bcrypt.dll
+ModLoad: 00007ffa`05780000 00007ffa`05828000   C:\WINDOWS\System32\sechost.dll
+(2a90.4e4c): Break instruction exception - code 80000003 (first chance)
+ModLoad: 00007ffa`04160000 00007ffa`0420c000   C:\WINDOWS\System32\bcryptprimitives.dll
+ModLoad: 00000225`e1330000 00000225`e1340000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\python3.DLL
+ModLoad: 00000225`e1330000 00000225`e1340000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\python3.DLL
+ModLoad: 00007ff9`d3e20000 00007ff9`d3e36000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_bz2.pyd
+ModLoad: 00007ff9`ae480000 00007ff9`ae4a8000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_lzma.pyd
+ModLoad: 00007ff9`48e10000 00007ff9`48e8c000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_zstd.pyd
+ModLoad: 00007ff9`d7a40000 00007ff9`d7a48000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_uuid.pyd
+ModLoad: 00007ff9`2cdc0000 00007ff9`2ce7a000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\unicodedata.pyd
+ModLoad: 00007ff9`c8f10000 00007ff9`c8f1b000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_wmi.pyd
+ModLoad: 00007ffa`04f50000 00007ffa`05029000   C:\WINDOWS\System32\OLEAUT32.dll
+ModLoad: 00007ffa`03ae0000 00007ffa`03b83000   C:\WINDOWS\System32\msvcp_win.dll
+ModLoad: 00007ffa`05fe0000 00007ffa`0636b000   C:\WINDOWS\System32\combase.dll
+ModLoad: 00007ff9`fe1b0000 00007ff9`fe2a5000   C:\WINDOWS\SYSTEM32\PROPSYS.dll
+ModLoad: 00007ff9`c8f00000 00007ff9`c8f0c000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\VCRUNTIME140_1.dll
+ModLoad: 00007ff9`81600000 00007ff9`81646000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_decimal.pyd
+ModLoad: 00007ff9`81860000 00007ff9`81882000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_elementtree.pyd
+ModLoad: 00007ff9`80ad0000 00007ff9`80b06000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\pyexpat.pyd
+ModLoad: 00007ff9`80aa0000 00007ff9`80ac4000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_ctypes.pyd
+ModLoad: 00007ffa`04b60000 00007ffa`04cfa000   C:\WINDOWS\System32\ole32.dll
+ModLoad: 00007ffa`06550000 00007ffa`0657b000   C:\WINDOWS\System32\GDI32.dll
+ModLoad: 00007ffa`03ab0000 00007ffa`03ad7000   C:\WINDOWS\System32\win32u.dll
+ModLoad: 00007ffa`04030000 00007ffa`0415a000   C:\WINDOWS\System32\gdi32full.dll
+ModLoad: 00007ff9`b3020000 00007ff9`b302b000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\libffi-8.dll
+ModLoad: 00007ffa`04980000 00007ffa`04b57000   C:\WINDOWS\System32\USER32.dll
+ModLoad: 00007ffa`04940000 00007ffa`04971000   C:\WINDOWS\System32\IMM32.DLL
+ModLoad: 00007ff9`15f00000 00007ff9`162c9000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\numpy\_core\_multiarray_umath.cp314-win_amd64.pyd
+ModLoad: 00007ff9`2cea0000 00007ff9`2cf2d000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\numpy.libs\msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll
+ModLoad: 00007ff9`14660000 00007ff9`159f5000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\numpy.libs\libscipy_openblas64_-327b2e0bcffce2882e0dc04cdeb4eaa6.dll
+ModLoad: 00007ff9`761e0000 00007ff9`761fe000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\numpy\linalg\_umath_linalg.cp314-win_amd64.pyd
+ModLoad: 00007ff9`ceeb0000 00007ff9`ceec1000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_hashlib.pyd
+ModLoad: 00007ff9`21e50000 00007ff9`22351000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\libcrypto-3.dll
+ModLoad: 00007ff9`aa740000 00007ff9`aa756000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_socket.pyd
+ModLoad: 00007ffa`02050000 00007ffa`02083000   C:\WINDOWS\SYSTEM32\IPHLPAPI.DLL
+ModLoad: 00007ff9`76680000 00007ff9`766ae000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_ssl.pyd
+ModLoad: 00007ffa`04440000 00007ffa`045bf000   C:\WINDOWS\System32\CRYPT32.dll
+ModLoad: 00007ff9`2aa70000 00007ff9`2ab33000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\libssl-3.dll
+ModLoad: 00007ff9`816b0000 00007ff9`816c5000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_asyncio.pyd
+ModLoad: 00007ff9`ae510000 00007ff9`ae51e000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_overlapped.pyd
+ModLoad: 00007ffa`02d10000 00007ffa`02d7c000   C:\WINDOWS\system32\mswsock.dll
+ModLoad: 00007ff9`ad170000 00007ff9`ad179000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\select.pyd
+ModLoad: 00007ff9`aa6a0000 00007ff9`aa6aa000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\shiboken6\Shiboken.pyd
+ModLoad: 00007ff9`764d0000 00007ff9`76530000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\shiboken6\shiboken6.abi3.dll
+ModLoad: 00007ff9`2a8c0000 00007ff9`2a949000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\shiboken6\MSVCP140.dll
+ModLoad: 00007ff9`14320000 00007ff9`14653000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\QtCore.pyd
+ModLoad: 00007ff9`74b50000 00007ff9`74b8e000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\pyside6.abi3.dll
+ModLoad: 00007ff9`13910000 00007ff9`14316000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\Qt6Core.dll
+ModLoad: 00007ffa`05830000 00007ffa`05fcc000   C:\WINDOWS\System32\SHELL32.dll
+ModLoad: 00007ff9`da310000 00007ff9`da331000   C:\WINDOWS\SYSTEM32\MPR.dll
+ModLoad: 00007ffa`02dc0000 00007ffa`02df4000   C:\WINDOWS\SYSTEM32\USERENV.dll
+ModLoad: 00007ffa`022d0000 00007ffa`02320000   C:\WINDOWS\SYSTEM32\AUTHZ.dll
+ModLoad: 00007ff9`dacb0000 00007ff9`dacca000   C:\WINDOWS\SYSTEM32\NETAPI32.dll
+ModLoad: 00007ff9`aa5d0000 00007ff9`aa5d9000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\MSVCP140_1.dll
+ModLoad: 00000225`fb370000 00000225`fb379000   C:\WINDOWS\SYSTEM32\icuuc.dll
+ModLoad: 00007ff9`f4030000 00007ff9`f4067000   C:\WINDOWS\SYSTEM32\WINMM.dll
+ModLoad: 00000225`fb370000 00000225`fb379000   C:\WINDOWS\SYSTEM32\icuuc.dll
+ModLoad: 00007ffa`03020000 00007ffa`0302c000   C:\WINDOWS\SYSTEM32\CRYPTBASE.DLL
+ModLoad: 00007ffa`02260000 00007ffa`0226d000   C:\WINDOWS\SYSTEM32\NETUTILS.DLL
+ModLoad: 00007ff9`e2570000 00007ff9`e2599000   C:\WINDOWS\SYSTEM32\SRVCLI.DLL
+ModLoad: 00007ff9`dcd20000 00007ff9`dcfbe000   C:\WINDOWS\SYSTEM32\icu.DLL
+ModLoad: 00007ff9`12750000 00007ff9`12c09000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\QtWidgets.pyd
+ModLoad: 00007ff9`12100000 00007ff9`1274d000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\Qt6Widgets.dll
+ModLoad: 00007ff9`12c10000 00007ff9`1354a000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\Qt6Gui.dll
+ModLoad: 00007ff9`fecf0000 00007ff9`fef4f000   C:\WINDOWS\SYSTEM32\d3d11.dll
+ModLoad: 00007ff9`a7c90000 00007ff9`a7cb3000   C:\WINDOWS\SYSTEM32\d3d12.dll
+ModLoad: 00007ffa`007c0000 00007ffa`008fb000   C:\WINDOWS\SYSTEM32\dxgi.dll
+ModLoad: 00007ff9`24d40000 00007ff9`24d84000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\MSVCP140_2.dll
+ModLoad: 00007ffa`00920000 00007ffa`0094e000   C:\WINDOWS\SYSTEM32\dwmapi.dll
+ModLoad: 00007ff9`fef60000 00007ff9`ff1ca000   C:\WINDOWS\SYSTEM32\DWrite.dll
+ModLoad: 00007ffa`00600000 00007ffa`006a7000   C:\WINDOWS\SYSTEM32\UxTheme.dll
+ModLoad: 00000225`fb3b0000 00000225`fb457000   C:\WINDOWS\SYSTEM32\UxTheme.dll
+ModLoad: 00007ffa`03900000 00007ffa`0395e000   C:\WINDOWS\SYSTEM32\powrprof.dll
+ModLoad: 00007ffa`038e0000 00007ffa`038f5000   C:\WINDOWS\SYSTEM32\UMPDC.dll
+ModLoad: 00007ff9`13550000 00007ff9`1390b000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\QtGui.pyd
+ModLoad: 00007ff9`b0950000 00007ff9`b0959000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_queue.pyd
+ModLoad: 00007ff9`73490000 00007ff9`734ae000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\QtSvg.pyd
+ModLoad: 00007ff9`117c0000 00007ff9`1185d000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\Qt6Svg.dll
+ModLoad: 00007ff9`672a0000 00007ff9`672bf000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\QtOpenGLWidgets.pyd
+ModLoad: 00007ff9`67230000 00007ff9`67241000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\Qt6OpenGLWidgets.dll
+ModLoad: 00007ff9`115d0000 00007ff9`117b5000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\Qt6OpenGL.dll
+ModLoad: 00007ff9`4df00000 00007ff9`4df30000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\QtTest.pyd
+ModLoad: 00007ff9`1b8c0000 00007ff9`1b91f000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\Qt6Test.dll
+ModLoad: 00007ff9`107d0000 00007ff9`11021000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\QtOpenGL.pyd
+ModLoad: 00007ff9`a1000000 00007ff9`a100a000   C:\Users\chdxm\AppData\Local\Programs\Python\Python314\DLLs\_multiprocessing.pyd
+ModLoad: 00007ffa`02750000 00007ffa`0276b000   C:\WINDOWS\SYSTEM32\kernel.appcore.dll
+ModLoad: 00007ffa`014d0000 00007ffa`01d7e000   C:\WINDOWS\SYSTEM32\windows.storage.dll
+ModLoad: 00007ffa`04840000 00007ffa`04939000   C:\WINDOWS\System32\SHCORE.dll
+ModLoad: 00007ffa`06580000 00007ffa`065e6000   C:\WINDOWS\System32\shlwapi.dll
+ModLoad: 00007ffa`039c0000 00007ffa`039e9000   C:\WINDOWS\SYSTEM32\profapi.dll
+ModLoad: 00007ff9`4bb40000 00007ff9`4bb5d000   D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PySide6\plugins\platforms\qoffscreen.dll
+DEBUGGEE_EXITED

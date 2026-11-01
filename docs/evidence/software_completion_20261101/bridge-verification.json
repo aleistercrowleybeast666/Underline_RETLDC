@@ -1,0 +1,89 @@
+{
+  "scope": "Synthetic owner export, exact pinned contract, real consumer CLI validation; no hardware evidence",
+  "owner_head": "c1f8ac76f9bbcde1076ef9e48624c920ad161960",
+  "consumer_head": "d3d0fc1e94b8abc28f76a5f7aa95f26d2da0c2f8",
+  "contract_owner_commit": "e4001bf730692f58071a1df4d1efad756bd84379",
+  "files": [
+    {
+      "consumer_path": "contracts/motor-test-package/v1/schema.json",
+      "owner_path": "contracts/motor-test-package/v1/schema.json",
+      "sha256": "23b484e42ed2245c2547562969ade6327222c46eaf83954dcffdd6750f3ce3d2",
+      "byte_identical": true
+    },
+    {
+      "consumer_path": "src/treediagram/vendor_motor/contract.py",
+      "owner_path": "plugins/exporters/treediagram_motor/contract.py",
+      "sha256": "ea4eaaf4e38587e44678a3bd05fef476fda2329c49596ce7201cbbbba0479988",
+      "byte_identical": true
+    },
+    {
+      "consumer_path": "tests/fixtures/motor/invalid_bool_mass.tdmotor.json",
+      "owner_path": "tests/fixtures/motor_test_package/v1/invalid_bool_mass.tdmotor.json",
+      "sha256": "56b0a8082abc3567dca40b6740dc3baa621885d4b268bc501a9d86c50c57cda4",
+      "byte_identical": true
+    },
+    {
+      "consumer_path": "tests/fixtures/motor/invalid_clock.tdmotor.json",
+      "owner_path": "tests/fixtures/motor_test_package/v1/invalid_clock.tdmotor.json",
+      "sha256": "5a8324e13196dd4a314547a1cc77f880682fa632c1daa38917ad499bd8cad116",
+      "byte_identical": true
+    },
+    {
+      "consumer_path": "tests/fixtures/motor/invalid_digest.tdmotor.json",
+      "owner_path": "tests/fixtures/motor_test_package/v1/invalid_digest.tdmotor.json",
+      "sha256": "9d50448559b3454004cba2834f55bcf5f872f1568e5baf143e949ae4e5a56cf6",
+      "byte_identical": true
+    },
+    {
+      "consumer_path": "tests/fixtures/motor/invalid_length.tdmotor.json",
+      "owner_path": "tests/fixtures/motor_test_package/v1/invalid_length.tdmotor.json",
+      "sha256": "9cedfb2d410d687c68f16eb302ec77cde5a1e40df2893b1e21daf0fed5ea4f11",
+      "byte_identical": true
+    },
+    {
+      "consumer_path": "tests/fixtures/motor/invalid_mass.tdmotor.json",
+      "owner_path": "tests/fixtures/motor_test_package/v1/invalid_mass.tdmotor.json",
+      "sha256": "d536c5d9ca467ef195753bf8479a888888a42ce6732abeff34ea7d12b62eb81f",
+      "byte_identical": true
+    },
+    {
+      "consumer_path": "tests/fixtures/motor/invalid_version.tdmotor.json",
+      "owner_path": "tests/fixtures/motor_test_package/v1/invalid_version.tdmotor.json",
+      "sha256": "1ea69347de7f02df4cb84d9f7faaa286a8aaa92e91e3b549d132125bc644888c",
+      "byte_identical": true
+    },
+    {
+      "consumer_path": "tests/fixtures/motor/valid_positive.tdmotor.json",
+      "owner_path": "tests/fixtures/motor_test_package/v1/valid_positive.tdmotor.json",
+      "sha256": "66c6232d0ccec6ceaabdec9186e9059a2f16dc9eeedea0c94221f06a8ceaed96",
+      "byte_identical": true
+    },
+    {
+      "consumer_path": "tests/fixtures/motor/valid_synthetic.tdmotor.json",
+      "owner_path": "tests/fixtures/motor_test_package/v1/valid_synthetic.tdmotor.json",
+      "sha256": "6b8ea90658017c9419c4344022ed41d7d8ab90f6dfeb52fa608893ccf976467a",
+      "byte_identical": true
+    },
+    {
+      "consumer_path": "tests/fixtures/motor/vectors.json",
+      "owner_path": "tests/fixtures/motor_test_package/v1/vectors.json",
+      "sha256": "55287d865bd817c34099c47820f6213bafa51ef884d7f69edbf93a183581ec96",
+      "byte_identical": true
+    }
+  ],
+  "export_matches_existing_golden": true,
+  "export_sha256": "66c6232d0ccec6ceaabdec9186e9059a2f16dc9eeedea0c94221f06a8ceaed96",
+  "consumer_check_command": [
+    "D:\\python_software\\TreeDiagram\\.venv\\Scripts\\python.exe",
+    "-m",
+    "treediagram",
+    "check",
+    ".test-tmp/software-completion-20261101/motor-imported.json"
+  ],
+  "consumer_check_exit": 0,
+  "consumer_check_result": {
+    "structurally_valid": true,
+    "runnable": true,
+    "issues": []
+  }
+}

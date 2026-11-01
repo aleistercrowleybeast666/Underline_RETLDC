@@ -1,0 +1,490 @@
+I001 [*] Import block is un-sorted or un-formatted
+ --> docs\evidence\software_completion_20261101\heap-lifecycle\dialog_export_gc_probe.py:2:1
+  |
+1 |   """Real current plot export dialog format transition, unchanged product source."""
+2 | / import gc
+3 | | import json
+4 | | import os
+5 | | from pathlib import Path
+6 | | import threading
+7 | | from concurrent.futures import ThreadPoolExecutor
+  | |_________________________________________________^
+8 |
+9 |   os.environ['QT_QPA_PLATFORM']='offscreen'
+  |
+help: Organize imports
+  |
+4 | import os
+  - from pathlib import Path
+5 | import threading
+6 | from concurrent.futures import ThreadPoolExecutor
+7 + from pathlib import Path
+8 |
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\dialog_export_gc_probe.py:10:1
+   |
+ 9 |   os.environ['QT_QPA_PLATFORM']='offscreen'
+10 | / import numpy as np
+11 | | from PySide6.QtCore import Qt, QEvent
+12 | | from PySide6.QtWidgets import QApplication
+13 | | from pyqtgraph.exporters import ImageExporter, CSVExporter
+14 | | from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
+15 | | from underline_retldc.i18n.service import TranslationService
+   | |____________________________________________________________^
+16 |
+17 |   out=Path(__file__).with_name('dialog-export-gc-before.jsonl')
+   |
+help: Organize imports
+   |
+10 | import numpy as np
+   - from PySide6.QtCore import Qt, QEvent
+11 + from pyqtgraph.exporters import CSVExporter, ImageExporter
+12 + from PySide6.QtCore import QEvent, Qt
+13 | from PySide6.QtWidgets import QApplication
+   - from pyqtgraph.exporters import ImageExporter, CSVExporter
+14 +
+15 | from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
+   |
+
+E501 Line too long (120 > 100)
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\dialog_export_gc_probe.py:29:101
+   |
+27 | dialog=plot.plot_widget.scene().exportDialog
+28 | dialog.updateItemList(select=plot.plot_widget.getPlotItem())
+29 | image_row=next(i for i in range(dialog.ui.formatList.count()) if dialog.ui.formatList.item(i).expClass == ImageExporter)
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^
+30 | csv_row=next(i for i in range(dialog.ui.formatList.count()) if dialog.ui.formatList.item(i).expClass == CSVExporter)
+31 | for index in range(3):
+   |
+
+E501 Line too long (116 > 100)
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\dialog_export_gc_probe.py:30:101
+   |
+28 | dialog.updateItemList(select=plot.plot_widget.getPlotItem())
+29 | image_row=next(i for i in range(dialog.ui.formatList.count()) if dialog.ui.formatList.item(i).expClass == ImageExporter)
+30 | csv_row=next(i for i in range(dialog.ui.formatList.count()) if dialog.ui.formatList.item(i).expClass == CSVExporter)
+   |                                                                                                     ^^^^^^^^^^^^^^^^
+31 | for index in range(3):
+32 |     dialog.ui.formatList.setCurrentRow(image_row)
+   |
+
+B008 Do not perform function call `parameter.name` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\dialog_export_gc_probe.py:34:71
+   |
+32 |     dialog.ui.formatList.setCurrentRow(image_row)
+33 |     for parameter in dialog.currentExporter.parameters().children():
+34 |         parameter.destroyed.connect(lambda _obj=None,label=f'{index}:{parameter.name()}':record('destroyed',name=label),Qt.ConnectionT…
+   |                                                                       ^^^^^^^^^^^^^^^^
+35 |     del parameter
+36 |     dialog.ui.formatList.setCurrentRow(csv_row)
+   |
+
+E501 Line too long (155 > 100)
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\dialog_export_gc_probe.py:34:101
+   |
+32 | …
+33 | …dren():
+34 | …{index}:{parameter.name()}':record('destroyed',name=label),Qt.ConnectionType.DirectConnection)
+   |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+35 | …
+36 | …
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> docs\evidence\software_completion_20261101\heap-lifecycle\export_gc_probe.py:2:1
+  |
+1 |   """Bounded standalone exporter retirement probe against unchanged GUI."""
+2 | / import gc
+3 | | import json
+4 | | import os
+5 | | from pathlib import Path
+6 | | import threading
+7 | | from concurrent.futures import ThreadPoolExecutor
+  | |_________________________________________________^
+8 |
+9 |   os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+  |
+help: Organize imports
+  |
+4 | import os
+  - from pathlib import Path
+5 | import threading
+6 | from concurrent.futures import ThreadPoolExecutor
+7 + from pathlib import Path
+8 |
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\export_gc_probe.py:10:1
+   |
+ 9 |   os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+10 | / import numpy as np
+11 | | from PySide6.QtCore import Qt, QEvent
+12 | | from PySide6.QtWidgets import QApplication
+13 | | from pyqtgraph.exporters import ImageExporter
+14 | | from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
+15 | | from underline_retldc.i18n.service import TranslationService
+   | |____________________________________________________________^
+16 |
+17 |   out=Path(__file__).with_name('export-gc-before.jsonl')
+   |
+help: Organize imports
+   |
+10 | import numpy as np
+   - from PySide6.QtCore import Qt, QEvent
+   - from PySide6.QtWidgets import QApplication
+11 | from pyqtgraph.exporters import ImageExporter
+12 + from PySide6.QtCore import QEvent, Qt
+13 + from PySide6.QtWidgets import QApplication
+14 +
+15 | from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
+   |
+
+E501 Line too long (139 > 100)
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\export_gc_probe.py:31:101
+   |
+29 | …ound','invertValue'):
+30 | …
+31 | …l=f'{index}:{name}':record('destroyed',name=label),Qt.ConnectionType.DirectConnection)
+   |                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+32 | …
+33 | …
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\plot_gc_probe.py:12:1
+   |
+11 |   os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+12 | / from PySide6.QtCore import QEvent, Qt
+13 | | from PySide6.QtWidgets import QApplication
+14 | | import numpy as np
+15 | | import shiboken6
+16 | | from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
+17 | | from underline_retldc.i18n.service import TranslationService
+   | |____________________________________________________________^
+18 |
+19 |   out = Path(__file__).with_name(sys.argv[1])
+   |
+help: Organize imports
+   |
+11 | os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+   - from PySide6.QtCore import QEvent, Qt
+   - from PySide6.QtWidgets import QApplication
+12 | import numpy as np
+13 | import shiboken6
+14 + from PySide6.QtCore import QEvent, Qt
+15 + from PySide6.QtWidgets import QApplication
+16 +
+17 | from underline_retldc.gui.analysis_widgets import AnalysisPlotWidget
+   |
+
+E501 Line too long (111 > 100)
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\plot_gc_probe.py:35:101
+   |
+33 | def track(obj, name):
+34 |     record('created', name=name, owned_by_python=shiboken6.ownedByPython(obj))
+35 |     obj.destroyed.connect(lambda _obj=None: record('destroyed', name=name), Qt.ConnectionType.DirectConnection)
+   |                                                                                                     ^^^^^^^^^^^
+36 |     references.append((name, weakref.ref(obj)))
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_after.py:2:1
+  |
+1 |   """Actual existing source-workflow test with temporary-exporter lifecycle telemetry."""
+2 | / import gc
+3 | | import json
+4 | | import os
+5 | | from pathlib import Path
+6 | | import sys
+7 | | import threading
+  | |________________^
+8 |
+9 |   os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
+  |
+help: Organize imports
+  |
+4 | import os
+  - from pathlib import Path
+5 | import sys
+6 | import threading
+7 + from pathlib import Path
+8 |
+  |
+
+E402 Module level import not at top of file
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_after.py:12:1
+   |
+10 | ROOT=Path(__file__).resolve().parents[2]
+11 | sys.path.insert(0,str(ROOT))
+12 | import pytest
+   | ^^^^^^^^^^^^^
+13 | from PySide6.QtCore import Qt
+14 | from underline_retldc.app import release_smoke
+   |
+help: Move module level imports to top of file
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_after.py:12:1
+   |
+10 |   ROOT=Path(__file__).resolve().parents[2]
+11 |   sys.path.insert(0,str(ROOT))
+12 | / import pytest
+13 | | from PySide6.QtCore import Qt
+14 | | from underline_retldc.app import release_smoke
+15 | | from underline_retldc.core.task import TaskManager
+   | |__________________________________________________^
+16 |
+17 |   stream=Path(__file__).with_name('smoke-export-after.jsonl').open('w',encoding='utf8',buffering=1)
+   |
+help: Organize imports
+   |
+13 | from PySide6.QtCore import Qt
+14 +
+15 | from underline_retldc.app import release_smoke
+   |
+
+E402 Module level import not at top of file
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_after.py:13:1
+   |
+11 | sys.path.insert(0,str(ROOT))
+12 | import pytest
+13 | from PySide6.QtCore import Qt
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+14 | from underline_retldc.app import release_smoke
+15 | from underline_retldc.core.task import TaskManager
+   |
+help: Move module level imports to top of file
+
+E402 Module level import not at top of file
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_after.py:14:1
+   |
+12 | import pytest
+13 | from PySide6.QtCore import Qt
+14 | from underline_retldc.app import release_smoke
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+15 | from underline_retldc.core.task import TaskManager
+   |
+help: Move module level imports to top of file
+
+E402 Module level import not at top of file
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_after.py:15:1
+   |
+13 | from PySide6.QtCore import Qt
+14 | from underline_retldc.app import release_smoke
+15 | from underline_retldc.core.task import TaskManager
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+16 |
+17 | stream=Path(__file__).with_name('smoke-export-after.jsonl').open('w',encoding='utf8',buffering=1)
+   |
+help: Move module level imports to top of file
+
+E501 Line too long (132 > 100)
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_after.py:29:101
+   |
+27 |         label=f'{serial}:{parameter.name()}'
+28 |         record('created',name=label)
+29 |         parameter.destroyed.connect(lambda _object=None,name=label:record('destroyed',name=name),Qt.ConnectionType.DirectConnection)
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+30 |     return result
+31 | release_smoke.ImageExporter=exporter
+   |
+
+E501 Line too long (184 > 100)
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_after.py:41:101
+   |
+39 | …
+40 | …
+41 | …ed lifetime patch', release_smoke_sha256='b090c5d030ec86d68663f8325a4a7efd00c2f18bc6588d0b9e0551b73a5966e5',
+   |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+42 | …ed=gc.isenabled())
+43 | …_source_workflow_uses_real_gui_and_generated_fixture','-q',
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_trace.py:2:1
+  |
+1 |   """Actual existing source-workflow test with temporary-exporter lifecycle telemetry."""
+2 | / import gc
+3 | | import json
+4 | | import os
+5 | | from pathlib import Path
+6 | | import sys
+7 | | import threading
+  | |________________^
+8 |
+9 |   os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
+  |
+help: Organize imports
+  |
+4 | import os
+  - from pathlib import Path
+5 | import sys
+6 | import threading
+7 + from pathlib import Path
+8 |
+  |
+
+E402 Module level import not at top of file
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_trace.py:12:1
+   |
+10 | ROOT=Path(__file__).resolve().parents[2]
+11 | sys.path.insert(0,str(ROOT))
+12 | import pytest
+   | ^^^^^^^^^^^^^
+13 | from PySide6.QtCore import Qt
+14 | from underline_retldc.app import release_smoke
+   |
+help: Move module level imports to top of file
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_trace.py:12:1
+   |
+10 |   ROOT=Path(__file__).resolve().parents[2]
+11 |   sys.path.insert(0,str(ROOT))
+12 | / import pytest
+13 | | from PySide6.QtCore import Qt
+14 | | from underline_retldc.app import release_smoke
+15 | | from underline_retldc.core.task import TaskManager
+   | |__________________________________________________^
+16 |
+17 |   stream=Path(__file__).with_name('smoke-export-before.jsonl').open('w',encoding='utf8',buffering=1)
+   |
+help: Organize imports
+   |
+13 | from PySide6.QtCore import Qt
+14 +
+15 | from underline_retldc.app import release_smoke
+   |
+
+E402 Module level import not at top of file
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_trace.py:13:1
+   |
+11 | sys.path.insert(0,str(ROOT))
+12 | import pytest
+13 | from PySide6.QtCore import Qt
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+14 | from underline_retldc.app import release_smoke
+15 | from underline_retldc.core.task import TaskManager
+   |
+help: Move module level imports to top of file
+
+E402 Module level import not at top of file
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_trace.py:14:1
+   |
+12 | import pytest
+13 | from PySide6.QtCore import Qt
+14 | from underline_retldc.app import release_smoke
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+15 | from underline_retldc.core.task import TaskManager
+   |
+help: Move module level imports to top of file
+
+E402 Module level import not at top of file
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_trace.py:15:1
+   |
+13 | from PySide6.QtCore import Qt
+14 | from underline_retldc.app import release_smoke
+15 | from underline_retldc.core.task import TaskManager
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+16 |
+17 | stream=Path(__file__).with_name('smoke-export-before.jsonl').open('w',encoding='utf8',buffering=1)
+   |
+help: Move module level imports to top of file
+
+E501 Line too long (132 > 100)
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\smoke_export_trace.py:29:101
+   |
+27 |         label=f'{serial}:{parameter.name()}'
+28 |         record('created',name=label)
+29 |         parameter.destroyed.connect(lambda _object=None,name=label:record('destroyed',name=name),Qt.ConnectionType.DirectConnection)
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+30 |     return result
+31 | release_smoke.ImageExporter=exporter
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\trace_gui_gc.py:2:1
+   |
+ 1 |   """Diagnostic-only QObject destruction telemetry for the unchanged full suite."""
+ 2 | / import gc
+ 3 | | import json
+ 4 | | import os
+ 5 | | from pathlib import Path
+ 6 | | import sys
+ 7 | | import threading
+ 8 | | import weakref
+   | |______________^
+ 9 |
+10 |   os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
+   |
+help: Organize imports
+  |
+4 | import os
+  - from pathlib import Path
+5 | import sys
+6 | import threading
+7 | import weakref
+8 + from pathlib import Path
+9 |
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\trace_gui_gc.py:11:1
+   |
+10 |   os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
+11 | / from PySide6.QtCore import QObject, Qt
+12 | | import shiboken6
+13 | | import pytest
+14 | | from underline_retldc.gui.main_window import MainWindow
+   | |_______________________________________________________^
+15 |
+16 |   ROOT = Path(__file__).resolve().parents[2]
+   |
+help: Organize imports
+   |
+10 | os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
+   - from PySide6.QtCore import QObject, Qt
+   - import shiboken6
+11 | import pytest
+12 + import shiboken6
+13 + from PySide6.QtCore import QObject, Qt
+14 +
+15 | from underline_retldc.gui.main_window import MainWindow
+   |
+
+E501 Line too long (106 > 100)
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\trace_gui_gc.py:26:101
+   |
+25 | def record(kind, **fields):
+26 |     stream.write(json.dumps(dict(kind=kind, thread=threading.get_ident(), test=test_name, **fields))+'\n')
+   |                                                                                                     ^^^^^^
+27 |
+28 | def destroyed(identity, name):
+   |
+
+E501 Line too long (121 > 100)
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\trace_gui_gc.py:73:101
+   |
+72 | record('identity', head='c1f8ac76f9bbcde1076ef9e48624c920ad161960', diagnostic_monkeypatch=True,
+73 |        global_gc_enabled=gc.isenabled(), note='Tracks existing QObject wrappers; no production edits or GC suppression.')
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^
+74 | try:
+75 |     result = pytest.main(['-q', '--basetemp='+str(Path(__file__).with_name('heap-trace-tests')),
+   |
+
+E501 Line too long (120 > 100)
+  --> docs\evidence\software_completion_20261101\heap-lifecycle\trace_gui_gc.py:76:101
+   |
+74 | try:
+75 |     result = pytest.main(['-q', '--basetemp='+str(Path(__file__).with_name('heap-trace-tests')),
+76 |                          '-o', 'cache_dir='+str(Path(__file__).with_name('heap-trace-cache'))], plugins=[TracePlugin()])
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^
+77 |     record('complete', exit_code=int(result), counts=counts)
+78 |     raise SystemExit(result)
+   |
+
+Found 31 errors.
+[*] 11 fixable with the `--fix` option.

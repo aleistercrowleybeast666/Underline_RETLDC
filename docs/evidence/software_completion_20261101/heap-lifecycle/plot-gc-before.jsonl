@@ -1,0 +1,27 @@
+{"kind": "main", "thread": 15676}
+{"kind": "created", "thread": 15676, "name": "0:item", "owned_by_python": false}
+{"kind": "created", "thread": 15676, "name": "0:curve", "owned_by_python": false}
+{"kind": "created", "thread": 15676, "name": "0:scatter", "owned_by_python": false}
+{"kind": "destroyed", "thread": 15676, "name": "0:curve"}
+{"kind": "destroyed", "thread": 15676, "name": "0:scatter"}
+{"kind": "destroyed", "thread": 15676, "name": "0:item"}
+{"kind": "worker-before-gc", "thread": 25792}
+{"kind": "worker-after-gc", "thread": 25792, "count": 5}
+{"kind": "created", "thread": 15676, "name": "1:item", "owned_by_python": false}
+{"kind": "created", "thread": 15676, "name": "1:curve", "owned_by_python": false}
+{"kind": "created", "thread": 15676, "name": "1:scatter", "owned_by_python": false}
+{"kind": "destroyed", "thread": 15676, "name": "1:curve"}
+{"kind": "destroyed", "thread": 15676, "name": "1:scatter"}
+{"kind": "destroyed", "thread": 15676, "name": "1:item"}
+{"kind": "worker-before-gc", "thread": 28336}
+{"kind": "worker-after-gc", "thread": 28336, "count": 0}
+{"kind": "created", "thread": 15676, "name": "2:item", "owned_by_python": false}
+{"kind": "created", "thread": 15676, "name": "2:curve", "owned_by_python": false}
+{"kind": "created", "thread": 15676, "name": "2:scatter", "owned_by_python": false}
+{"kind": "destroyed", "thread": 15676, "name": "2:curve"}
+{"kind": "destroyed", "thread": 15676, "name": "2:scatter"}
+{"kind": "destroyed", "thread": 15676, "name": "2:item"}
+{"kind": "worker-before-gc", "thread": 6540}
+{"kind": "worker-after-gc", "thread": 6540, "count": 0}
+{"kind": "alive", "thread": 15676, "objects": []}
+{"kind": "complete", "thread": 15676}

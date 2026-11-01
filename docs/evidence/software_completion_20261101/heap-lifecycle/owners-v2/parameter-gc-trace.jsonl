@@ -1,0 +1,1041 @@
+{"kind": "identity", "thread": 12976, "diagnostic_only": true, "forced_worker_gc": true, "gc_enabled": true}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 3, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 4, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 8, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 50, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 38, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 3, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 3, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 3, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 2, "collected": 1457, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 45, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 15, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 12, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Detect Parsers"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Automatically detecting table..."}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 317, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Parsing source\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 74, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 74}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Processing data\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 37, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 37}
+{"kind": "task-start", "thread": 2712, "name": "Analyzing thrust\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Detect Parsers"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Automatically detecting table..."}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Parsing source\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 74, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 74}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Bounded File Preview"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 37, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 37}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Calculating source metrics"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 37, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 37}
+{"kind": "task-start", "thread": 2712, "name": "Calculating source metrics"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Calculating source metrics"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Calculating source metrics"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Detecting the theory test interval independently\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Save Project JSON\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Open Project JSON\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Bounded File Preview"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 74, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 74}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Open Project JSON\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 37, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 37}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Bounded File Preview"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 74, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 74}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Analyzing thrust\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 37, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 37}
+{"kind": "task-start", "thread": 2712, "name": "Calculating source metrics"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Analyzing thrust\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Calculating source metrics"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Analyzing thrust\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "task-start", "thread": 2712, "name": "Calculating source metrics"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "created", "thread": 12976, "serial": 1, "name": "separator", "cls": "ListParameter"}
+{"kind": "created", "thread": 12976, "serial": 2, "name": "precision", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 3, "name": "columnMode", "cls": "ListParameter"}
+{"kind": "created", "thread": 12976, "serial": 4, "name": "params", "cls": "GroupParameter"}
+{"kind": "created", "thread": 12976, "serial": 5, "name": "separator", "cls": "ListParameter"}
+{"kind": "created", "thread": 12976, "serial": 6, "name": "precision", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 7, "name": "columnMode", "cls": "ListParameter"}
+{"kind": "created", "thread": 12976, "serial": 8, "name": "params", "cls": "GroupParameter"}
+{"kind": "created", "thread": 12976, "serial": 9, "name": "width", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 10, "name": "height", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 11, "name": "antialias", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 12, "name": "background", "cls": "ColorParameter"}
+{"kind": "created", "thread": 12976, "serial": 13, "name": "invertValue", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 14, "name": "params", "cls": "GroupParameter"}
+{"kind": "created", "thread": 12976, "serial": 15, "name": "background", "cls": "ColorParameter"}
+{"kind": "created", "thread": 12976, "serial": 16, "name": "width", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 17, "name": "height", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 18, "name": "scaling stroke", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 19, "name": "params", "cls": "GroupParameter"}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 486, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 25, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 425, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 561, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 25, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 259, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 74, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 496, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 40, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 5980, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 7930, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 7865, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 7772, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 5135, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 145682, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 5887, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 6918, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 6825, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 6790, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 6714, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 4591, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 610, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 512, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 444, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "created", "thread": 12976, "serial": 20, "name": "width", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 21, "name": "height", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 22, "name": "antialias", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 23, "name": "background", "cls": "ColorParameter"}
+{"kind": "created", "thread": 12976, "serial": 24, "name": "invertValue", "cls": "SimpleParameter"}
+{"kind": "created", "thread": 12976, "serial": 25, "name": "params", "cls": "GroupParameter"}
+{"kind": "gc-start", "thread": 12976, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 1, "collected": 553, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Bounded File Preview"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 204543, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 204543}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "native-destroyed", "thread": 12976, "serial": 14}
+{"kind": "native-destroyed", "thread": 12976, "serial": 9}
+{"kind": "native-destroyed", "thread": 12976, "serial": 10}
+{"kind": "native-destroyed", "thread": 12976, "serial": 11}
+{"kind": "native-destroyed", "thread": 12976, "serial": 12}
+{"kind": "native-destroyed", "thread": 12976, "serial": 13}
+{"kind": "native-destroyed", "thread": 12976, "serial": 25}
+{"kind": "native-destroyed", "thread": 12976, "serial": 20}
+{"kind": "native-destroyed", "thread": 12976, "serial": 21}
+{"kind": "native-destroyed", "thread": 12976, "serial": 22}
+{"kind": "native-destroyed", "thread": 12976, "serial": 23}
+{"kind": "native-destroyed", "thread": 12976, "serial": 24}
+{"kind": "task-start", "thread": 2712, "name": "Save Project JSON\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 14}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 25}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 9}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 11}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 13}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 10}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 12}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 22}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 21}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 24}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 23}
+{"kind": "wrapper-finalized", "thread": 2712, "serial": 20}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 277, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 277}
+{"kind": "task-start", "thread": 2712, "name": "Open Project JSON\u2026"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "task-start", "thread": 2712, "name": "Bounded File Preview"}
+{"kind": "gc-start", "thread": 2712, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 2, "collected": 37, "uncollectable": 0}
+{"kind": "controlled-worker-gc", "thread": 2712, "collected": 37}
+{"kind": "gc-start", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 2712, "generation": 1, "collected": 0, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 2, "collected": 174, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 19}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 18}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 17}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 16}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 15}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 4}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 8}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 3}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 1}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 2}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 5}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 6}
+{"kind": "wrapper-finalized", "thread": 12976, "serial": 7}
+{"kind": "native-destroyed", "thread": 12976, "serial": 15}
+{"kind": "native-destroyed", "thread": 12976, "serial": 16}
+{"kind": "native-destroyed", "thread": 12976, "serial": 17}
+{"kind": "native-destroyed", "thread": 12976, "serial": 18}
+{"kind": "native-destroyed", "thread": 12976, "serial": 19}
+{"kind": "native-destroyed", "thread": 12976, "serial": 1}
+{"kind": "native-destroyed", "thread": 12976, "serial": 2}
+{"kind": "native-destroyed", "thread": 12976, "serial": 3}
+{"kind": "native-destroyed", "thread": 12976, "serial": 4}
+{"kind": "native-destroyed", "thread": 12976, "serial": 5}
+{"kind": "native-destroyed", "thread": 12976, "serial": 6}
+{"kind": "native-destroyed", "thread": 12976, "serial": 7}
+{"kind": "native-destroyed", "thread": 12976, "serial": 8}
+{"kind": "gc-stop", "thread": 12976, "generation": 2, "collected": 7175, "uncollectable": 0}
+{"kind": "gc-start", "thread": 12976, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "gc-stop", "thread": 12976, "generation": 2, "collected": 0, "uncollectable": 0}
+{"kind": "complete", "thread": 12976, "exit_code": 0}

@@ -57,7 +57,9 @@ class SourceAnalysisWidget(QWidget):
         self.source_combo.currentIndexChanged.connect(self._source_selected)
         self.notice = QLabel()
         self.notice.setWordWrap(True)
-        self.parameter_scroll = QScrollArea()
+        # This legacy editor stays hidden outside the layout. It still needs a
+        # native owner so a retained Python wrapper cannot outlive its GUI owner.
+        self.parameter_scroll = QScrollArea(self)
         self.parameter_scroll.setWidgetResizable(True)
         self.parameter_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         self.parameter_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)

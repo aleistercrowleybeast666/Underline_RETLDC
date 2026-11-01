@@ -1,0 +1,44 @@
+{
+  "status": "PASS for the recorded software scope",
+  "baseline_commit": "c1f8ac76f9bbcde1076ef9e48624c920ad161960",
+  "source_freeze": {
+    "head_at_check": "c1f8ac76f9bbcde1076ef9e48624c920ad161960",
+    "files_checked": 215,
+    "changed": []
+  },
+  "ordinary_uninstrumented_runs": [
+    {
+      "scope": "full current suite",
+      "passed": 383,
+      "pytest_seconds": 754.36,
+      "exit_code": 0,
+      "log": "full-owner-after-v1.log",
+      "log_sha256": "cbfb7bad8caf158f388d5350ff88f0647163e44f105fba33f21e467c1cc95c45",
+      "log_file_created_utc": "2026-11-01T06:07:14.734564+00:00",
+      "exit_file_written_utc": "2026-11-01T06:19:54.432521+00:00"
+    },
+    {
+      "scope": "exact original failed collection, excluding only two new owner regression tests",
+      "passed": 381,
+      "pytest_seconds": 445.47,
+      "exit_code": 0,
+      "log": "original381-after.log",
+      "log_sha256": "01745f8e2907f926c2e0e6cee5505511110a8ca9cf882968628a7cc15392d66e",
+      "log_file_created_utc": "2026-11-01T06:20:20.598882+00:00",
+      "exit_file_written_utc": "2026-11-01T06:27:47.868583+00:00"
+    }
+  ],
+  "original_collection_order_and_ids_equal": true,
+  "full_repository_ruff_exit": 0,
+  "diff_check_exit": 0,
+  "gui_worker_destructions_before": 24,
+  "gui_worker_destructions_after": 0,
+  "native_orphan_widgets_after_owner_close_before": 48,
+  "native_orphan_widgets_after_owner_close_after": 0,
+  "gc_disabled": false,
+  "scientific_inputs_or_expectations_relaxed": false,
+  "historical_failures_retained": true,
+  "original_corrupting_native_instruction_captured": false,
+  "physical_desktop_or_hardware_validation": false,
+  "remaining_required_for_this_fix": []
+}

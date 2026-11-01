@@ -1,0 +1,23 @@
+{"phase": "diagnostics.ready", "monotonic_s": 75126.8415349, "thread_id": 24356}
+{"phase": "application.begin", "monotonic_s": 75126.841657, "thread_id": 24356, "locale": "zh_CN", "theme": "light"}
+{"phase": "qapplication.begin", "monotonic_s": 75126.8418219, "thread_id": 24356}
+{"phase": "qapplication.ready", "monotonic_s": 75126.8581138, "thread_id": 24356}
+{"phase": "mainwindow.begin", "monotonic_s": 75126.8608892, "thread_id": 24356}
+{"phase": "mainwindow.ready", "monotonic_s": 75128.723971, "thread_id": 24356}
+{"phase": "window.shown", "monotonic_s": 75128.751926, "thread_id": 24356}
+{"phase": "bounded.locale.begin", "monotonic_s": 75128.9321331, "thread_id": 24356, "locale": "zh_CN"}
+{"phase": "bounded.context_menu.begin", "monotonic_s": 75129.1562342, "thread_id": 24356, "locale": "zh_CN"}
+{"phase": "bounded.context_menu.ready", "monotonic_s": 75129.1889417, "thread_id": 24356, "locale": "zh_CN"}
+{"phase": "bounded.export_dialog.ready", "monotonic_s": 75129.2604989, "thread_id": 24356, "locale": "zh_CN"}
+{"phase": "bounded.svg.ready", "monotonic_s": 75129.3937272, "thread_id": 24356, "locale": "zh_CN"}
+{"phase": "bounded.export.ready", "monotonic_s": 75129.3945027, "thread_id": 24356, "locale": "zh_CN"}
+{"phase": "bounded.locale.begin", "monotonic_s": 75129.3945515, "thread_id": 24356, "locale": "en_US"}
+{"phase": "bounded.context_menu.begin", "monotonic_s": 75129.6094385, "thread_id": 24356, "locale": "en_US"}
+{"phase": "bounded.context_menu.ready", "monotonic_s": 75129.6399801, "thread_id": 24356, "locale": "en_US"}
+{"phase": "bounded.export_dialog.ready", "monotonic_s": 75129.7319522, "thread_id": 24356, "locale": "en_US"}
+{"phase": "bounded.svg.ready", "monotonic_s": 75129.8592674, "thread_id": 24356, "locale": "en_US"}
+{"phase": "bounded.export.ready", "monotonic_s": 75129.8600666, "thread_id": 24356, "locale": "en_US"}
+{"phase": "bounded.complete", "monotonic_s": 75129.9233134, "thread_id": 24356}
+{"phase": "event_loop.exit", "monotonic_s": 75130.4180713, "thread_id": 24356, "result": 0}
+{"phase": "window.closed", "monotonic_s": 75130.4195539, "thread_id": 24356}
+{"phase": "diagnostics.close", "monotonic_s": 75130.4196071, "thread_id": 24356}

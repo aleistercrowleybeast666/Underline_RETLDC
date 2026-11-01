@@ -1,0 +1,6 @@
+{
+  "ProcessId": 26996,
+  "ParentProcessId": 25492,
+  "CreationDate": "2026-11-01T13:56:49.205691+08:00",
+  "CommandLine": "\"D:\\python_software\\Underline_RETLDC\\.venv\\Scripts\\python.exe\" -m pytest --basetemp=.work/0.1.0-software-completion-20261101/native-attach-tests -o cache_dir=.work/0.1.0-software-completion-20261101/native-attach-cache -q"
+}

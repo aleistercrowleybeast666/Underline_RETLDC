@@ -246,8 +246,12 @@ class PlotUiLocalizer(QObject):
                 if action.menu() is not None:
                     retain(action.menu())
 
-        retain(plot.getPlotItem().ctrlMenu)
-        retain(plot.getPlotItem().vb.menu)
+        for menu in (plot.getPlotItem().ctrlMenu, plot.getPlotItem().vb.menu):
+            # Python references can outlive the native plot through failed-task
+            # tracebacks. Native GUI ownership retires menus on the GUI thread,
+            # even if that reference cycle is later collected by a parser worker.
+            menu.setParent(plot, menu.windowFlags())
+            retain(menu)
         self.scene.exportDialog = LocalizedPlotExportDialog(self.scene, service, plot)
         service.locale_changed.connect(self.retranslate)
         self.retranslate()

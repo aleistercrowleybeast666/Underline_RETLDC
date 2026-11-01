@@ -1,0 +1,84 @@
+{"kind": "identity", "thread": 29780, "source": "c1f8ac76f9bbcde1076ef9e48624c920ad161960", "diagnostic_monkeypatch": true, "controlled_worker_gc": true, "global_gc_enabled": true}
+{"kind": "task-start", "thread": 10632, "name": "Detect Parsers"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Automatically detecting table..."}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Parsing source\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 74}
+{"kind": "task-start", "thread": 10632, "name": "Processing data\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 37}
+{"kind": "task-start", "thread": 10632, "name": "Analyzing thrust\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Detect Parsers"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Automatically detecting table..."}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Parsing source\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 74}
+{"kind": "task-start", "thread": 10632, "name": "Bounded File Preview"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 37}
+{"kind": "task-start", "thread": 10632, "name": "Calculating source metrics"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 37}
+{"kind": "task-start", "thread": 10632, "name": "Calculating source metrics"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Calculating source metrics"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Calculating source metrics"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Detecting the theory test interval independently\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Save Project JSON\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Open Project JSON\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Bounded File Preview"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 74}
+{"kind": "task-start", "thread": 10632, "name": "Open Project JSON\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 37}
+{"kind": "task-start", "thread": 10632, "name": "Bounded File Preview"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 74}
+{"kind": "task-start", "thread": 10632, "name": "Analyzing thrust\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 37}
+{"kind": "task-start", "thread": 10632, "name": "Calculating source metrics"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Analyzing thrust\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Calculating source metrics"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Analyzing thrust\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Calculating source metrics"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "created", "thread": 29780, "name": "1:params"}
+{"kind": "created", "thread": 29780, "name": "1:width"}
+{"kind": "created", "thread": 29780, "name": "1:height"}
+{"kind": "created", "thread": 29780, "name": "1:antialias"}
+{"kind": "created", "thread": 29780, "name": "1:background"}
+{"kind": "created", "thread": 29780, "name": "1:invertValue"}
+{"kind": "created", "thread": 29780, "name": "2:params"}
+{"kind": "created", "thread": 29780, "name": "2:width"}
+{"kind": "created", "thread": 29780, "name": "2:height"}
+{"kind": "created", "thread": 29780, "name": "2:antialias"}
+{"kind": "created", "thread": 29780, "name": "2:background"}
+{"kind": "created", "thread": 29780, "name": "2:invertValue"}
+{"kind": "destroyed", "thread": 29780, "name": "2:width"}
+{"kind": "destroyed", "thread": 29780, "name": "2:height"}
+{"kind": "destroyed", "thread": 29780, "name": "2:antialias"}
+{"kind": "destroyed", "thread": 29780, "name": "2:background"}
+{"kind": "destroyed", "thread": 29780, "name": "2:invertValue"}
+{"kind": "destroyed", "thread": 29780, "name": "2:params"}
+{"kind": "task-start", "thread": 10632, "name": "Bounded File Preview"}
+{"kind": "destroyed", "thread": 10632, "name": "1:width"}
+{"kind": "destroyed", "thread": 10632, "name": "1:height"}
+{"kind": "destroyed", "thread": 10632, "name": "1:antialias"}
+{"kind": "destroyed", "thread": 10632, "name": "1:background"}
+{"kind": "destroyed", "thread": 10632, "name": "1:invertValue"}
+{"kind": "destroyed", "thread": 10632, "name": "1:params"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 204573}
+{"kind": "task-start", "thread": 10632, "name": "Save Project JSON\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 131}
+{"kind": "task-start", "thread": 10632, "name": "Open Project JSON\u2026"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 0}
+{"kind": "task-start", "thread": 10632, "name": "Bounded File Preview"}
+{"kind": "controlled-worker-gc", "thread": 10632, "collected": 37}
+{"kind": "complete", "thread": 29780, "exit_code": 0}

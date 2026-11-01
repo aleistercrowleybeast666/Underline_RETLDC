@@ -1,0 +1,56 @@
+"""Diagnostic only: observe new Parameter wrappers; never enumerate all objects."""
+import gc
+import json
+import os
+from pathlib import Path
+import sys
+import threading
+import weakref
+
+os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+import pytest
+from PySide6.QtCore import Qt
+from pyqtgraph.parametertree import Parameter
+from underline_retldc.core.task import TaskManager
+
+stream = Path(__file__).with_name('parameter-gc-trace.jsonl').open('w', encoding='utf8', buffering=1)
+serial = 0
+
+def record(kind, **fields):
+    stream.write(json.dumps(dict(kind=kind, thread=threading.get_ident(), **fields))+'\n')
+
+original = Parameter.__init__
+def initialize(self, **opts):
+    global serial
+    original(self, **opts)
+    serial += 1
+    ident = serial
+    label = str(opts.get('name', ''))
+    record('created', serial=ident, name=label, cls=type(self).__qualname__)
+    self.destroyed.connect(lambda _object=None, token=ident: record('native-destroyed', serial=token), Qt.ConnectionType.DirectConnection)
+    weakref.finalize(self, record, 'wrapper-finalized', serial=ident)
+Parameter.__init__ = initialize
+
+def collect(phase, info):
+    record('gc-'+phase, **info)
+gc.callbacks.append(collect)
+
+submit = TaskManager.submit
+def submit_observed(self, name, operation):
+    def observed(context):
+        record('task-start', name=name)
+        count = gc.collect()
+        record('controlled-worker-gc', collected=count)
+        return operation(context)
+    return submit(self, name, observed)
+TaskManager.submit = submit_observed
+
+record('identity', diagnostic_only=True, forced_worker_gc=True, gc_enabled=gc.isenabled())
+result = pytest.main(['tests/integration/test_theory_overlay.py::test_portable_source_workflow_uses_real_gui_and_generated_fixture', '-q',
+    '--basetemp='+str(Path(__file__).with_name('parameter-gc-tests')),
+    '-o', 'cache_dir='+str(Path(__file__).with_name('parameter-gc-cache'))])
+record('complete', exit_code=int(result))
+gc.callbacks.remove(collect)
+raise SystemExit(result)

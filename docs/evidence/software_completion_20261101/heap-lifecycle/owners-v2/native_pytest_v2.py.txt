@@ -1,0 +1,16 @@
+"""Normal pytest invocation with stdout saved for native debugger capture."""
+import os
+from pathlib import Path
+import sys
+
+root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(root))
+os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
+sys.stdout = Path(__file__).with_name('native-debug-v2-pytest.log').open('w', encoding='utf8', buffering=1)
+sys.stderr = sys.stdout
+import pytest
+
+result = pytest.main(['-v', '--basetemp='+str(Path(__file__).with_name('native-debug-v2-tests')),
+                     '-o', 'cache_dir='+str(Path(__file__).with_name('native-debug-v2-cache'))])
+Path(__file__).with_name('native-debug-v2-pytest.exit').write_text(str(result)+'\n')
+raise SystemExit(result)
