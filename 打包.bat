@@ -30,6 +30,7 @@ if not exist "%CD%\plugins" (
 
 echo [2/8] Running release preflight: pytest...
 "%VENV_PYTHON%" -m pytest
+if not errorlevel 0 goto :native_failure
 if errorlevel 1 (
     echo ERROR: pytest failed. Portable build was not started.
     if not defined CI pause
@@ -38,6 +39,7 @@ if errorlevel 1 (
 
 echo [3/8] Running release preflight: Ruff...
 "%VENV_PYTHON%" -m ruff check .
+if not errorlevel 0 goto :native_failure
 if errorlevel 1 (
     echo ERROR: Ruff failed. Portable build was not started.
     if not defined CI pause
@@ -46,9 +48,11 @@ if errorlevel 1 (
 
 echo [4/8] Checking PyInstaller...
 "%VENV_PYTHON%" -c "import PyInstaller" >nul 2>nul
+if not errorlevel 0 goto :native_failure
 if errorlevel 1 (
     echo PyInstaller is not installed. Installing it into .venv...
     "%VENV_PYTHON%" -m pip install "pyinstaller>=6.21"
+    if not errorlevel 0 goto :native_failure
     if errorlevel 1 (
         echo ERROR: PyInstaller installation failed.
         if not defined CI pause
@@ -57,6 +61,12 @@ if errorlevel 1 (
 )
 
 echo [5/8] Building the one-folder application...
+rem Bind the collected folder to this exact invocation, even if an older EXE exists.
+if not exist "%CD%\build" mkdir "%CD%\build"
+set "BUILD_ID=%CD%\build\underline-build-invocation.txt"
+"%VENV_PYTHON%" -c "import sys,uuid;from pathlib import Path;Path(sys.argv[1]).write_text(uuid.uuid4().hex,encoding='ascii')" "%BUILD_ID%"
+if not errorlevel 0 goto :native_failure
+if errorlevel 1 exit /b 1
 "%VENV_PYTHON%" -m PyInstaller ^
     --noconfirm ^
     --clean ^
@@ -67,6 +77,7 @@ echo [5/8] Building the one-folder application...
     --workpath "%WORK_DIR%" ^
     --specpath "%CD%\build" ^
     --paths "%CD%\src" ^
+    --add-data "%BUILD_ID%;." ^
     --add-data "%CD%\src\underline_retldc\i18n;underline_retldc\i18n" ^
     --collect-data pyqtgraph ^
     --hidden-import csv ^
@@ -85,9 +96,17 @@ echo [5/8] Building the one-folder application...
     --hidden-import underline_retldc.plugin_api.two_column ^
     --hidden-import underline_retldc.plugins.measurement_export ^
     "%CD%\main.py"
+if not errorlevel 0 goto :native_failure
 if errorlevel 1 (
     echo ERROR: PyInstaller build failed.
     if not defined CI pause
+    exit /b 1
+)
+
+fc /b "%BUILD_ID%" "%DIST_DIR%\_internal\underline-build-invocation.txt" >nul
+if not errorlevel 0 goto :native_failure
+if errorlevel 1 (
+    echo ERROR: The collected application does not belong to this build invocation.
     exit /b 1
 )
 
@@ -136,6 +155,7 @@ for %%F in (Qt6Pdf.dll Qt6Quick.dll Qt6Qml.dll Qt6QmlMeta.dll Qt6QmlModels.dll Q
 )
 
 robocopy "%CD%\plugins" "%DIST_DIR%\plugins" /E /XD __pycache__ .pytest_cache /XF *.pyc *.pyo /NFL /NDL /NJH /NJS /NP >nul
+if not errorlevel 0 goto :native_failure
 if errorlevel 8 (
     echo ERROR: Failed to copy bundled plugins.
     if not defined CI pause
@@ -144,10 +164,13 @@ if errorlevel 8 (
 
 rem A candidate carries the public manuals and upstream notices, not local review notes or test logs.
 robocopy "%CD%\docs" "%DIST_DIR%\docs" Architecture.md Analysis.md Calibration.md Data_Formats.md Plugin_API.md VERSION.md Theoretical_Curves.md TreeDiagram_Export_Contract.md Recorded_Data_Showcase.md Synthetic_Overlay_Example.md Qt_*.md /NFL /NDL /NJH /NJS /NP >nul
+if not errorlevel 0 goto :native_failure
 if errorlevel 8 exit /b 1
 robocopy "%CD%\docs\assets" "%DIST_DIR%\docs\assets" /E /NFL /NDL /NJH /NJS /NP >nul
+if not errorlevel 0 goto :native_failure
 if errorlevel 8 exit /b 1
 robocopy "%CD%\docs\third_party" "%DIST_DIR%\docs\third_party" /E /NFL /NDL /NJH /NJS /NP >nul
+if not errorlevel 0 goto :native_failure
 if errorlevel 8 (
     echo ERROR: Failed to copy documentation.
     if not defined CI pause
@@ -155,6 +178,7 @@ if errorlevel 8 (
 )
 
 xcopy "%CD%\examples\*" "%DIST_DIR%\examples\" /E /I /Y /Q >nul
+if not errorlevel 0 goto :native_failure
 if errorlevel 1 (
     echo ERROR: Failed to copy examples.
     if not defined CI pause
@@ -163,6 +187,7 @@ if errorlevel 1 (
 
 if exist "%CD%\presets" (
     robocopy "%CD%\presets" "%DIST_DIR%\presets" /E /XD __pycache__ /XF *.pyc *.pyo /NFL /NDL /NJH /NJS /NP >nul
+    if not errorlevel 0 goto :native_failure
     if errorlevel 8 (
         echo ERROR: Failed to copy bundled Tabular presets.
         if not defined CI pause
@@ -171,6 +196,7 @@ if exist "%CD%\presets" (
 )
 
 robocopy "%CD%\contracts\motor-test-package" "%DIST_DIR%\contracts\motor-test-package" /E /NFL /NDL /NJH /NJS /NP >nul
+if not errorlevel 0 goto :native_failure
 if errorlevel 8 exit /b 1
 copy /Y "%CD%\README.txt" "%DIST_DIR%\README.txt" >nul
 copy /Y "%CD%\新增解析器_PROMPT.txt" "%DIST_DIR%\新增解析器_PROMPT.txt" >nul
@@ -179,6 +205,7 @@ copy /Y "%CD%\新增校准配置_PROMPT.txt" "%DIST_DIR%\新增校准配置_PROM
 rem Preserve upstream documents and any owner-selected root legal files.
 rem This collects notices; it does not select a project license or approve release.
 "%VENV_PYTHON%" "%CD%\scripts\collect_licenses.py" --output "%DIST_DIR%"
+if not errorlevel 0 goto :native_failure
 if errorlevel 1 (
     echo ERROR: Failed to collect third-party license documents.
     if not defined CI pause
@@ -193,6 +220,7 @@ if not exist "%DIST_DIR%\%APP_NAME%.exe" (
 
 echo [7/8] Smoke-testing the packaged executable in light mode...
 start "" /wait "%DIST_DIR%\%APP_NAME%.exe" --smoke-test --theme light
+if not errorlevel 0 goto :native_failure
 if errorlevel 1 (
     echo ERROR: Packaged light-mode smoke test failed.
     if not defined CI pause
@@ -201,6 +229,7 @@ if errorlevel 1 (
 
 echo [8/8] Smoke-testing the packaged executable in dark mode...
 start "" /wait "%DIST_DIR%\%APP_NAME%.exe" --smoke-test --theme dark
+if not errorlevel 0 goto :native_failure
 if errorlevel 1 (
     echo ERROR: Packaged dark-mode smoke test failed.
     if not defined CI pause
@@ -214,3 +243,8 @@ echo Program: %DIST_DIR%\%APP_NAME%.exe
 echo Distribute the entire %APP_NAME% folder, not the EXE alone.
 if not defined CI pause
 exit /b 0
+
+:native_failure
+echo ERROR: A native process terminated abnormally. Candidate rejected.
+if not defined CI pause
+exit /b 1

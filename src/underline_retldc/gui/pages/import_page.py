@@ -52,6 +52,7 @@ class ImportPage(QWidget):
     OFFSET_ROLE = int(Qt.ItemDataRole.UserRole) + 3
     PARSED_ROLE = int(Qt.ItemDataRole.UserRole) + 4
     ENTRY_ID_ROLE = int(Qt.ItemDataRole.UserRole) + 5
+    DETAILS_ROLE = int(Qt.ItemDataRole.UserRole) + 6
 
     def __init__(
         self,
@@ -168,6 +169,7 @@ class ImportPage(QWidget):
             summary_layout.addRow(self.summary_labels[key], self.summary_values[key])
 
         self.diagnostics_group = QGroupBox()
+        self.diagnostics_group.hide()
         self.diagnostics_list = QListWidget()
         diagnostics_layout = QVBoxLayout(self.diagnostics_group)
         diagnostics_layout.addWidget(self.diagnostics_list)
@@ -208,9 +210,7 @@ class ImportPage(QWidget):
                 combo.setItemText(index, t(f"source.{kind.value}"))
         for index in range(self.source_list.count()):
             item = self.source_list.item(index)
-            kind = SourceKind(item.data(self.KIND_ROLE))
-            details = item.text().split("] ", 1)[-1]
-            item.setText(f"[{t(f'source.{kind.value}')}] {details}")
+            self._source_row_render(item)
         self.source_label.setText(t("import.source_file"))
         self.browse_button.setText(t("import.add_sources"))
         self.remove_source_button.setText(t("import.remove_source"))
@@ -417,6 +417,21 @@ class ImportPage(QWidget):
         return tuple(str(self.source_list.item(i).data(self.ENTRY_ID_ROLE))
                      for i in range(self.source_list.count()))
 
+    def _source_row_render(self, item: QListWidgetItem) -> None:
+        t = self._translations.translate
+        kind = SourceKind(item.data(self.KIND_ROLE))
+        prefix = f"[{t(f'source.{kind.value}')}] "
+        details = item.data(self.DETAILS_ROLE)
+        if isinstance(details, dict):
+            values = dict(details)
+            if values.pop("parsed_status", False):
+                values["status"] = t("import.status_parsed")
+            item.setText(prefix + t("import.source_summary", **values))
+            item.setToolTip(str(item.data(Qt.ItemDataRole.UserRole)) + "\n" +
+                            t("import.source_details", **values))
+        else:
+            item.setText(prefix + item.text().split("] ", 1)[-1])
+
     def set_source_details(
         self,
         source: Path,
@@ -441,17 +456,12 @@ class ImportPage(QWidget):
                 continue
             item.setData(self.PARSED_ROLE, True)
             item.setData(self.SOURCE_ID_ROLE, source_id)
-            item.setText(
-                f"[{self._translations.translate(f'source.{kind.value}')}] " +
-                self._translations.translate(
-                    "import.source_details",
-                    file=item_path.name,
-                    parser=parser_id,
-                    stream=stream_name,
-                    channels=channel_count,
-                    status=status,
-                )
-            )
+            item.setData(self.DETAILS_ROLE, {
+                "file": item_path.name, "parser": parser_id, "stream": stream_name,
+                "channels": channel_count, "status": status,
+                "parsed_status": status == self._translations.translate("import.status_parsed"),
+            })
+            self._source_row_render(item)
             if index == self.source_list.currentRow():
                 self.source_kind_combo.setEnabled(False)
                 self.time_offset_edit.setEnabled(kind != SourceKind.THEORETICAL)
@@ -762,9 +772,11 @@ class ImportPage(QWidget):
                 f"[{diagnostic.severity.value}] {diagnostic.code}{location}: {message}"
             )
 
+        self.diagnostics_group.setVisible(self.diagnostics_list.count() > 0)
+
     def clear_results(self) -> None:
         self.recommendation_table.setRowCount(0)
         for value in self.summary_values.values():
             value.setText("—")
-        self.diagnostics_list.clear()
+        self.set_diagnostics(())
         self.clear_parser_ambiguity()

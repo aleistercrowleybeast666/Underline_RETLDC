@@ -214,6 +214,18 @@ def test_raw_property_cancel_revokes_pending_calibration(tmp_path, monkeypatch):
     window._source_parse()
     _task_wait(window)
     app.processEvents()
+    from underline_retldc.core.diagnostics import Diagnostic, DiagnosticSeverity
+
+    imported = window.import_page
+    imported.set_diagnostics(())
+    assert imported.diagnostics_group.isHidden()
+    imported.set_diagnostics([Diagnostic(DiagnosticSeverity.WARNING, "fixture", "Check clock")])
+    assert not imported.diagnostics_group.isHidden() and imported.diagnostics_list.count() == 1
+    item = imported.source_list.currentItem()
+    assert "builtin.parser.tr_f" not in item.text()
+    assert "builtin.parser.tr_f" in item.toolTip()
+    imported.clear_results()
+    assert imported.diagnostics_group.isHidden()
     button = window.setup_page.input_help
     assert button.visibleRegion().contains(button.rect().center())
     button.click()

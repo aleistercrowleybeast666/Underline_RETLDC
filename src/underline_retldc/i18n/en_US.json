@@ -631,5 +631,6 @@
   "setup.select_input": "Select the primary measurement channel",
   "setup.calibration_properties": "Channel and calibration properties",
   "setup.channel_details": "Advanced channel fields",
-  "export.project_motor_summary": "Propellant {propellant_mass_kg} kg · Total {total_motor_mass_kg} kg · Diameter {diameter_mm} mm · Length {length_mm} mm"
+  "export.project_motor_summary": "Propellant {propellant_mass_kg} kg · Total {total_motor_mass_kg} kg · Diameter {diameter_mm} mm · Length {length_mm} mm",
+  "import.source_summary": "{file} · Channels: {channels} · {status}"
 }
