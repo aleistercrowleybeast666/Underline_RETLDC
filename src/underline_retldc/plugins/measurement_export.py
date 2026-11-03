@@ -7,8 +7,6 @@ from enum import StrEnum
 from pathlib import Path
 
 import numpy as np
-from PySide6.QtCore import QPointF, QRectF, Qt
-from PySide6.QtGui import QColor, QFont, QImage, QPainter, QPen, QPolygonF
 
 from underline_retldc.core.channel import Channel
 from underline_retldc.core.dataset import Dataset
@@ -71,6 +69,9 @@ def MeasurementPng_Write(
     reference_value: float | None = None,
     reference_label: str | None = None,
 ) -> MeasurementWriteResult:
+    from PySide6.QtCore import QPointF, QRectF, Qt
+    from PySide6.QtGui import QColor, QFont, QImage, QPainter, QPen, QPolygonF
+
     selected = tuple(channels)
     if not selected:
         return MeasurementWriteResult.SKIPPED_NO_CHANNEL

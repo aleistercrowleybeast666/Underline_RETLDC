@@ -591,6 +591,7 @@ class AnalysisDiagnosticsPanel(QGroupBox):
             )
         if notice:
             self.list.addItem(notice)
+        self.setVisible(self.list.count() > 0)
 
 
 class AnalysisWorkspaceShell(QWidget):

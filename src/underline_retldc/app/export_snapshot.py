@@ -10,6 +10,7 @@ from typing import Any
 
 from underline_retldc.app.session import AnalysisSession
 from underline_retldc.core.dataset import Dataset
+from underline_retldc.core.motor_parameters import MotorPhysicalParameters
 from underline_retldc.core.project_data import ChannelReference, SourceKind
 from underline_retldc.core.registry import PluginRegistry
 from underline_retldc.plugin_api.common import AnalysisResult
@@ -44,7 +45,6 @@ def ExportSnapshot_Build(
     registry: PluginRegistry,
     *,
     group_id: str = "thrust",
-    motor_metadata: Mapping[str, Any] | None = None,
 ) -> ExportSnapshot:
     project = session.project_data
     bindings = project.primary_channels
@@ -65,6 +65,11 @@ def ExportSnapshot_Build(
     if group_id not in {"chamber_pressure", "temperature"}:
         if processing is None or analysis is None:
             raise ValueError("Complete the primary thrust processing and analysis before export")
+        recorded = analysis.metadata.get("motor_parameters")
+        if isinstance(recorded, Mapping) and (
+            MotorPhysicalParameters.from_metadata(recorded) != session.motor_parameters
+        ):
+            raise ValueError("Motor parameters changed after analysis; recalculate before export")
         dataset = processing.dataset
         channel_id = analysis.metadata.get("channel_id")
         if channel_id not in processing.output_channel_ids:
@@ -156,7 +161,7 @@ def ExportSnapshot_Build(
         "ignition": float(active[0]) if active is not None else None,
         "burnout": float(active[1]) if active is not None else None,
         "motor_metadata": deepcopy(
-            dict(motor_metadata if motor_metadata is not None else session.motor_metadata)
+            dict(session.motor_metadata)
         ),
         "processing_metadata": deepcopy(dict(processing.metadata)) if processing else {},
         "project_name": session.project_path.name if session.project_path else None,

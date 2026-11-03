@@ -38,6 +38,10 @@ class SchemaForm(QWidget):
     def field_names(self) -> tuple[str, ...]:
         return tuple(self._editors)
 
+    def set_field_visible(self, name: str, visible: bool) -> None:
+        if name in self._editors:
+            self._layout.setRowVisible(self._editors[name], visible)
+
     def field_widget(self, field_name: str) -> QWidget:
         try:
             return self._editors[field_name]
@@ -80,6 +84,15 @@ class SchemaForm(QWidget):
             field_name: self._editor_value(editor)
             for field_name, editor in self._editors.items()
         }
+
+    def validated_values(self) -> dict[str, Any]:
+        for name, editor in self._editors.items():
+            if isinstance(editor, (QSpinBox, QDoubleSpinBox)):
+                if not editor.hasAcceptableInput():
+                    editor.setFocus()
+                    raise ValueError(f"{self._labels[name].text()}: {editor.text()}")
+                editor.interpretText()
+        return self.values()
 
     def set_values(self, values: Mapping[str, Any]) -> None:
         for field_name, value in values.items():

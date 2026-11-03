@@ -40,6 +40,13 @@ class PluginRegistry:
         self._records: list[PluginRecord] = []
         self._plugins: dict[str, Any] = {}
 
+    def loaded_copy(self) -> PluginRegistry:
+        """Retain the actual loaded implementations when discovering additions."""
+        result = PluginRegistry()
+        result._records = [item for item in self._records if item.result == PluginLoadResult.LOADED]
+        result._plugins = dict(self._plugins)
+        return result
+
     def register(
         self,
         plugin: Any,

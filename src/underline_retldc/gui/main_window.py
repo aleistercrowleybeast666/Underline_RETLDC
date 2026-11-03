@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from underline_retldc.app.export_batch import ExportBatch_Stage
 from underline_retldc.app.export_snapshot import ExportSnapshot_Build
 from underline_retldc.app.project_pipeline import ProjectPipeline
 from underline_retldc.app.session import AnalysisSession, ChannelCalibrationState
@@ -113,7 +114,7 @@ from underline_retldc.core.tabular import (
 )
 from underline_retldc.core.tabular_auto_detector import TabularAutoDetector
 from underline_retldc.core.task import TaskHandle, TaskManager, TaskResult
-from underline_retldc.core.units import Quantity_Dimension
+from underline_retldc.core.units import Quantity_Dimension, Unit_AreConvertible
 from underline_retldc.core.workspace_capabilities import WorkspaceCapabilities_Default
 from underline_retldc.gui.pages.analyze_page import AnalyzePage
 from underline_retldc.gui.pages.export_page import ExportDialog
@@ -423,6 +424,10 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self.project_menu.addAction(self.save_project_as_action)
         self.project_menu.addAction(self.open_project_action)
         self.project_menu.addSeparator()
+        self.undo_science_action = QAction(self)
+        self.undo_science_action.setEnabled(False)
+        self.undo_science_action.triggered.connect(self._science_undo)
+        self.project_menu.addAction(self.undo_science_action)
         self.project_menu.addAction(self.new_project_action)
         self.project_menu.addAction(self.exit_action)
 
@@ -447,6 +452,12 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self.addToolBar(self.toolbar)
 
         self._project_title: str | None = None
+        self._undo_document = None
+        self._saved_key = None
+        self._refresh_pending = False
+        self._leave_after_save = None
+        self.document_status = QLabel()
+        self.statusBar().addPermanentWidget(self.document_status)
         self._signals_connect()
         self._plugins_refresh()
         self.process_page.set_theme(self._theme)
@@ -470,7 +481,8 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self._retranslate()
         self.navigation.setCurrentRow(0)
         self.resize(1280, 820)
-        self.setMinimumSize(980, 640)
+        self.setMinimumSize(900, 600)
+        self._mark_saved()
 
     def _signals_connect(self) -> None:
         for plot in self._plot_widgets().values():
@@ -489,9 +501,14 @@ class MainWindow(QMainWindow, ProjectPipeline):
             display_page.theory_overlay.curve_selected.connect(
                 result_page.source_analysis.select_reference,
             )
-        for name in MOTOR_PHYSICAL_FIELDS:
-            self.setup_page.motor_edits[name].textChanged.connect(self._shared_mass_changed)
+        for editor in self.setup_page.motor_edits.values():
+            editor.textChanged.connect(self._document_state_update)
+            editor.textChanged.connect(self._shared_mass_changed)
+        self.setup_page.motor_applied.connect(self._shared_mass_changed)
+        self.setup_page.calibration_cancelled.connect(self.setup_page._channel_update)
+        self.setup_page.input_help.clicked.connect(self._input_help_show)
         for page in (self.process_page, *self._measurement_pages()):
+            page.theory_overlay.add_requested.connect(self._reference_add)
             page.theory_overlay.display_changed.connect(self._source_display_changed)
             page.theory_overlay.align_requested.connect(self._theory_align)
         self.import_page.browse_requested.connect(self._source_browse)
@@ -517,7 +534,11 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self.process_page.detect_requested.connect(
             lambda: self._burn_detect("thrust")
         )
-        self.process_page.apply_requested.connect(self._processing_apply)
+        self.process_page.apply_requested.connect(lambda: self._processing_apply(recalculate=True))
+        self.process_page.restore_button.clicked.connect(self._processing_restore)
+        self.process_page.processor_combo.currentIndexChanged.connect(self._document_state_update)
+        self.process_page.processor_form.value_changed.connect(self._document_state_update)
+        self.export_dialog.edit_project_parameters.clicked.connect(self._motor_editor_focus)
         self.process_page.plugins_requested.connect(self._plugins_dialog_show)
         self.process_page.regions_changed.connect(self._regions_store)
         self.process_page.candidate_selected.connect(
@@ -604,6 +625,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self.plugins_page.set_records(self.registry.records)
         self.project_menu.setTitle(t("menu.file"))
         self.new_project_action.setText(t("menu.project.new"))
+        self.undo_science_action.setText(t("project.undo_science"))
         self.open_raw_action.setText(t("menu.project.open_raw"))
         self.open_project_action.setText(t("menu.project.open"))
         self.save_project_action.setText(t("menu.project.save"))
@@ -902,6 +924,9 @@ class MainWindow(QMainWindow, ProjectPipeline):
             self._primary_channels_update()
             return
         previous = self.session.project_data.primary_channels
+        if previous == bindings:
+            return
+        self._science_checkpoint()
         self.session.project_data = self.session.project_data.with_primary_channels(
             bindings
         )
@@ -1051,13 +1076,51 @@ class MainWindow(QMainWindow, ProjectPipeline):
             page._results_refresh()
         self._calculation_action_refresh()
 
-    def _project_mass_value(self) -> float | None:
-        text = self.setup_page.motor_edits["propellant_mass_kg"].text().strip()
+    def _reference_add(self) -> None:
+        self._workspace_select("project")
+        combo = self.import_page.new_kind_combo
+        previous = combo.currentIndex()
+        combo.setCurrentIndex(combo.findData(SourceKind.THEORETICAL.value))
         try:
-            mass = float(text)
-        except ValueError:
-            return None
-        return mass if np.isfinite(mass) else None
+            self._source_browse()
+        finally:
+            combo.setCurrentIndex(previous)
+
+    def _input_help_show(self) -> None:
+        reference = self._input_blocker()
+        if reference is None:
+            self.project_page.setup_scroll.ensureWidgetVisible(
+                self.project_page.primary_channels.thrust_combo)
+            self.project_page.primary_channels.thrust_combo.setFocus()
+            return
+        for index in range(self.import_page.source_list.count()):
+            item = self.import_page.source_list.item(index)
+            if item.data(self.import_page.SOURCE_ID_ROLE) == reference.source_id:
+                self.import_page.source_list.setCurrentRow(index)
+                break
+        self.setup_page.advanced_button.setChecked(True)
+        combo = self.setup_page.channel_combo
+        index = combo.findData(reference.channel_id)
+        if index >= 0:
+            combo.setCurrentIndex(index)
+        self.setup_page.calibration_combo.setFocus()
+        self.setup_page.calibration_scroll.ensureWidgetVisible(self.setup_page.calibration_combo)
+
+    def _input_blocker(self) -> ChannelReference | None:
+        bindings = self.session.project_data.primary_channels
+        for reference, unit in ((bindings.thrust, "N"), (bindings.chamber_pressure, "Pa"),
+                                *((item, "K") for item in bindings.temperature_channels)):
+            if reference is not None:
+                try:
+                    dataset, key = self._calibrated_binding_resolve(reference)
+                    if not Unit_AreConvertible(dataset.channel(key).data_unit, unit):
+                        return reference
+                except (KeyError, ValueError):
+                    return reference
+        return None
+
+    def _project_mass_value(self) -> float | None:
+        return self.session.motor_parameters.propellant_mass_kg
 
     def _motor_parameters_sync(self) -> MotorPhysicalParameters:
         for name in MOTOR_PHYSICAL_FIELDS:
@@ -1080,6 +1143,17 @@ class MainWindow(QMainWindow, ProjectPipeline):
     def _shared_mass_changed(self) -> None:
         previous = self.session.motor_parameters
         parameters = self._motor_parameters_sync()
+        for name in ("motor_designation", "manufacturer", "delay_s"):
+            value = self.setup_page.motor_edits[name].text().strip()
+            if not value:
+                self.session.motor_metadata.pop(name, None)
+            elif name != "delay_s":
+                self.session.motor_metadata[name] = value
+            else:
+                try:
+                    self.session.motor_metadata[name] = float(value)
+                except ValueError:
+                    self.session.motor_metadata.pop(name, None)
         for key, state in tuple(self.session.source_analyses.items()):
             if (self._source_uses_shared_motor(state.config)
                     and state.config.workspace_id == "thrust_analysis"
@@ -1359,6 +1433,13 @@ class MainWindow(QMainWindow, ProjectPipeline):
         )
 
     def _export_availability_update(self) -> None:
+        blocker = self._input_blocker()
+        bindings = self.session.project_data.primary_channels
+        missing = bool(self.session.project_data.sources) and not (
+            bindings.thrust or bindings.chamber_pressure or bindings.temperature_channels)
+        self.setup_page.input_help.setVisible(blocker is not None or missing)
+        self.setup_page.input_help.setText(self.translations.translate(
+            "setup.needs_calibration" if blocker else "setup.select_input"))
         self.export_dialog.set_completed_analysis_ids(self._completed_analysis_ids())
         capabilities: set[str] = set()
         bindings = self.session.project_data.primary_channels
@@ -1401,6 +1482,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
             capabilities.add("physical_force")
         self.export_dialog.set_completed_capability_ids(tuple(sorted(capabilities)))
         self._calculation_action_refresh()
+        self._document_state_update()
 
     def _task_start(
         self,
@@ -1420,7 +1502,8 @@ class MainWindow(QMainWindow, ProjectPipeline):
             return None
         self._active_success = success
         self._active_failure = failure
-        self._active_valid = valid
+        started_session = self.session
+        self._active_valid = lambda: self.session is started_session and (valid is None or valid())
         self._active_task = self.task_manager.submit(name, operation)
         self._active_task_indeterminate = indeterminate
         if indeterminate:
@@ -1467,6 +1550,14 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self._active_failure = None
         self._active_task_indeterminate = False
         self.progress_bar.setRange(0, 1000)
+        if self._leave_after_save is not None:
+            proceed = self._leave_after_save
+            self._leave_after_save = None
+            self._project_save(after_save=proceed)
+            return
+        if self._refresh_pending:
+            self._refresh_pending = False
+            QTimer.singleShot(0, self, self._plugins_refresh)
         if valid is not None and not valid():
             return
         if handle.state is TaskResult.SUCCESS:
@@ -1504,7 +1595,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
             self._active_task.cancel()
 
     def _error_show(self, error: BaseException) -> None:
-        message = str(error)
+        message = str(error).strip() or type(error).__name__
         if isinstance(error, PluginInstallError):
             message = self._plugin_install_error_text(error)
         elif isinstance(error, ProjectSourceHashMismatchError):
@@ -1553,7 +1644,92 @@ class MainWindow(QMainWindow, ProjectPipeline):
     def _last_directory_store(self, path: Path) -> None:
         self.settings.set_last_directory(path if path.is_dir() else path.parent)
 
+    def _science_checkpoint(self) -> None:
+        if self.session.project_data.sources:
+            self._undo_document = deepcopy(self._project_document_create())
+            self.undo_science_action.setEnabled(True)
+
+    def _science_undo(self) -> None:
+        if self._undo_document is not None and self._active_task is None:
+            path = self.session.project_path or (
+                self.settings.last_directory() / "Untitled.retldc.json"
+            )
+            document = replace(
+                self._undo_document,
+                locale=self.translations.locale,
+                plot_views=self._plot_views_capture(),
+                plot_analysis_active_only=self.session.plot_analysis_active_only,
+                reference_pressure_pa=self.chamber_pressure_page.reference_pressure_pa,
+                pressure_reference_visible=self.chamber_pressure_page.reference_line_visible,
+                motor_metadata=deepcopy(self.session.motor_metadata),
+            )
+            self._restore_project_document(document, path, undo=True)
+
+    def _project_key(self) -> dict[str, Any]:
+        try:
+            # Dirty-state reads must not capture a live viewport into a session
+            # that is still restoring the project's saved axes.
+            values = self._project_document_create(capture_views=False).to_dict()
+        except (ValueError, KeyError, OverflowError) as exc:
+            return {"invalid_input": str(exc),
+                    "motor_input": [item.text() for item in self.setup_page.motor_edits.values()]}
+        # Transient workspace selection, chart viewport and global locale are view state.
+        for key in ("locale", "plot_views", "plot_analysis_active_only",
+                    "export_settings", "diagnostics"):
+            values.pop(key, None)
+        return values
+
+    def _mark_saved(self) -> None:
+        self._saved_key = self._project_key()
+        self._document_state_update()
+
+    def _document_state_update(self, *_args) -> None:
+        if self._saved_key is None:
+            return
+        draft = self._processing_draft() is not None
+        result = self.session.analysis_result is not None
+        t = self.translations.translate
+        self.process_page.restore_button.setVisible(draft)
+        self.process_page.draft_status.setText(t(
+            "process.previous_result" if draft and result else "process.unapplied" if draft
+            else "process.valid" if result else "process.needs_calculation"
+        ))
+        status = t("project.unsaved" if self._project_key() != self._saved_key
+                   else "project.saved" if self.session.project_path else "project.new")
+        self.document_status.setText(
+            status + " · " + t("process.unapplied") if draft else status)
+        self.analyze_page.applied_notice.setText(t("process.previous_result"))
+        self.analyze_page.applied_notice.setVisible(draft and result)
+
+    def _leave_decision(self):
+        buttons = QMessageBox.StandardButton
+        return QMessageBox.warning(
+            self, self.translations.translate("project.unsaved"),
+            self.translations.translate("project.leave_prompt"),
+            buttons.Save | buttons.Discard | buttons.Cancel, buttons.Cancel,
+        )
+
+    def _leave_request(self, proceed: Callable[[], None]) -> None:
+        if self._saved_key == self._project_key():
+            proceed()
+            return
+        decision = self._leave_decision()
+        if decision == QMessageBox.StandardButton.Discard:
+            proceed()
+        elif decision == QMessageBox.StandardButton.Save:
+            if self._active_task is not None:
+                self._active_task.cancel()
+                self._active_valid = lambda: False
+                self._leave_after_save = proceed
+            else:
+                self._project_save(after_save=proceed)
+
     def _project_new(self) -> None:
+        self._leave_request(self._project_new_confirmed)
+
+    def _project_new_confirmed(self) -> None:
+        self._undo_document = None
+        self.undo_science_action.setEnabled(False)
         self._import_pending_invalidate()
         self._import_drafts.clear()
         self._import_editor_entry = ""
@@ -1592,6 +1768,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self.process_page.set_processing_config(None, {})
         self.navigation.setCurrentRow(0)
         self._retranslate()
+        self._mark_saved()
 
     def _source_open_dialog(self) -> None:
         sources, _filter = QFileDialog.getOpenFileNames(
@@ -1755,6 +1932,8 @@ class MainWindow(QMainWindow, ProjectPipeline):
             and (not source_id or candidate_id == source_id)
             and (source_kind is None or source.source_kind == source_kind)
         }
+        if removed_source_ids:
+            self._science_checkpoint()
         if not removed_source_ids:
             if (
                 self._recommendation_source is not None
@@ -2699,6 +2878,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
         )
 
     def _calibration_apply(self) -> None:
+        epoch = self.setup_page.calibration_epoch
         active_stream = self._active_stream()
         source_dataset = (
             active_stream.dataset
@@ -2716,7 +2896,6 @@ class MainWindow(QMainWindow, ProjectPipeline):
         try:
             plugin_id = self.setup_page.calibration_id()
             config = self.setup_page.calibration_config()
-            metadata = self.setup_page.motor_metadata()
             if plugin_id is None:
                 raise ValueError("Select a calibration model")
             model = self.registry.get(plugin_id)
@@ -2857,8 +3036,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
                 self.session.channel_calibrations = states
                 self.session.calibrated_dataset = dataset
             if not theory_source:
-                self.session.motor_metadata = metadata
-            self.setup_page.set_channels(
+                self.setup_page.set_channels(
                 list(raw_dataset.channels.values()),
                 preferred_id=str(config["input_channel_id"]),
             )
@@ -2872,7 +3050,15 @@ class MainWindow(QMainWindow, ProjectPipeline):
                 self.translations.translate("status.calibration_applied"), 5000
             )
 
-        self._task_start(self.translations.translate("setup.apply_calibration"), operation, success)
+            if self.setup_page.calibration_dialog.isVisible():
+                self.setup_page.calibration_dialog.accept()
+
+        self._task_start(self.translations.translate("setup.apply_calibration"), operation, success,
+                         valid=lambda: self.setup_page.calibration_epoch == epoch
+                         and self._active_stream() is active_stream
+                         and self.setup_page.calibration_id() == plugin_id
+                         and self.setup_page.calibration_config() == config
+                         and self.setup_page.channel_interpretation() == interpretation)
 
     def _calibration_channel_changed(self, channel_id: str) -> None:
         state = self._active_channel_calibrations().get(channel_id)
@@ -3010,7 +3196,17 @@ class MainWindow(QMainWindow, ProjectPipeline):
             if detections and not all(detections.values()):
                 self._theory_notice("theory.no_interval")
 
-        self._task_start(task_name, operation, success)
+        project = self.session.project_data
+        polarity = self.session.thrust_polarity
+        regions = deepcopy(self.session.regions)
+        calibrated = dict(self.session.calibrated_streams)
+        self._task_start(task_name, operation, success, valid=lambda: (
+            self.session.project_data is project and self.session.thrust_polarity == polarity
+            and self.session.regions == regions and all(
+                self.session.calibrated_streams.get(key) is value
+                for key, value in calibrated.items()
+            )
+        ))
 
 
     def _segmentation_reference_name(self) -> str:
@@ -3112,6 +3308,8 @@ class MainWindow(QMainWindow, ProjectPipeline):
                 if current_candidate is not None
                 else 0
             )
+        if changed:
+            self._science_checkpoint()
         self.session.regions = normalized
         self.session.segmentation_manually_modified = bool(manually_modified)
         if changed:
@@ -3126,20 +3324,57 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self._segmentation_views_sync(selected_index=selected_index)
         self._export_availability_update()
 
-    def _processing_apply(self) -> None:
+    def _motor_editor_focus(self) -> None:
+        self.export_dialog.reject()
+        self._workspace_select("project")
+        self.setup_page.edit_motor_parameters()
+
+    def _processing_draft(self) -> dict[str, Any] | None:
+        page = self.process_page
+        plugin_id = page.processor_id()
+        values = page.processor_form.values()
+        applied = self.session.processor_config
+        if plugin_id == self.session.processor_id and all(
+            applied.get(key) == value for key, value in values.items()
+        ):
+            return None
+        return {"plugin_id": plugin_id, "parameters": values}
+
+    def _processing_restore(self) -> None:
+        # Regions are a separate project owner; restoring form fields must not rewind them.
+        self.process_page.set_processing_config(
+            self.session.processor_id,
+            {key: value for key, value in self.session.processor_config.items()
+             if key != "regions"},
+        )
+        self._document_state_update()
+
+    def _processing_apply(self, *, recalculate: bool = False) -> None:
         binding = self.session.project_data.primary_channels.thrust
         if binding is None:
             self._error_show(ValueError("Select the Primary Thrust Channel before processing"))
             return
         try:
             dataset, input_channel_id = self._oriented_thrust_resolve(binding)
-            config = self.process_page.processing_config()
-            motor_metadata = self.setup_page.motor_metadata()
+            config = self.process_page.processing_config(validate=True)
             plugin_id = self.process_page.processor_id()
             processor = self.registry.get(plugin_id) if plugin_id is not None else None
         except (KeyError, ValueError) as exc:
             self._error_show(exc)
             return
+
+        session = self.session
+        regions = deepcopy(session.regions)
+        polarity = session.thrust_polarity
+        calibrated = session.calibrated_streams.get(binding.stream_id)
+
+        def valid() -> bool:
+            return (self.session is session and session.regions == regions
+                    and session.thrust_polarity == polarity
+                    and session.project_data.primary_channels.thrust == binding
+                    and session.calibrated_streams.get(binding.stream_id) is calibrated
+                    and self.process_page.processor_id() == plugin_id
+                    and self.process_page.processing_config() == config)
 
         def operation(context: TaskContext) -> ProcessingResult:
             if processor is None:
@@ -3158,7 +3393,6 @@ class MainWindow(QMainWindow, ProjectPipeline):
             self.session.processor_id = plugin_id
             self.session.processor_config = dict(config)
             self.session.processing_result = result
-            self.session.motor_metadata = motor_metadata
             self._primary_channels_update()
             self.process_page.set_processing_metadata(result.metadata)
             self._measurement_workspaces_update()
@@ -3168,7 +3402,11 @@ class MainWindow(QMainWindow, ProjectPipeline):
                 self.translations.translate("status.processing_applied"), 5000
             )
 
-        self._task_start(self.translations.translate("status.processing"), operation, success)
+            if recalculate and regions.get("active_test"):
+                self._analysis_calculate()
+
+        self._task_start(self.translations.translate("status.processing"), operation, success,
+                         valid=valid)
 
     def _analysis_calculate(self) -> None:
         processing = self.session.processing_result
@@ -3177,7 +3415,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
             return
         try:
             regions = self._regions_normalize(self.session.regions)
-            metadata = self.setup_page.motor_metadata()
+            metadata = dict(self.session.motor_metadata)
             parameters = MotorPhysicalParameters.from_metadata(metadata)
             plugin_id = THRUST_ANALYZER_ID
             analyzer = self.registry.get(plugin_id)
@@ -3203,12 +3441,13 @@ class MainWindow(QMainWindow, ProjectPipeline):
             })
 
         def success(result: AnalysisResult) -> None:
-            if self.session.motor_parameters != parameters:
+            if (self.session.motor_parameters != parameters
+                    or self.session.processing_result is not processing
+                    or self.session.regions != regions):
                 return
             self.session.analyzer_id = plugin_id
             self.session.analyzer_config = config
             self.session.analysis_result = result
-            self.session.motor_metadata = metadata
             self.analyze_page.set_result(result)
             self._export_availability_update()
             self.statusBar().showMessage(
@@ -3239,7 +3478,9 @@ class MainWindow(QMainWindow, ProjectPipeline):
             return replace(reference, version=source.parser_version)
         return reference
 
-    def _project_document_create(self, source_hash: str | None = None) -> ProjectDocument:
+    def _project_document_create(
+        self, source_hash: str | None = None, *, capture_views: bool = True,
+    ) -> ProjectDocument:
         source_path = self.session.source_path
         if source_path is None:
             source_text = self.import_page.source_edit.text().strip()
@@ -3270,17 +3511,8 @@ class MainWindow(QMainWindow, ProjectPipeline):
             diagnostics += self.session.analysis_result.diagnostics
 
         processors: tuple[PluginReference, ...] = ()
-        if self.session.processing_result is not None:
-            selected_processor_id = self.session.processor_id
-            selected_processor_config = dict(self.session.processor_config)
-        elif self.process_page.input_channel_id is None:
-            selected_processor_id = None
-            selected_processor_config = {}
-        else:
-            selected_processor_id = self.process_page.processor_id()
-            selected_processor_config = self.process_page.processing_config()
-            if not self.session.regions:
-                selected_processor_config.pop("regions", None)
+        selected_processor_id = self.session.processor_id
+        selected_processor_config = dict(self.session.processor_config)
         processor_reference = self._plugin_reference_create(
             selected_processor_id, selected_processor_config
         )
@@ -3418,6 +3650,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
                 key: state.document() for key, state in self.session.source_analyses.items()
             },
             calibrated_stream_ids=tuple(self.session.calibrated_streams),
+            processing_draft=self._processing_draft(),
             source_path=str(source_path) if source_path is not None else None,
             source_hash=source_hash or self.session.source_hash,
             sources=source_states,
@@ -3443,8 +3676,8 @@ class MainWindow(QMainWindow, ProjectPipeline):
             analyzer=self._plugin_reference_create(
                 self.session.analyzer_id, self.session.analyzer_config
             ),
-            motor_metadata=self.setup_page.motor_metadata(),
-            plot_views=self._plot_views_capture(),
+            motor_metadata=deepcopy(self.session.motor_metadata),
+            plot_views=self._plot_views_capture() if capture_views else {},
             plot_analysis_active_only=self.session.plot_analysis_active_only,
             export_settings=export_settings,
             workflow_state={
@@ -3497,15 +3730,15 @@ class MainWindow(QMainWindow, ProjectPipeline):
             if self.session is session:
                 PlotViews_Restore(self._plot_widgets(), session.plot_views)
 
-        QTimer.singleShot(0, deferred_restore)
+        QTimer.singleShot(0, self, deferred_restore)
 
-    def _project_save(self) -> None:
+    def _project_save(self, *, after_save: Callable[[], None] | None = None) -> None:
         if self.session.project_path is None:
-            self._project_save_dialog()
+            self._project_save_dialog(after_save=after_save)
             return
-        self._project_save_path(self.session.project_path)
+        self._project_save_path(self.session.project_path, after_save=after_save)
 
-    def _project_save_dialog(self) -> None:
+    def _project_save_dialog(self, *, after_save: Callable[[], None] | None = None) -> None:
         default_path = self.session.project_path
         if default_path is None:
             default_path = self.settings.last_directory() / "Untitled_Project.retldc.json"
@@ -3521,9 +3754,12 @@ class MainWindow(QMainWindow, ProjectPipeline):
         path = Path(destination)
         if not path.name.lower().endswith(".retldc.json"):
             path = path.with_name(f"{path.stem}.retldc.json")
-        self._project_save_path(path)
+        self._project_save_path(path, after_save=after_save)
 
-    def _project_save_path(self, path: Path) -> None:
+    def _project_save_path(
+        self, path: Path, *, after_save: Callable[[], None] | None = None
+    ) -> None:
+        submitted = self._project_key()
         was_untitled = self.session.project_path is None
         try:
             document_template = self._project_document_create()
@@ -3574,11 +3810,13 @@ class MainWindow(QMainWindow, ProjectPipeline):
                 source_hash=source_hash,
                 sources=tuple(source_states),
             )
+            context.raise_if_cancelled()
             Project_Save(document, path)
             context.report_progress(1.0, "Project saved")
             return document
 
         def success(document: ProjectDocument) -> None:
+            same_document = self._project_key() == submitted
             self.session.project_path = path.resolve()
             self.session.source_hash = document.source_hash
             self.session.export_settings = dict(document.export_settings)
@@ -3592,9 +3830,20 @@ class MainWindow(QMainWindow, ProjectPipeline):
                 self.translations.translate("status.project_saved"), 5000
             )
 
+            if same_document:
+                self._mark_saved()
+                if after_save is not None:
+                    after_save()
+            else:
+                self._saved_key = submitted
+                self._document_state_update()
+
         self._task_start(self.translations.translate("export.save_project"), operation, success)
 
     def _project_open_dialog(self) -> None:
+        self._leave_request(self._project_open_confirmed)
+
+    def _project_open_confirmed(self) -> None:
         source, _filter = QFileDialog.getOpenFileName(
             self,
             self.translations.translate("dialog.open_project"),
@@ -3607,6 +3856,22 @@ class MainWindow(QMainWindow, ProjectPipeline):
         project_path = Path(source).resolve()
         try:
             document = Project_Load(project_path)
+        except (OSError, ValueError) as exc:
+            self._error_show(exc)
+            return
+        self._restore_project_document(document, project_path)
+
+    def _restore_project_document(
+        self, document: ProjectDocument, project_path: Path, *, undo: bool = False
+    ) -> None:
+        original_path = self.session.project_path
+        try:
+            if document.processing_draft is not None:
+                plugin_id = document.processing_draft.get("plugin_id")
+                if plugin_id is not None:
+                    self.registry.get(plugin_id)
+                    if self.process_page.processor_combo.findData(plugin_id) < 0:
+                        raise ValueError(f"Unavailable processing draft: {plugin_id}")
             relocated_sources: dict[str, Path] = {}
             raw_source: Path | None = None
             if document.source_path is not None:
@@ -3645,7 +3910,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
                 if not relocated:
                     return
                 relocated_sources[source_state.source_id] = Path(relocated).resolve()
-        except (OSError, ValueError) as exc:
+        except (KeyError, OSError, ValueError) as exc:
             self._error_show(exc)
             return
 
@@ -3842,9 +4107,10 @@ class MainWindow(QMainWindow, ProjectPipeline):
                             channel_state.plugin_id, dict(channel_state.config)
                         )
             blocked = [(edit, edit.blockSignals(True)) for name, edit
-                       in self.setup_page.motor_edits.items() if name in MOTOR_PHYSICAL_FIELDS]
+                       in self.setup_page.motor_edits.items()]
             try:
                 self.setup_page.set_motor_metadata(dict(document.motor_metadata))
+                self.setup_page._motor_summary_update()
             finally:
                 for edit, was_blocked in blocked:
                     edit.blockSignals(was_blocked)
@@ -3929,6 +4195,19 @@ class MainWindow(QMainWindow, ProjectPipeline):
             self._retranslate()
             self._workspace_select("project")
             self._plot_views_restore()
+            if document.processing_draft is not None:
+                self.process_page.set_processing_config(
+                    document.processing_draft.get("plugin_id"),
+                    document.processing_draft["parameters"],
+                )
+            self._undo_document = None
+            self.undo_science_action.setEnabled(False)
+            if undo:
+                self.session.project_path = original_path
+                self._project_title = original_path.name if original_path else None
+                self._document_state_update()
+            else:
+                self._mark_saved()
             self.statusBar().showMessage(
                 self.translations.translate("status.project_loaded"), 5000
             )
@@ -3957,7 +4236,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
                     fallback_directory=self.settings.last_directory(),
                 )
             )
-        self.export_dialog.set_motor_metadata(self.setup_page.motor_metadata())
+        self.export_dialog.set_motor_metadata(dict(self.session.motor_metadata))
         self.export_dialog.show()
         self.export_dialog.raise_()
 
@@ -3984,12 +4263,11 @@ class MainWindow(QMainWindow, ProjectPipeline):
                 raise ValueError(
                     self.translations.translate("export.complete_thrust_analysis")
                 )
-            motor_metadata = self.export_dialog.motor_metadata()
+            motor_metadata = dict(self.session.motor_metadata)
             snapshots = {
                 plugin_id: ExportSnapshot_Build(
                     self.session, self.registry,
                     group_id=self.export_dialog.export_group_id(plugin_id),
-                    motor_metadata=motor_metadata,
                 ) for plugin_id in selected
             }
             export_inputs = {
@@ -3999,6 +4277,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
             self._error_show(exc)
             return
 
+        exporters = {plugin_id: self.registry.get(plugin_id) for plugin_id in selected}
         output_locale = self.export_dialog.output_locale()
         filenames = {
             plugin_id: self.export_dialog.export_filename(plugin_id)
@@ -4028,8 +4307,8 @@ class MainWindow(QMainWindow, ProjectPipeline):
                 configs[plugin_id] = {
                     **defaults,
                     **common_config,
-                    **snapshots[plugin_id].Config_Copy(),
                     **motor_metadata,
+                    **snapshots[plugin_id].Config_Copy(),
                 }
         except (KeyError, TypeError, ValueError) as exc:
             self._error_show(exc)
@@ -4058,44 +4337,34 @@ class MainWindow(QMainWindow, ProjectPipeline):
             self._error_show(exc)
             return
 
-        def operation(context: TaskContext):
-            results = []
-            for index, plugin_id in enumerate(selected):
-                context.raise_if_cancelled()
-                exporter = self.registry.get(plugin_id)
-                dataset, analysis = export_inputs[plugin_id]
-                result = exporter.export(
-                    destination / filenames[plugin_id],
-                    dataset,
-                    analysis,
-                    configs.get(plugin_id, common_config),
-                    context,
-                )
-                results.append(result)
-                context.report_progress(
-                    (index + 1) / len(selected), f"Exported {filenames[plugin_id]}"
-                )
-            return results
+        export_settings = {
+            "directory": str(destination), "selected_exporter_ids": list(selected),
+            "selection_initialized_exporter_ids": list(
+                self.export_dialog.initialized_exporter_ids()),
+            "annotate_metrics": self.export_dialog.annotate_metrics(),
+            "output_locale": self.export_dialog.output_locale_selection(),
+        }
+
+        def operation(context: TaskContext) -> None:
+            with ExportBatch_Stage(destination, filenames.values(), context) as staged:
+                for index, plugin_id in enumerate(selected):
+                    context.raise_if_cancelled()
+                    dataset, analysis = export_inputs[plugin_id]
+                    exporters[plugin_id].export(
+                        staged / filenames[plugin_id], dataset, analysis,
+                        configs[plugin_id], context,
+                    )
+                    context.report_progress(
+                        (index + 1) / len(selected), f"Prepared {filenames[plugin_id]}",
+                    )
 
         def success(_results) -> None:
-            self.session.export_settings = {
-                "directory": str(destination),
-                "selected_exporter_ids": list(selected),
-                "selection_initialized_exporter_ids": list(
-                    self.export_dialog.initialized_exporter_ids()
-                ),
-                "annotate_metrics": self.export_dialog.annotate_metrics(),
-                "output_locale": self.export_dialog.output_locale_selection(),
-            }
+            self.session.export_settings = export_settings
             self._last_directory_store(destination)
             self.export_dialog.accept()
-            QMessageBox.information(
-                self,
-                self.translations.translate("common.success"),
-                self.translations.translate(
-                    "export.completed", count=len(selected), directory=str(destination)
-                ),
-            )
+            self.statusBar().showMessage(self.translations.translate(
+                "export.completed", count=len(selected), directory=str(destination)
+            ), 7000)
 
         self._task_start(
             self.translations.translate("status.exporting"),
@@ -4104,18 +4373,54 @@ class MainWindow(QMainWindow, ProjectPipeline):
         )
 
     def _plugins_refresh(self) -> None:
-        registry = PluginRegistry()
-        PluginLoader(registry).discover(
-            (
-                PluginDiscoveryRoot(
-                    self.application_plugin_directory, "application"
-                ),
-                PluginDiscoveryRoot(self.user_plugin_directory, "user"),
-            )
-        )
-        self._plugins_registry_apply(registry)
+        if self._active_task is not None:
+            self._refresh_pending = True
+            self.statusBar().showMessage(self.translations.translate("plugins.deferred"))
+            return
+        if self._plugins_initialized and self._plugin_files_changed():
+            self.statusBar().showMessage(self.translations.translate("plugins.restart"), 15000)
+            return
+        roots = (PluginDiscoveryRoot(self.application_plugin_directory, "application"),
+                 PluginDiscoveryRoot(self.user_plugin_directory, "user"))
+        registry = self.registry.loaded_copy()
+
+        def discover(context: TaskContext) -> PluginRegistry:
+            context.raise_if_cancelled()
+            PluginLoader(registry).discover(roots, retain_loaded=True)
+            context.raise_if_cancelled()
+            return registry
+
+        if self._plugins_initialized:
+            self._task_start(self.translations.translate("plugins.refresh"), discover,
+                             self._plugins_registry_apply, indeterminate=True)
+        else:
+            self._plugins_registry_apply(discover(TaskContext()))
+
+    @staticmethod
+    def _implementation_identity(root: Path) -> str | None:
+        import hashlib
+        digest = hashlib.sha256()
+        for file in sorted(root.rglob("*")):
+            if file.is_file() and "__pycache__" not in file.parts and not file.is_symlink():
+                digest.update(file.relative_to(root).as_posix().encode("utf-8") + b"\0")
+                try:
+                    digest.update(hashlib.sha256(file.read_bytes()).digest())
+                except OSError:
+                    return None
+        return digest.hexdigest()
+
+    def _plugin_files_changed(self) -> bool:
+        return any(saved is None or self._implementation_identity(root) != saved
+                   for root, saved in self._loaded_identities.items())
 
     def _plugins_registry_apply(self, registry: PluginRegistry) -> None:
+        if self._plugins_initialized and self._plugin_files_changed():
+            self.statusBar().showMessage(self.translations.translate("plugins.restart"), 15000)
+            return
+        self._loaded_identities = {
+            Path(record.source): self._implementation_identity(Path(record.source))
+            for record in registry.records if record.result == PluginLoadResult.LOADED
+        }
         selected_parser = self.import_page.selected_parser_id()
         selected_calibration = self.setup_page.calibration_id()
         selected_processor = self.process_page.processor_id()
@@ -4300,6 +4605,9 @@ class MainWindow(QMainWindow, ProjectPipeline):
                 package.close()
 
         def success(outcome: PluginInstallBatchOutcome) -> None:
+            if self._plugin_files_changed():
+                self.statusBar().showMessage(self.translations.translate("plugins.restart"), 15000)
+                return
             self._plugins_registry_apply(outcome.registry)
             self._plugin_install_result_show(outcome)
             if outcome.failure_count == 0:
@@ -4393,7 +4701,15 @@ class MainWindow(QMainWindow, ProjectPipeline):
         directory.mkdir(parents=True, exist_ok=True)
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(directory.resolve())))
 
+    def _close_confirmed(self) -> None:
+        self._closing = True
+        self.close()
+
     def closeEvent(self, event: QCloseEvent) -> None:
+        if not self._closing and self._saved_key != self._project_key():
+            event.ignore()
+            self._leave_request(lambda: QTimer.singleShot(0, self, self._close_confirmed))
+            return
         self._closing = True
         self._detect_timer.stop()
         self._source_preview_timer.stop()

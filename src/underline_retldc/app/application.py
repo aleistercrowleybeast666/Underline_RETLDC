@@ -28,6 +28,8 @@ def _arguments_parse(arguments: list[str]) -> tuple[argparse.Namespace, list[str
         help="Initialize and briefly show the GUI, then exit successfully",
     )
     parser.add_argument("--release-smoke", type=Path, help="Write isolated release-check artifacts")
+    parser.add_argument("--candidate-flow", action="store_true",
+                        help="Use the release-candidate workflow with --release-smoke")
     parser.add_argument("--locale", choices=("zh_CN", "en_US"))
     parser.add_argument("--theme", choices=("light", "dark"))
     return parser.parse_known_args(arguments)
@@ -120,9 +122,11 @@ def main(argv: list[str] | None = None) -> int:
     if diagnostics is not None:
         diagnostics.phase("window.shown")
     if options.release_smoke is not None:
-        from underline_retldc.app.release_smoke import ReleaseSmoke_Run
-
-        QTimer.singleShot(0, lambda: app.exit(ReleaseSmoke_Run(window, options.release_smoke)))
+        if options.candidate_flow:
+            from underline_retldc.app.candidate_smoke import CandidateSmoke_Run as run_check
+        else:
+            from underline_retldc.app.release_smoke import ReleaseSmoke_Run as run_check
+        QTimer.singleShot(0, lambda: app.exit(run_check(window, options.release_smoke)))
     elif options.smoke_test:
         bundled_records = tuple(
             record

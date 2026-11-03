@@ -116,3 +116,12 @@ with colliding basenames. The source companion is
 `Underline_RETLDC_0_1_0_Corresponding_Sources.zip`; `SHA256SUMS.txt` covers both archives.
 The executable retains the accepted FFT_Restored bytes; release-only documentation/metadata is
 repacked and reverified. See `Release_Handoff_0_1_0.md` and `Release_Notes_0_1_0.md`.
+
+
+## Release candidate, 2026-11-03
+
+The 2026-11-03 work branch is a release candidate based on 0.1.0. The public product,
+Plugin API and motor-test package versions stay at their recorded identities. Existing
+project /2 readers can ignore the optional unapplied processing draft. Scientific replay
+uses the applied fields. This branch and its local portable candidate do not create a
+formal release or change the existing release tag.

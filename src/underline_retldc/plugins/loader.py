@@ -33,9 +33,15 @@ class PluginLoader:
         self,
         roots: list[Path | PluginDiscoveryRoot]
         | tuple[Path | PluginDiscoveryRoot, ...],
+        *,
+        selected_ids: set[str] | None = None,
+        retain_loaded: bool = False,
     ) -> tuple[PluginRecord, ...]:
         records: list[PluginRecord] = []
-        discovered_directories: set[Path] = set()
+        discovered_directories = {
+            Path(record.source).resolve() for record in self._registry.records
+            if retain_loaded and record.result == PluginLoadResult.LOADED
+        }
         for configured_root in roots:
             if isinstance(configured_root, PluginDiscoveryRoot):
                 root = Path(configured_root.path)
@@ -63,6 +69,15 @@ class PluginLoader:
                 if resolved in discovered_directories:
                     continue
                 discovered_directories.add(resolved)
+                if selected_ids is not None:
+                    try:
+                        manifest = Manifest_Load(resolved / "plugin.json")
+                    except (OSError, ValueError):
+                        # Unreadable manifests cannot identify the requested implementation.
+                        # A required ID still has to resolve uniquely below.
+                        continue
+                    if manifest.plugin_id not in selected_ids:
+                        continue
                 records.append(self.load(plugin_directory, source_kind=source_kind))
         return tuple(records)
 

@@ -41,7 +41,10 @@ def Launcher_ProjectRoot() -> Path:
 
 def Launcher_ApplicationRun(arguments: Sequence[str]) -> LauncherResult:
     try:
-        from underline_retldc.app.application import main as Application_Main
+        if arguments and arguments[0] == "export":
+            from underline_retldc.cli import main as Application_Main
+        else:
+            from underline_retldc.app.application import main as Application_Main
     except ImportError as exc:
         print(f"无法导入 Underline RETLDC：{exc}", file=sys.stderr)
         return LauncherResult.APPLICATION_FAILED

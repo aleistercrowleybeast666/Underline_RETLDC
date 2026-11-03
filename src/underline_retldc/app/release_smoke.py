@@ -21,8 +21,11 @@ from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import (
     QApplication,
+    QDialog,
+    QDialogButtonBox,
     QFileDialog,
     QInputDialog,
+    QLineEdit,
     QMessageBox,
     QStyle,
     QStyleOptionSlider,
@@ -758,6 +761,8 @@ def ReleaseSmoke_Run(window: MainWindow, output: Path) -> ReleaseSmokeResult:
         with (
             _temporary_attribute(window, "_error_show", lambda error: errors.append(str(error))),
             _temporary_attribute(
+                window, "_leave_decision", lambda: QMessageBox.StandardButton.Discard),
+            _temporary_attribute(
                 QMessageBox, "information", lambda *a, **k: QMessageBox.StandardButton.Ok
             ),
         ):
@@ -798,6 +803,32 @@ def ReleaseSmoke_Run(window: MainWindow, output: Path) -> ReleaseSmokeResult:
                 and np.isclose(np.max(pressure.values), 9.0)
                 and np.isclose(np.trapezoid(thrust.values, dataset.time), 6000.0),
             )
+            # Exercise the actual modal editor with focused text, no Enter, and Esc.
+            # Capture inside the running packaged window without moving the desktop pointer.
+            original_motor = window.setup_page.motor_metadata()
+            def interact_motor():
+                dialog = QApplication.activeModalWidget()
+                if not isinstance(dialog, QDialog):
+                    errors.append("Motor properties did not open")
+                    return
+                try:
+                    field = dialog.findChild(QLineEdit, "motorDraft_propellant_mass_kg")
+                    field.setFocus()
+                    field.selectAll()
+                    QTest.keyClicks(field, "0.15")
+                    fields = dialog.findChild(QDialogButtonBox)
+                    assert fields.button(QDialogButtonBox.StandardButton.Apply).isVisible()
+                    assert dialog.grab().save(str(output / "motor_properties.png"))
+                    report["screenshots"].append({"file": "motor_properties.png"})
+                    QTest.keyClick(dialog, Qt.Key.Key_Escape)
+                finally:
+                    if dialog.isVisible():
+                        dialog.reject()
+
+            QTimer.singleShot(40, window, interact_motor)
+            window.setup_page.motor_properties.click()
+            check("motor_properties_cancel_preserves_owner",
+                  window.setup_page.motor_metadata() == original_motor and not errors)
             window.process_page.detect_button.click()
             _wait(window, errors)
             check("automatic_interval", bool(window.session.regions.get("active_test")))

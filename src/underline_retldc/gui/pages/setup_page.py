@@ -1,17 +1,21 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from math import isfinite
 from typing import Any
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -34,6 +38,8 @@ class SetupPage(QWidget):
     load_requested = Signal()
     save_requested = Signal()
     channel_changed = Signal(str)
+    motor_applied = Signal()
+    calibration_cancelled = Signal()
 
     MOTOR_FIELDS = (
         "motor_designation",
@@ -80,6 +86,11 @@ class SetupPage(QWidget):
         channel_layout.addRow(self.unit_source_label, self.unit_source_value)
         channel_layout.addRow(self.display_unit_label, self.display_unit_combo)
         channel_layout.addRow(self.semantic_role_label, self.semantic_role_edit)
+        self.channel_details_button = QPushButton()
+        self.channel_details_button.setCheckable(True)
+        channel_layout.insertRow(1, self.channel_details_button)
+        self.channel_details_button.toggled.connect(self._channel_details_update)
+        self._channel_details_update(False)
 
         self.calibration_group = QGroupBox()
         calibration_layout = QFormLayout(self.calibration_group)
@@ -122,6 +133,19 @@ class SetupPage(QWidget):
             self.motor_edits[field_name] = edit
             motor_layout.addRow(label, edit)
 
+        self.motor_summary = QLabel()
+        self.motor_summary.setWordWrap(True)
+        self.motor_properties = QPushButton()
+        self.motor_properties.clicked.connect(self.edit_motor_parameters)
+        for name, field in self.motor_edits.items():
+            label = self.motor_labels[name]
+            label.hide()
+            field.hide()
+            field.textChanged.connect(self._motor_summary_update)
+        motor_layout.addRow(self.motor_summary)
+        motor_layout.addRow(self.motor_properties)
+        self.input_help = QPushButton()
+        self.input_help.hide()
         self.advanced_button = QPushButton()
         self.advanced_button.setCheckable(True)
         self.advanced_button.setChecked(False)
@@ -130,19 +154,112 @@ class SetupPage(QWidget):
         advanced_layout.setContentsMargins(0, 0, 0, 0)
         advanced_layout.addWidget(self.channel_group)
         advanced_layout.addWidget(self.calibration_group)
-        self.advanced_container.hide()
+        self.calibration_epoch = 0
+        self.calibration_dialog = QDialog(self)
+        self.calibration_dialog.resize(550, 600)
+        self.calibration_scroll = QScrollArea()
+        self.calibration_scroll.setWidgetResizable(True)
+        self.calibration_scroll.setWidget(self.advanced_container)
+        dialog_layout = QVBoxLayout(self.calibration_dialog)
+        dialog_layout.addWidget(self.calibration_scroll)
+        close_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel)
+        self.calibration_cancel = close_box.button(QDialogButtonBox.StandardButton.Cancel)
+        close_box.rejected.connect(self.calibration_dialog.reject)
+        dialog_layout.addWidget(close_box)
+        self.calibration_dialog.finished.connect(self._calibration_finished)
         self.advanced_button.toggled.connect(self._advanced_visibility_update)
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.motor_group)
         layout.addWidget(self.advanced_button)
-        layout.addWidget(self.advanced_container)
         layout.addStretch(1)
         self.retranslate()
 
+    def _channel_details_update(self, visible: bool) -> None:
+        layout = self.channel_group.layout()
+        for editor in (self.quantity_combo, self.data_unit_combo, self.unit_source_value,
+                       self.display_unit_combo, self.semantic_role_edit):
+            layout.setRowVisible(editor, visible)
+        if hasattr(self, "calibration_form"):
+            self.calibration_form.set_field_visible("quantity", visible)
+
+    def _motor_summary_update(self) -> None:
+        lines = [f"{self.motor_labels[name].text()}  {edit.text()}" for name, edit
+                 in self.motor_edits.items() if edit.text().strip()]
+        summary = " · ".join(lines) or self._translations.translate("motor.optional")
+        self.motor_summary.setText(summary)
+
+    def edit_motor_parameters(self) -> None:
+        dialog = QDialog(self)
+        dialog.setWindowTitle(self._translations.translate("project.edit_motor"))
+        form = QFormLayout(dialog)
+        drafts = {}
+        for name, applied in self.motor_edits.items():
+            field = QLineEdit(applied.text(), dialog)
+            field.setObjectName("motorDraft_" + name)
+            form.addRow(self.motor_labels[name].text(), field)
+            drafts[name] = field
+        reason = QLabel()
+        reason.setObjectName("warningLabel")
+        reason.setWordWrap(True)
+        reason.hide()
+        form.addRow(reason)
+        for field in drafts.values():
+            field.textChanged.connect(reason.hide)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply
+                                   | QDialogButtonBox.StandardButton.Cancel, parent=dialog)
+        buttons.button(QDialogButtonBox.StandardButton.Apply).setText(
+            self._translations.translate("common.apply"))
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(
+            self._translations.translate("common.cancel"))
+        form.addRow(buttons)
+        buttons.rejected.connect(dialog.reject)
+
+        def apply() -> None:
+            for name, field in drafts.items():
+                text = field.text().strip()
+                if text and name not in {"motor_designation", "manufacturer"}:
+                    try:
+                        value = float(text)
+                        if not isfinite(value) or value < 0:
+                            raise ValueError
+                    except ValueError:
+                        reason.setText(self._translations.translate("motor.invalid"))
+                        reason.show()
+                        field.setFocus()
+                        field.selectAll()
+                        return
+            dialog.accept()
+
+        buttons.button(QDialogButtonBox.StandardButton.Apply).clicked.connect(apply)
+        try:
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                for name, field in drafts.items():
+                    applied = self.motor_edits[name]
+                    previous = applied.blockSignals(True)
+                    applied.setText(field.text().strip())
+                    applied.blockSignals(previous)
+                self._motor_summary_update()
+                self.motor_applied.emit()
+        finally:
+            dialog.deleteLater()
+
     def _advanced_visibility_update(self, visible: bool) -> None:
-        self.advanced_container.setVisible(bool(visible))
+        if visible:
+            self.calibration_dialog.open()
+            self.calibration_scroll.ensureWidgetVisible(self.calibration_combo)
+        elif self.calibration_dialog.isVisible():
+            self.calibration_dialog.reject()
         self._advanced_button_text_update()
+
+    def _calibration_finished(self, result: int) -> None:
+        self.calibration_epoch += 1
+        blocked = self.advanced_button.blockSignals(True)
+        self.advanced_button.setChecked(False)
+        self.advanced_button.blockSignals(blocked)
+        self._advanced_button_text_update()
+        if result != QDialog.DialogCode.Accepted:
+            self.calibration_cancelled.emit()
 
     def _advanced_button_text_update(self) -> None:
         key = (
@@ -155,6 +272,7 @@ class SetupPage(QWidget):
     def retranslate(self) -> None:
         t = self._translations.translate
         self.channel_group.setTitle(t("setup.channel_interpretation"))
+        self.channel_details_button.setText(t("setup.channel_details"))
         self.channel_label.setText(t("setup.channel"))
         self.quantity_label.setText(t("setup.quantity"))
         self.data_unit_label.setText(t("setup.data_unit"))
@@ -162,6 +280,8 @@ class SetupPage(QWidget):
         self.display_unit_label.setText(t("setup.display_unit"))
         self.semantic_role_label.setText(t("setup.semantic_role"))
         self.calibration_group.setTitle(t("setup.calibration"))
+        self.calibration_cancel.setText(t("common.cancel"))
+        self.calibration_dialog.setWindowTitle(t("setup.calibration_properties"))
         self.calibration_label.setText(t("setup.calibration"))
         self.identity_notice.setText(t("setup.identity_notice"))
         self.calibration_form.retranslate()
@@ -169,6 +289,7 @@ class SetupPage(QWidget):
         self.load_button.setText(t("setup.load_calibration"))
         self.save_button.setText(t("setup.save_calibration"))
         self.motor_group.setTitle(t("setup.motor_metadata"))
+        self.motor_properties.setText(t("project.edit_motor"))
         self._advanced_button_text_update()
         motor_keys = {
             "motor_designation": "motor.designation",
@@ -182,6 +303,8 @@ class SetupPage(QWidget):
         for field_name, key in motor_keys.items():
             self.motor_labels[field_name].setText(t(key))
         self._populate_calibrations(self.calibration_id())
+
+        self._motor_summary_update()
 
     def set_channels(
         self,
@@ -374,6 +497,7 @@ class SetupPage(QWidget):
         )
         schema["properties"] = properties
         self.calibration_form.set_schema(schema)
+        self._channel_details_update(self.channel_details_button.isChecked())
         self._calibration_output_defaults_update()
 
     def calibration_id(self) -> str | None:

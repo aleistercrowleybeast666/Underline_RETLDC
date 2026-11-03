@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from underline_retldc.app.export_snapshot import ExportSnapshot_Build
-from underline_retldc.app.project_pipeline import ProjectPipeline
+from underline_retldc.app.project_pipeline import DEFAULT_CALIBRATION_ID, ProjectPipeline
+from underline_retldc.core.project import Project_Load
 from underline_retldc.core.registry import PluginLoadResult, PluginRegistry
 from underline_retldc.plugin_api.common import TaskContext
 from underline_retldc.plugins.loader import PluginDiscoveryRoot, PluginLoader
@@ -28,21 +30,38 @@ def main(argv: list[str] | None = None) -> int:
         metavar="SOURCE_ID=PATH",
         help="Explicit source relocation; the recorded SHA-256 must match",
     )
-    export.add_argument(
-        "--plugin-root", type=Path, default=Path(__file__).resolve().parents[2] / "plugins"
-    )
+    application_root = (Path(sys.executable).resolve().parent if getattr(sys, "frozen", False)
+                        else Path(__file__).resolve().parents[2])
+    export.add_argument("--plugin-root", type=Path, default=application_root / "plugins")
     options = parser.parse_args(argv)
     try:
         registry = PluginRegistry()
+        document = Project_Load(options.project)
+        required = {options.exporter, DEFAULT_CALIBRATION_ID}
+        for reference in (document.parser, document.calibration, document.analyzer,
+                          *document.processors, *(source.parser for source in document.sources),
+                          *(channel.calibration for channel in document.channels.values())):
+            if reference is not None:
+                required.add(reference.id)
+        for saved in document.source_analyses.values():
+            if saved.completed:
+                if saved.config.workspace_id == "thrust_analysis":
+                    required.add(str(saved.calculator["id"]))
+                if saved.config.processor:
+                    required.add(str(saved.config.processor["id"]))
         records = PluginLoader(registry).discover(
-            (PluginDiscoveryRoot(options.plugin_root, "bundled"),)
+            (PluginDiscoveryRoot(options.plugin_root, "bundled"),), selected_ids=required,
         )
-        failures = [record for record in records if record.result != PluginLoadResult.LOADED]
+        failures = [record for record in records if record.plugin_id in required
+                    and record.result != PluginLoadResult.LOADED]
         if failures:
             raise ValueError(
                 "Plugin loading failed: "
                 + "; ".join(str(record.diagnostics) for record in failures)
             )
+        missing = required.difference(record.plugin_id for record in records)
+        if missing:
+            raise ValueError("Required plugins are not installed: " + ", ".join(sorted(missing)))
         exporter = registry.get(options.exporter)
         context = TaskContext()
         relocated = {}
@@ -62,8 +81,8 @@ def main(argv: list[str] | None = None) -> int:
             session, registry, group_id=metadata.get("group_id", "thrust")
         )
         config = {
-            **snapshot.Config_Copy(),
             **session.motor_metadata,
+            **snapshot.Config_Copy(),
             "maximum_gap_s": options.maximum_gap_s,
             "output_locale": "en_US",
         }

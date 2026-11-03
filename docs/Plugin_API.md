@@ -443,3 +443,12 @@ class MyDAQParser(ParserPlugin):
 
 Do not import GUI modules. Respect cancellation for long loops, keep source files read-only, and
 return a fresh array/Dataset rather than modifying caller-owned values.
+
+
+## Release candidate, 2026-11-03
+
+CLI export scans manifest identities before importing the implementations required by
+the selected exporter and saved replay stages. Missing, failed or duplicate required IDs
+block export. CSV serialization has no Qt import. In the GUI, a refresh requested during
+a task runs after that task finishes. Installed files belonging to a loaded implementation
+require restart when changed. These lifecycle rules preserve Plugin API generation 1.

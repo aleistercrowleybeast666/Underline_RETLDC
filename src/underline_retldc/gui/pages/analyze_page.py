@@ -4,6 +4,7 @@ from collections.abc import Mapping
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
+    QLabel,
     QPushButton,
     QTableWidgetItem,
     QVBoxLayout,
@@ -57,6 +58,10 @@ class AnalyzePage(QWidget):
         self.source_analysis.view_changed.connect(self._results_refresh)
 
         self.metrics_group = AnalysisResultsPanel()
+        self.applied_notice = QLabel()
+        self.applied_notice.setWordWrap(True)
+        self.applied_notice.hide()
+        self.metrics_group.layout().insertWidget(0, self.applied_notice)
         self.metrics_group.layout().insertWidget(0, self.source_analysis)
         self.metrics_table = self.metrics_group.table
         self.metrics_table.setMinimumWidth(0)
@@ -99,7 +104,7 @@ class AnalyzePage(QWidget):
             self.source_analysis._notice_refresh()
         if result is None:
             self.metrics_table.setRowCount(0)
-            self.diagnostics_list.clear()
+            self.diagnostics_group.set_diagnostics(())
             return
         available = [key for key in self.METRIC_ORDER if key in result.metrics]
         self.metrics_table.setRowCount(len(available))

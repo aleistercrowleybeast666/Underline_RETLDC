@@ -203,7 +203,14 @@ def test_import_limits_duplicate_keys_digest_and_nonfinite(prepared, bundled_reg
 
 def test_unknown_mass_negative_samples_and_gap_are_not_fabricated(prepared, bundled_registry):
     session, plugin = prepared
+    # Replay a real unknown-mass project. Editing a completed session in place
+    # would mix an old analysis with a new mass and must be refused.
     session.motor_metadata = {}
+    with pytest.raises(ValueError, match="changed after analysis"):
+        _package(session, plugin, bundled_registry)
+    project = session.project_path
+    Project_Save(replace(Project_Load(project), motor_metadata={}), project)
+    session = ProjectPipeline.Project_LoadSession(project, bundled_registry, TaskContext())
     package = _package(session, plugin, bundled_registry, maximum_gap_s=0.01)
     assert package["motor"]["propellant_mass_kg"] is None
     assert package["simulation_curve"] is None

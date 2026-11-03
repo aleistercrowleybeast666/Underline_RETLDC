@@ -459,3 +459,25 @@ Appending sources retains committed Sources/Streams/calibration and valid Primar
 Explicit reparse replaces only the selected source after parsing and identity calibration succeed;
 removed/changed primary inputs invalidate dependent workflow results. No persistent schema or
 Plugin API change is required for this UI lifecycle state.
+
+
+## Release candidate, 2026-11-03
+
+The Project owns motor parameters. The property editor validates a draft and applies all
+fields together. The export dialog reads the applied values and opens that same editor.
+A changed physical parameter invalidates dependent analysis. The export snapshot also
+checks the analysis motor-parameter identity before combining a completed result and its
+metadata. Unknown mass stays nullable.
+
+Project schema /2 accepts an optional `processing_draft` object with `plugin_id` and
+`parameters`. Only the existing applied processor references and workflow flags drive replay.
+The editable draft is restored afterwards. Leaving prompts for Save, Discard or Cancel.
+Saving an earlier snapshot while edits continue leaves the newer working project dirty.
+The raw/unknown input action is above the Project panes and opens one scrollable channel/calibration property window. Cancelling that window also invalidates its outstanding Apply callback. The results panel labels previously computed metrics when a processing draft is present.
+A one-level scientific edit checkpoint replays the previous configuration through the
+usual source hash checks. The separate chart reset affects the viewport.
+
+Manual plugin refresh queues during active work and uses TaskManager when idle. Existing
+loaded implementations stay pinned when adding plugins. Modified loaded files require an
+application restart. The CLI discovers required project and export implementations from
+trusted roots. Project JSON only names IDs and cannot register or execute local code.

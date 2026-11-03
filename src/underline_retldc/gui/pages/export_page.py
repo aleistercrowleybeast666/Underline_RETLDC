@@ -147,9 +147,13 @@ class ExportDialog(QDialog):
                 validator = QDoubleValidator()
                 validator.setBottom(0.0)
                 edit.setValidator(validator)
+            edit.setReadOnly(True)
             self.eng_labels[field_name] = label
             self.eng_edits[field_name] = edit
             eng_layout.addRow(label, edit)
+
+        self.edit_project_parameters = QPushButton()
+        eng_layout.addRow(self.edit_project_parameters)
 
         self.export_button = QPushButton()
         self.export_button.setObjectName("primaryButton")
@@ -197,6 +201,7 @@ class ExportDialog(QDialog):
     def retranslate(self) -> None:
         t = self._translations.translate
         self.setWindowTitle(t("export.dialog_title"))
+        self.edit_project_parameters.setText(t("project.edit_motor"))
         self.destination_group.setTitle(t("export.destination"))
         self.directory_label.setText(t("export.directory"))
         self.directory_button.setText(t("common.browse"))

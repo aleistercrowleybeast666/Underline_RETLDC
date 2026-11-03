@@ -181,7 +181,13 @@ class ProcessPage(QWidget):
         self.apply_button.clicked.connect(self.apply_requested)
         processing_layout.addRow(self.compensation_label, processor_row)
         processing_layout.addRow(self.processor_form)
+        self.draft_status = QLabel()
+        self.draft_status.setWordWrap(True)
+        self.restore_button = QPushButton()
+        self.restore_button.hide()
+        processing_layout.addRow(self.draft_status)
         processing_layout.addRow(self.apply_button)
+        processing_layout.addRow(self.restore_button)
         controls_layout.addWidget(self.processing_group)
         for group in (
             self.interval_editor,
@@ -228,6 +234,7 @@ class ProcessPage(QWidget):
         self.compensation_label.setText(t("process.enable_baseline"))
         self.plugins_button.setText(t("process.plugins"))
         self.apply_button.setText(t("process.apply"))
+        self.restore_button.setText(t("process.restore"))
         self.baseline_status_group.setTitle(t("process.baseline_status"))
         self.baseline_status_labels["pre"].setText(t("process.pre_baseline"))
         self.baseline_status_labels["post"].setText(t("process.post_baseline"))
@@ -459,7 +466,7 @@ class ProcessPage(QWidget):
     def input_channel_id(self) -> str | None:
         return self._input_channel_id
 
-    def processing_config(self) -> dict[str, Any]:
+    def processing_config(self, *, validate: bool = False) -> dict[str, Any]:
         processor = self._selected_processor()
         if processor is None:
             return {}
@@ -467,7 +474,8 @@ class ProcessPage(QWidget):
         raw_properties = schema.get("properties", {})
         if not isinstance(raw_properties, Mapping):
             raise ValueError("Processor config schema properties must be an object")
-        config = self.processor_form.values()
+        config = (self.processor_form.validated_values() if validate
+                  else self.processor_form.values())
         regions = self.regions()
         processor_regions = {
             "pre": regions.get("pre"),

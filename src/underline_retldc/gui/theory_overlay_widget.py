@@ -30,6 +30,7 @@ from underline_retldc.i18n.service import TranslationService
 class TheoryOverlayWidget(QWidget):
     """Shared view controls; emits source display state, never workflow input changes."""
 
+    add_requested = Signal()
     display_changed = Signal(str, object)
     align_requested = Signal(str)
     view_changed = Signal()
@@ -81,7 +82,14 @@ class TheoryOverlayWidget(QWidget):
         form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
         form.addRow(self.align_label, self.curve_combo)
         form.addRow(self.shift_label, self.shift_spin)
-        layout = QVBoxLayout(self)
+        self.add_button = QPushButton()
+        self.add_button.clicked.connect(self.add_requested)
+        self.details = QWidget(self)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(self.add_button)
+        outer.addWidget(self.details)
+        layout = QVBoxLayout(self.details)
         layout.setContentsMargins(0, 6, 0, 0)
         layout.addWidget(self.title_label)
         layout.addWidget(self.curve_list)
@@ -92,10 +100,11 @@ class TheoryOverlayWidget(QWidget):
         layout.addWidget(self.reset_button)
         layout.addWidget(self.status_label)
         self.retranslate()
-        self.hide()
+        self.details.hide()
 
     def retranslate(self) -> None:
         t = self._translations.translate
+        self.add_button.setText(t("theory.add_reference"))
         self.title_label.setText(t("theory.curves"))
         self.align_label.setText(t("theory.align_source"))
         self.shift_label.setText(t("theory.shift"))
@@ -119,7 +128,8 @@ class TheoryOverlayWidget(QWidget):
         index = self.curve_combo.findData(selected)
         self.curve_combo.setCurrentIndex(max(0, index) if self._curves else -1)
         self.curve_combo.blockSignals(False)
-        self.setVisible(bool(project.sources))
+        self.details.setVisible(any(source.source_kind == SourceKind.THEORETICAL
+                                    for source in project.sources.values()))
         self._alignment_refresh()
 
     def _selected_curve(self) -> DisplayCurve | None:

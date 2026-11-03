@@ -6,8 +6,11 @@ cd /d "%~dp0"
 set "APP_NAME=Underline_RETLDC"
 set "VENV_PYTHON=%CD%\.venv\Scripts\python.exe"
 set "DIST_ROOT=%CD%\dist"
+if defined UNDERLINE_RC_20261103 set "DIST_ROOT=%CD%\dist\rc_20261103"
 set "DIST_DIR=%DIST_ROOT%\%APP_NAME%"
 set "WORK_DIR=%CD%\build\%APP_NAME%"
+
+if defined UNDERLINE_RC_20261103 set "WORK_DIR=%LOCALAPPDATA%\UnderlineBuild\rc_20261103"
 
 echo [1/8] Checking project environment...
 if not exist "%VENV_PYTHON%" (
@@ -139,8 +142,13 @@ if errorlevel 8 (
     exit /b 1
 )
 
-xcopy "%CD%\docs\*" "%DIST_DIR%\docs\" /E /I /Y /Q >nul
-if errorlevel 1 (
+rem A candidate carries the public manuals and upstream notices, not local review notes or test logs.
+robocopy "%CD%\docs" "%DIST_DIR%\docs" Architecture.md Analysis.md Calibration.md Data_Formats.md Plugin_API.md VERSION.md Theoretical_Curves.md TreeDiagram_Export_Contract.md Recorded_Data_Showcase.md Synthetic_Overlay_Example.md Qt_*.md /NFL /NDL /NJH /NJS /NP >nul
+if errorlevel 8 exit /b 1
+robocopy "%CD%\docs\assets" "%DIST_DIR%\docs\assets" /E /NFL /NDL /NJH /NJS /NP >nul
+if errorlevel 8 exit /b 1
+robocopy "%CD%\docs\third_party" "%DIST_DIR%\docs\third_party" /E /NFL /NDL /NJH /NJS /NP >nul
+if errorlevel 8 (
     echo ERROR: Failed to copy documentation.
     if not defined CI pause
     exit /b 1
@@ -162,6 +170,8 @@ if exist "%CD%\presets" (
     )
 )
 
+robocopy "%CD%\contracts\motor-test-package" "%DIST_DIR%\contracts\motor-test-package" /E /NFL /NDL /NJH /NJS /NP >nul
+if errorlevel 8 exit /b 1
 copy /Y "%CD%\README.txt" "%DIST_DIR%\README.txt" >nul
 copy /Y "%CD%\新增解析器_PROMPT.txt" "%DIST_DIR%\新增解析器_PROMPT.txt" >nul
 copy /Y "%CD%\新增校准配置_PROMPT.txt" "%DIST_DIR%\新增校准配置_PROMPT.txt" >nul

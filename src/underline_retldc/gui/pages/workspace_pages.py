@@ -110,6 +110,7 @@ class ProjectWorkspacePage(QWidget):
         splitter.setSizes([760, 480])
 
         layout = QVBoxLayout(self)
+        layout.addWidget(setup_page.input_help)
         layout.addWidget(splitter, 1)
         self.splitter = splitter
         self.import_scroll = import_scroll

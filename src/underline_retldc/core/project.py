@@ -225,6 +225,7 @@ class ProjectDocument:
     analyzer: PluginReference | None = None
     motor_metadata: Mapping[str, Any] = field(default_factory=dict)
     export_settings: Mapping[str, Any] = field(default_factory=dict)
+    processing_draft: Mapping[str, Any] | None = None
     workflow_state: Mapping[str, bool] = field(default_factory=dict)
     locale: str = "zh_CN"
     diagnostics: tuple[Diagnostic, ...] = field(default_factory=tuple)
@@ -295,6 +296,7 @@ class ProjectDocument:
             "plot_analysis_active_only": self.plot_analysis_active_only,
             "export_settings": dict(self.export_settings),
             "workflow_state": dict(self.workflow_state),
+            **({"processing_draft": dict(self.processing_draft)} if self.processing_draft else {}),
             "locale": self.locale,
             "diagnostics": [item.to_dict() for item in self.diagnostics],
         }
@@ -440,6 +442,13 @@ class ProjectDocument:
         parser_payload = payload.get("parser")
         calibration_payload = payload.get("calibration")
         analyzer_payload = payload.get("analyzer")
+        draft = payload.get("processing_draft")
+        if draft is not None and (
+            not isinstance(draft, Mapping)
+            or draft.get("plugin_id") is not None and not isinstance(draft["plugin_id"], str)
+            or not isinstance(draft.get("parameters"), Mapping)
+        ):
+            raise ValueError("Invalid unapplied processing draft")
         workflow_state_payload = payload.get("workflow_state")
         if workflow_state_payload is None:
             workflow_state: dict[str, bool] = {
@@ -507,6 +516,7 @@ class ProjectDocument:
             motor_metadata=dict(motor_metadata_payload),
             export_settings=dict(export_settings_payload),
             workflow_state=workflow_state,
+            processing_draft=dict(draft) if draft is not None else None,
             locale=str(payload.get("locale", "zh_CN")),
             diagnostics=tuple(
                 Diagnostic.from_dict(item) for item in payload.get("diagnostics", [])

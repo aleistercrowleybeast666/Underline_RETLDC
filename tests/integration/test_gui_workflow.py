@@ -2763,7 +2763,9 @@ def test_new_project_defaults_none_and_restores_explicit_processor(
     window.process_page.set_processing_config(processor_id, {})
     project_path = tmp_path / "explicit.json"
     Project_Save(window._project_document_create(), project_path)
-    assert Project_Load(project_path).processors[0].id == processor_id
+    saved = Project_Load(project_path)
+    assert saved.processors == ()
+    assert saved.processing_draft["plugin_id"] == processor_id
     window._project_new()
     assert window.process_page.processor_id() is None
     monkeypatch.setattr(

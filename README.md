@@ -17,6 +17,8 @@ An offline desktop tool for importing, calibrating, analyzing and exporting rock
 
 拖动滑动条或输入偏移秒数，就能平移参考曲线；也可以按两份数据的试车起点自动对齐，再手动微调。[查看平移前后对比](docs/Recorded_Data_Showcase.md#移动时间轴与对齐曲线)。
 
+本次工作分支的最短导入、标定、重算和导出流程见 [使用手册](README.txt)，包含未应用草稿和离开时的保存选择。
+
 ## 主要功能
 
 - **导入与校准**：支持 TR_F / TR_P / TR_T 双列记录、CSV / TSV / 自定义分隔文本和 XLSX；保存列映射预设、配置校准与显示单位，保留原始样本。

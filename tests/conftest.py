@@ -24,10 +24,19 @@ def bundled_registry() -> PluginRegistry:
 
 
 @pytest.fixture(autouse=True)
-def _gui_windows_release() -> Iterator[None]:
+def _gui_windows_release(monkeypatch) -> Iterator[None]:
     """Dispose test-owned windows so global theme changes do not revisit old pages."""
     # Previous fixture frames can keep Python signal cycles alive beyond Qt deletion.
     # Reclaim them here, on the main thread and before any next-test worker starts.
+    from PySide6.QtWidgets import QMessageBox
+
+    from underline_retldc.gui.main_window import MainWindow
+
+    # Test-owned working projects are disposable. Dedicated leave-guard cases
+    # supply Save/Cancel or exercise the real prompt and native buttons.
+    monkeypatch.setattr(
+        MainWindow, "_leave_decision", lambda self: QMessageBox.StandardButton.Discard,
+    )
     gc.collect()
     yield
     from PySide6.QtCore import QEvent
@@ -42,7 +51,7 @@ def _gui_windows_release() -> Iterator[None]:
                 # A failed/time-limited test can leave a live worker. Finish cancellation
                 # before deleting its owner or constructing the next window.
                 widget.task_manager.shutdown(wait=True, cancel_pending=True)
-                widget.close()
+                widget._close_confirmed()
                 widget.deleteLater()
         application.sendPostedEvents(None, QEvent.Type.DeferredDelete)
         application.processEvents()
