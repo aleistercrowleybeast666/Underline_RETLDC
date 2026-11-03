@@ -225,7 +225,6 @@ class ProjectDocument:
     analyzer: PluginReference | None = None
     motor_metadata: Mapping[str, Any] = field(default_factory=dict)
     export_settings: Mapping[str, Any] = field(default_factory=dict)
-    processing_draft: Mapping[str, Any] | None = None
     workflow_state: Mapping[str, bool] = field(default_factory=dict)
     locale: str = "zh_CN"
     diagnostics: tuple[Diagnostic, ...] = field(default_factory=tuple)
@@ -234,6 +233,7 @@ class ProjectDocument:
     calibrated_stream_ids: tuple[str, ...] | None = None
     plot_views: Mapping[str, Mapping[str, AxisViewState]] = field(default_factory=dict)
     plot_analysis_active_only: bool = False
+    processing_draft: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.plot_analysis_active_only, bool):

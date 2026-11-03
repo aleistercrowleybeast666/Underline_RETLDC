@@ -152,8 +152,13 @@ class ExportDialog(QDialog):
             self.eng_edits[field_name] = edit
             eng_layout.addRow(label, edit)
 
+        self.project_motor_summary = QLabel()
+        self.project_motor_summary.setWordWrap(True)
         self.edit_project_parameters = QPushButton()
-        eng_layout.addRow(self.edit_project_parameters)
+        summary_row = QHBoxLayout()
+        summary_row.addWidget(self.project_motor_summary, 1)
+        summary_row.addWidget(self.edit_project_parameters)
+        destination_layout.addRow(summary_row)
 
         self.export_button = QPushButton()
         self.export_button.setObjectName("primaryButton")
@@ -202,6 +207,7 @@ class ExportDialog(QDialog):
         t = self._translations.translate
         self.setWindowTitle(t("export.dialog_title"))
         self.edit_project_parameters.setText(t("project.edit_motor"))
+        self._motor_summary_update()
         self.destination_group.setTitle(t("export.destination"))
         self.directory_label.setText(t("export.directory"))
         self.directory_button.setText(t("common.browse"))
@@ -592,6 +598,13 @@ class ExportDialog(QDialog):
         for field_name, edit in self.eng_edits.items():
             value = metadata.get(field_name)
             edit.setText("" if value is None else str(value))
+        self._motor_summary_update()
+
+    def _motor_summary_update(self) -> None:
+        fields = ("propellant_mass_kg", "total_motor_mass_kg", "diameter_mm", "length_mm")
+        values = {key: self.eng_edits[key].text().strip() or "—" for key in fields}
+        self.project_motor_summary.setText(
+            self._translations.translate("export.project_motor_summary", **values))
 
     def motor_metadata(self) -> dict[str, Any]:
         metadata: dict[str, Any] = {}

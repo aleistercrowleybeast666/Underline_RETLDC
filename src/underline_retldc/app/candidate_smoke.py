@@ -134,6 +134,10 @@ def CandidateSmoke_Run(window: MainWindow, output: Path) -> ReleaseSmokeResult:
             )
             dialog.set_output_directory(output / "export")
             check("read_only_export_mass", dialog.eng_edits["propellant_mass_kg"].isReadOnly())
+            check("report_only_parameters_visible",
+                  "0.15" in dialog.project_motor_summary.text()
+                  and dialog.edit_project_parameters.visibleRegion().contains(
+                      dialog.edit_project_parameters.rect().center()))
             capture("export", dialog)
             dialog.export_button.click()
             _wait(window, errors)

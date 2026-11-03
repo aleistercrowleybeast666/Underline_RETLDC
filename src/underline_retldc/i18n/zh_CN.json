@@ -630,5 +630,6 @@
   "motor.optional": "质量和尺寸可留空；填写已知值后可计算相应指标。",
   "setup.select_input": "选择主测量通道",
   "setup.calibration_properties": "通道与校准属性",
-  "setup.channel_details": "高级通道字段"
+  "setup.channel_details": "高级通道字段",
+  "export.project_motor_summary": "推进剂 {propellant_mass_kg} kg · 总质量 {total_motor_mass_kg} kg · 直径 {diameter_mm} mm · 长度 {length_mm} mm"
 }

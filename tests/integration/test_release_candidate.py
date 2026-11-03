@@ -59,6 +59,10 @@ def test_export_mass_and_processing_draft(tmp_path, monkeypatch):
     assert initial is not None
     window._export_dialog_show()
     assert window.export_dialog.eng_edits["propellant_mass_kg"].isReadOnly()
+    window.export_dialog.set_selected_exporter_ids(["builtin.exporter.analysis_txt"])
+    _application().processEvents()
+    assert window.export_dialog.edit_project_parameters.isVisible()
+    assert "0.15" in window.export_dialog.project_motor_summary.text()
     window.export_dialog.reject()
     window.process_page.processor_combo.setCurrentIndex(1)
     assert window._processing_draft() is not None

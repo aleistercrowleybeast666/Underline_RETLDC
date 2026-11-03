@@ -45,7 +45,13 @@ def ExportSnapshot_Build(
     registry: PluginRegistry,
     *,
     group_id: str = "thrust",
+    motor_metadata: Mapping[str, Any] | None = None,
 ) -> ExportSnapshot:
+    # Preserve callers supplying format annotations. Physical values always
+    # have to agree with the applied project owner.
+    metadata = {**session.motor_metadata, **(motor_metadata or {})}
+    if MotorPhysicalParameters.from_metadata(metadata) != session.motor_parameters:
+        raise ValueError("Export physical metadata differs from the applied motor parameters")
     project = session.project_data
     bindings = project.primary_channels
     reference: ChannelReference | None = bindings.thrust
@@ -160,9 +166,7 @@ def ExportSnapshot_Build(
         "thrust_polarity": session.thrust_polarity,
         "ignition": float(active[0]) if active is not None else None,
         "burnout": float(active[1]) if active is not None else None,
-        "motor_metadata": deepcopy(
-            dict(session.motor_metadata)
-        ),
+        "motor_metadata": deepcopy(metadata),
         "processing_metadata": deepcopy(dict(processing.metadata)) if processing else {},
         "project_name": session.project_path.name if session.project_path else None,
         "provenance": {

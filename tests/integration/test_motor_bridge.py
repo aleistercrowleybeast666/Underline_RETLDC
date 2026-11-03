@@ -203,6 +203,11 @@ def test_import_limits_duplicate_keys_digest_and_nonfinite(prepared, bundled_reg
 
 def test_unknown_mass_negative_samples_and_gap_are_not_fabricated(prepared, bundled_registry):
     session, plugin = prepared
+    annotation = ExportSnapshot_Build(
+        session, bundled_registry, motor_metadata={"manufacturer": "format annotation"})
+    assert annotation.Config_Copy()["motor_metadata"]["manufacturer"] == "format annotation"
+    with pytest.raises(ValueError, match="physical metadata"):
+        ExportSnapshot_Build(session, bundled_registry, motor_metadata={"propellant_mass_kg": .3})
     # Replay a real unknown-mass project. Editing a completed session in place
     # would mix an old analysis with a new mass and must be refused.
     session.motor_metadata = {}
