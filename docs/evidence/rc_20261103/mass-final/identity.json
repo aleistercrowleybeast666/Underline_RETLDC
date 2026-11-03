@@ -1,0 +1,12 @@
+{
+  "epoch": "after",
+  "baseline_commit": "351ab0b0167eb37bd6312c2bde79181d6225e97f",
+  "baseline_source_sha256": {},
+  "initial_impulse_ns": 200.0,
+  "initial_isp_s": 135.96216173039045,
+  "report_rows": [
+    "Propellant Mass [kg]: 0.3",
+    "Specific Impulse [s]: 67.9810808652"
+  ],
+  "actual_export_sha256": "1157e5c6c44be47e4638c220fe582c5f783132448b96f4bbd7e23c9bd985fcdf"
+}

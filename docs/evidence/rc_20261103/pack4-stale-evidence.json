@@ -1,0 +1,11 @@
+{
+  "observed": "2026-11-03T23:42:01.2498552+08:00",
+  "known_9e09567_executable_sha256": "55BCE7FDB70737EA70540931EFA5794E70C5E2584BF516647C151AAA3ECC606C",
+  "after_stopped_397193c_executable_sha256": "55BCE7FDB70737EA70540931EFA5794E70C5E2584BF516647C151AAA3ECC606C",
+  "after_stopped_executable_last_write": "2026-11-03T22:44:45.1697583+08:00",
+  "pack4_stop_log_timestamp": "2026-11-03T23:09:35.8972543+08:00",
+  "pack4_reported_exit": "0",
+  "pack4_reported_success": true,
+  "pack4_has_pyinstaller_collect_success": false,
+  "accepted": false
+}

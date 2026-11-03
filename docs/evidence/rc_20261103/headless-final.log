@@ -1,0 +1,3 @@
+3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)] 2.5.2 {'PySide6': False, 'pyqtgraph': False, 'scipy': False}
+{"output": "D:\\python_software\\Underline_RETLDC\\.work\\rc-20261103\\headless-final.tdmotor.json", "content_sha256": "a633f4c77247df2dcc958227670540c6c6b4dc5dceabd8e297ef50b94e636b5c", "schema_id": "underline.motor-test-package/1"}
+golden byte equality SHA-256 66C6232D0CCEC6CEAABDEC9186E9059A2F16DC9EEEDEA0C94221F06A8CEAED96

@@ -1,0 +1,1 @@
+Full preflight at 397193c passed all 390 tests plus Ruff. A separate empty diagnostics group remained visible in the non-tabular import details. The agent stopped its own superseded compiler to avoid unnecessary duplicate artifact generation; pack5 is the complete acceptance build including this presentation correction.

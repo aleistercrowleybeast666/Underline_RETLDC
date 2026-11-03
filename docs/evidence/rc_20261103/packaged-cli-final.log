@@ -1,0 +1,15 @@
+{
+  "executable": "D:\\python_software\\Underline_RETLDC\\dist\\rc_20261103\\Underline_RETLDC\\Underline_RETLDC.exe",
+  "executable_sha256": "8259A929A0D07C90783BC5E9A5DBD8D139D353D8083D8D1D7F94FE8B4CB3A5CC",
+  "arguments": [
+    "export",
+    "D:\\python_software\\Underline_RETLDC\\tests\\fixtures\\motor_test_package\\v1\\synthetic_positive.retldc.json",
+    "D:\\python_software\\Underline_RETLDC\\.work\\rc-20261103\\packaged-golden-final.tdmotor.json"
+  ],
+  "working_directory": "D:\\python_software\\Underline_RETLDC\\dist\\rc_20261103\\Underline_RETLDC",
+  "exit": 0,
+  "output_sha256": "66C6232D0CCEC6CEAABDEC9186E9059A2F16DC9EEEDEA0C94221F06A8CEAED96",
+  "golden_sha256": "66C6232D0CCEC6CEAABDEC9186E9059A2F16DC9EEEDEA0C94221F06A8CEAED96",
+  "path": "C:\\WINDOWS\\System32;C:\\WINDOWS",
+  "pythonpath": null
+}

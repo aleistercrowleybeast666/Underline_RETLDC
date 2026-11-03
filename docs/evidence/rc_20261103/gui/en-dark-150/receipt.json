@@ -1,0 +1,120 @@
+{
+  "checks": [
+    "physical_csv_import",
+    "physical_csv_no_calibration_block",
+    "invalid_input_keeps_draft",
+    "applied_without_enter",
+    "shared_interval",
+    "none_compensation",
+    "applied_and_analyzed",
+    "draft_preserves_previous_result",
+    "discard_draft",
+    "read_only_export_mass",
+    "report_only_parameters_visible",
+    "real_motor_export",
+    "saved_stage_replayed",
+    "immutable_input",
+    "raw_requires_calibration",
+    "raw_action_inside_viewport",
+    "raw_editor_reachable",
+    "raw_calibration_applied"
+  ],
+  "screenshots": [
+    "motor-properties.png",
+    "project.png",
+    "thrust-draft.png",
+    "chamber_pressure.png",
+    "temperature.png",
+    "data_explorer.png",
+    "export.png",
+    "raw-action.png",
+    "raw-calibration.png"
+  ],
+  "errors": [],
+  "theme": "dark",
+  "locale": "en_US",
+  "device_pixel_ratio": 1.5,
+  "passed": true,
+  "artifacts_sha256": {
+    "measurements.csv": "855646304fbc2cdafbbe5f525e0d1ef11ed8104013f9340f9a65995c172a4480",
+    "loadcell.txt": "618c5359413b28043de719915bad71463b41c9b0a549f297b992f85790591317",
+    "analysis.retldc.json": "45f1f7febdbefc05b9796eed0d71c4b4d63a3ac3116cdf6e9db4c0714f344a8f",
+    "analysis_summary_EN.txt": "479186b51f4890c9975f8d6887dd47c14a9e9ecc00e7f1a4666cded81726a2be",
+    "motor.tdmotor.json": "9e70602270b5a22dd49fefdcd67798afb4672a3b6a270899019099fcb2039e8b"
+  },
+  "screenshot_inventory": {
+    "motor-properties.png": {
+      "sha256": "6328daea96b2e59be3c26116192f016d598f410d3c03d860cb2a073cdaa93c6c",
+      "pixels": [
+        407,
+        522
+      ],
+      "retained": false
+    },
+    "project.png": {
+      "sha256": "e189e1e38bae05a931111db56bcddf60ff4306614a4e3aa4c75047ee292ff9cf",
+      "pixels": [
+        1470,
+        990
+      ],
+      "retained": false
+    },
+    "thrust-draft.png": {
+      "sha256": "c6b9d6326a7583020b7d01f0da6cb69484d4be541da496d89a324f290d31b97d",
+      "pixels": [
+        1470,
+        990
+      ],
+      "retained": false
+    },
+    "chamber_pressure.png": {
+      "sha256": "6bde428d1c4e1f0ce72af99bf0d978004ee8ab0abea103a3190d47a551a02f07",
+      "pixels": [
+        1470,
+        990
+      ],
+      "retained": true
+    },
+    "temperature.png": {
+      "sha256": "2cdba0795eda0bf75cef128820a2e79b82740221590abad65b7191df7d529429",
+      "pixels": [
+        1470,
+        990
+      ],
+      "retained": true
+    },
+    "data_explorer.png": {
+      "sha256": "dbe4b87d05765b26b429f1f896e54a8c33ce5716909b6054066a62f1856afaa9",
+      "pixels": [
+        1470,
+        990
+      ],
+      "retained": true
+    },
+    "export.png": {
+      "sha256": "b5bb595c813287f7498816e0bd403b2331e6839f920f2666ff4c486dacc77cfd",
+      "pixels": [
+        1230,
+        930
+      ],
+      "retained": true
+    },
+    "raw-action.png": {
+      "sha256": "3fc6e213222c7da1e36e07a6c94253030eba57bf3585c6d2e7f5857ff8e3ed8f",
+      "pixels": [
+        1470,
+        990
+      ],
+      "retained": false
+    },
+    "raw-calibration.png": {
+      "sha256": "ba038447c91a093a6e48770a4a5712bb8aa3629e432cc9d9c3036dbd6bc13232",
+      "pixels": [
+        825,
+        900
+      ],
+      "retained": false
+    }
+  },
+  "generated_data": "Synthetic offline verification; original file hash compared before and after."
+}

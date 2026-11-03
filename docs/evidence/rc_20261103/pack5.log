@@ -1,0 +1,192 @@
+[1/8] Checking project environment...
+[2/8] Running release preflight: pytest...
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\python_software\Underline_RETLDC
+configfile: pyproject.toml
+testpaths: tests
+collected 392 items
+
+tests\integration\test_entry_points.py FF...                             [  1%]
+tests\integration\test_export_selection.py .....                         [  2%]
+tests\integration\test_gui_lifecycle.py ..                               [  3%]
+tests\integration\test_gui_workflow.py ................................. [ 11%]
+                                                                         [ 11%]
+tests\integration\test_import_state_lifecycle.py ....................    [ 16%]
+tests\integration\test_motor_bridge.py ...............................   [ 24%]
+tests\integration\test_packaging_exit.py ..                              [ 25%]
+tests\integration\test_plot_analysis.py .................                [ 29%]
+tests\integration\test_plot_owner_lifecycle.py ..                        [ 29%]
+tests\integration\test_plot_svg.py ....                                  [ 30%]
+tests\integration\test_plot_ui_i18n.py .....                             [ 32%]
+tests\integration\test_plugin_install_gui.py .......                     [ 33%]
+tests\integration\test_plugin_installer_v003.py ...........              [ 36%]
+tests\integration\test_plugin_loader.py ....................             [ 41%]
+tests\integration\test_release_candidate.py .....                        [ 43%]
+tests\integration\test_release_plot_lifecycle.py ..                      [ 43%]
+tests\integration\test_source_alignment.py ....                          [ 44%]
+tests\integration\test_theory_overlay.py .............................   [ 52%]
+tests\unit\test_analyzer.py ..                                           [ 52%]
+tests\unit\test_calibration.py ...                                       [ 53%]
+tests\unit\test_export_batch.py ..                                       [ 53%]
+tests\unit\test_exporters.py .........                                   [ 56%]
+tests\unit\test_i18n.py ....                                             [ 57%]
+tests\unit\test_measurement_statistics.py ...                            [ 57%]
+tests\unit\test_motor_parameters.py ......                               [ 59%]
+tests\unit\test_parser.py ................                               [ 63%]
+tests\unit\test_plot_fft_notice.py ...........                           [ 66%]
+tests\unit\test_plot_view.py .............                               [ 69%]
+tests\unit\test_primary_channels.py ...                                  [ 70%]
+tests\unit\test_processing.py .........                                  [ 72%]
+tests\unit\test_project.py .........                                     [ 75%]
+tests\unit\test_settings.py .....                                        [ 76%]
+tests\unit\test_source_alignment_core.py .........                       [ 78%]
+tests\unit\test_source_analysis.py ................                      [ 82%]
+tests\unit\test_tabular.py ....                                          [ 83%]
+tests\unit\test_tabular_auto_detector.py ......................          [ 89%]
+tests\unit\test_task.py ...                                              [ 90%]
+tests\unit\test_theoretical_sources.py ....................              [ 95%]
+tests\unit\test_units_and_defaults.py ...................                [100%]
+
+================================== FAILURES ===================================
+_______________ test_python_file_entry_points_start_gui[entry0] _______________
+
+entry = WindowsPath('D:/python_software/Underline_RETLDC/main.py')
+
+    @pytest.mark.parametrize(
+        "entry",
+        (
+            PROJECT_ROOT / "main.py",
+            PROJECT_ROOT / "src" / "underline_retldc" / "__main__.py",
+        ),
+    )
+    def test_python_file_entry_points_start_gui(entry: Path) -> None:
+        environment = dict(os.environ)
+        environment["QT_QPA_PLATFORM"] = "offscreen"
+>       completed = subprocess.run(
+            [sys.executable, "-u", str(entry), "--smoke-test"],
+            cwd=PROJECT_ROOT,
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+
+tests\integration\test_entry_points.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\subprocess.py:556: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\subprocess.py:1220: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: 1 args: ['D:\\python_software\\Underline_RETLDC\\.venv\\...>
+input = None, endtime = 6026.1086635, orig_timeout = 15
+
+    def _communicate(self, input, endtime, orig_timeout):
+        # Start reader threads feeding into a list hanging off of this
+        # object, unless they've already been started.
+        if self.stdout and not hasattr(self, "_stdout_buff"):
+            self._stdout_buff = []
+            self.stdout_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stdout, self._stdout_buff))
+            self.stdout_thread.daemon = True
+            self.stdout_thread.start()
+        if self.stderr and not hasattr(self, "_stderr_buff"):
+            self._stderr_buff = []
+            self.stderr_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stderr, self._stderr_buff))
+            self.stderr_thread.daemon = True
+            self.stderr_thread.start()
+    
+        if self.stdin:
+            self._stdin_write(input)
+    
+        # Wait for the reader threads, or time out.  If we time out, the
+        # threads remain reading and the fds left open in case the user
+        # calls communicate again.
+        if self.stdout is not None:
+            self.stdout_thread.join(self._remaining_time(endtime))
+            if self.stdout_thread.is_alive():
+>               raise TimeoutExpired(self.args, orig_timeout)
+E               subprocess.TimeoutExpired: Command '['D:\\python_software\\Underline_RETLDC\\.venv\\Scripts\\python.exe', '-u', 'D:\\python_software\\Underline_RETLDC\\main.py', '--smoke-test']' timed out after 15 seconds
+
+C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\subprocess.py:1644: TimeoutExpired
+_______________ test_python_file_entry_points_start_gui[entry1] _______________
+
+entry = WindowsPath('D:/python_software/Underline_RETLDC/src/underline_retldc/__main__.py')
+
+    @pytest.mark.parametrize(
+        "entry",
+        (
+            PROJECT_ROOT / "main.py",
+            PROJECT_ROOT / "src" / "underline_retldc" / "__main__.py",
+        ),
+    )
+    def test_python_file_entry_points_start_gui(entry: Path) -> None:
+        environment = dict(os.environ)
+        environment["QT_QPA_PLATFORM"] = "offscreen"
+>       completed = subprocess.run(
+            [sys.executable, "-u", str(entry), "--smoke-test"],
+            cwd=PROJECT_ROOT,
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+
+tests\integration\test_entry_points.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\subprocess.py:556: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\subprocess.py:1220: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: 1 args: ['D:\\python_software\\Underline_RETLDC\\.venv\\...>
+input = None, endtime = 6045.49714, orig_timeout = 15
+
+    def _communicate(self, input, endtime, orig_timeout):
+        # Start reader threads feeding into a list hanging off of this
+        # object, unless they've already been started.
+        if self.stdout and not hasattr(self, "_stdout_buff"):
+            self._stdout_buff = []
+            self.stdout_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stdout, self._stdout_buff))
+            self.stdout_thread.daemon = True
+            self.stdout_thread.start()
+        if self.stderr and not hasattr(self, "_stderr_buff"):
+            self._stderr_buff = []
+            self.stderr_thread = \
+                    threading.Thread(target=self._readerthread,
+                                     args=(self.stderr, self._stderr_buff))
+            self.stderr_thread.daemon = True
+            self.stderr_thread.start()
+    
+        if self.stdin:
+            self._stdin_write(input)
+    
+        # Wait for the reader threads, or time out.  If we time out, the
+        # threads remain reading and the fds left open in case the user
+        # calls communicate again.
+        if self.stdout is not None:
+            self.stdout_thread.join(self._remaining_time(endtime))
+            if self.stdout_thread.is_alive():
+>               raise TimeoutExpired(self.args, orig_timeout)
+E               subprocess.TimeoutExpired: Command '['D:\\python_software\\Underline_RETLDC\\.venv\\Scripts\\python.exe', '-u', 'D:\\python_software\\Underline_RETLDC\\src\\underline_retldc\\__main__.py', '--smoke-test']' timed out after 15 seconds
+
+C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\subprocess.py:1644: TimeoutExpired
+=========================== short test summary info ===========================
+FAILED tests/integration/test_entry_points.py::test_python_file_entry_points_start_gui[entry0] - subprocess.TimeoutExpired: Command '['D:\\python_software\\Underline_RETLDC\\.venv\\Scripts\\python.exe', '-u', 'D:\\python_software\\Underline_RETLDC\\main.py', '--smoke-test']' timed out after 15 seconds
+FAILED tests/integration/test_entry_points.py::test_python_file_entry_points_start_gui[entry1] - subprocess.TimeoutExpired: Command '['D:\\python_software\\Underline_RETLDC\\.venv\\Scripts\\python.exe', '-u', 'D:\\python_software\\Underline_RETLDC\\src\\underline_retldc\\__main__.py', '--smoke-test']' timed out after 15 seconds
+================== 2 failed, 390 passed in 941.60s (0:15:41) ==================
+ERROR: pytest failed. Portable build was not started.

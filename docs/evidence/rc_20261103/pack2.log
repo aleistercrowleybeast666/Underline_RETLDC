@@ -1,0 +1,120 @@
+[1/8] Checking project environment...
+[2/8] Running release preflight: pytest...
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\python_software\Underline_RETLDC
+configfile: pyproject.toml
+testpaths: tests
+collected 389 items
+
+tests\integration\test_entry_points.py .....                             [  1%]
+tests\integration\test_export_selection.py .....                         [  2%]
+tests\integration\test_gui_lifecycle.py ..                               [  3%]
+tests\integration\test_gui_workflow.py ................................. [ 11%]
+                                                                         [ 11%]
+tests\integration\test_import_state_lifecycle.py ....................    [ 16%]
+tests\integration\test_motor_bridge.py ...............................   [ 24%]
+tests\integration\test_plot_analysis.py .................                [ 29%]
+tests\integration\test_plot_owner_lifecycle.py ..                        [ 29%]
+tests\integration\test_plot_svg.py ....                                  [ 30%]
+tests\integration\test_plot_ui_i18n.py .....                             [ 31%]
+tests\integration\test_plugin_install_gui.py .......                     [ 33%]
+tests\integration\test_plugin_installer_v003.py ...........              [ 36%]
+tests\integration\test_plugin_loader.py ....................             [ 41%]
+tests\integration\test_release_candidate.py ....                         [ 42%]
+tests\integration\test_release_plot_lifecycle.py ..                      [ 43%]
+tests\integration\test_source_alignment.py ....                          [ 44%]
+tests\integration\test_theory_overlay.py .............................   [ 51%]
+tests\unit\test_analyzer.py ..                                           [ 52%]
+tests\unit\test_calibration.py ...                                       [ 52%]
+tests\unit\test_export_batch.py ..                                       [ 53%]
+tests\unit\test_exporters.py .........                                   [ 55%]
+tests\unit\test_i18n.py ....                                             [ 56%]
+tests\unit\test_measurement_statistics.py ...                            [ 57%]
+tests\unit\test_motor_parameters.py ......                               [ 59%]
+tests\unit\test_parser.py ................                               [ 63%]
+tests\unit\test_plot_fft_notice.py ...........                           [ 66%]
+tests\unit\test_plot_view.py .............                               [ 69%]
+tests\unit\test_primary_channels.py ...                                  [ 70%]
+tests\unit\test_processing.py .........                                  [ 72%]
+tests\unit\test_project.py .........                                     [ 74%]
+tests\unit\test_settings.py .....                                        [ 76%]
+tests\unit\test_source_alignment_core.py .........                       [ 78%]
+tests\unit\test_source_analysis.py ................                      [ 82%]
+tests\unit\test_tabular.py ....                                          [ 83%]
+tests\unit\test_tabular_auto_detector.py ......................          [ 89%]
+tests\unit\test_task.py ...                                              [ 89%]
+tests\unit\test_theoretical_sources.py ....................              [ 95%]
+tests\unit\test_units_and_defaults.py ...................                [100%]
+
+======================= 389 passed in 611.39s (0:10:11) =======================
+[3/8] Running release preflight: Ruff...
+All checks passed!
+[4/8] Checking PyInstaller...
+[5/8] Building the one-folder application...
+738 INFO: PyInstaller: 6.22.0, contrib hooks: 2026.6
+738 INFO: Python: 3.14.0
+791 INFO: Platform: Windows-11-10.0.26200-SP0
+792 INFO: Python environment: D:\python_software\Underline_RETLDC\.venv
+793 INFO: wrote D:\python_software\Underline_RETLDC\build\Underline_RETLDC.spec
+816 INFO: Removing temporary files and cleaning cache in C:\Users\chdxm\AppData\Local\UnderlineBuild\rc_20261103_pyi\pyinstaller
+1699 INFO: Module search paths (PYTHONPATH):
+['D:\\python_software\\Underline_RETLDC',
+ 'C:\\Users\\chdxm\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip',
+ 'C:\\Users\\chdxm\\AppData\\Local\\Programs\\Python\\Python314\\DLLs',
+ 'C:\\Users\\chdxm\\AppData\\Local\\Programs\\Python\\Python314\\Lib',
+ 'C:\\Users\\chdxm\\AppData\\Local\\Programs\\Python\\Python314',
+ 'D:\\python_software\\Underline_RETLDC\\.venv',
+ 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages',
+ 'D:\\python_software\\Underline_RETLDC\\src',
+ 'D:\\python_software\\Underline_RETLDC',
+ 'D:\\python_software\\Underline_RETLDC\\src']
+3044 INFO: Appending 'datas' from .spec
+3071 INFO: checking Analysis
+3071 INFO: Building Analysis because Analysis-00.toc is non existent
+3071 INFO: Looking for Python shared library...
+3071 INFO: Using Python shared library: C:\Users\chdxm\AppData\Local\Programs\Python\Python314\python314.dll
+3071 INFO: Running Analysis Analysis-00.toc
+3071 INFO: Target bytecode optimization level: 0
+3072 INFO: Initializing module dependency graph...
+3079 INFO: Initializing module graph hook caches...
+3227 INFO: Analyzing modules for base_library.zip ...
+8219 INFO: Processing standard module hook 'hook-encodings.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+9677 INFO: Processing standard module hook 'hook-pickle.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+10120 INFO: Processing standard module hook 'hook-math.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+10320 INFO: Processing standard module hook 'hook-difflib.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+10342 INFO: Processing standard module hook 'hook-heapq.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+17861 INFO: Caching module dependency graph...
+17929 INFO: Analyzing D:\python_software\Underline_RETLDC\main.py
+18032 INFO: Processing standard module hook 'hook-numpy.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+19243 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+19252 INFO: SetuptoolsInfo: initializing cached setuptools info...
+22665 INFO: Processing standard module hook 'hook-platform.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+22721 INFO: Processing standard module hook 'hook-_ctypes.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+23060 INFO: Processing standard module hook 'hook-sysconfig.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+23536 INFO: Processing standard module hook 'hook-webbrowser.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+27066 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+27304 INFO: Processing standard module hook 'hook-xml.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+32127 INFO: Processing standard module hook 'hook-PySide6.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+32908 INFO: Processing standard module hook 'hook-shiboken6.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+33443 INFO: Processing standard module hook 'hook-PySide6.QtNetwork.py' from 'D:\\python_software\\Underline_RETLDC\\.venv\\Lib\\site-packages\\PyInstaller\\hooks'
+[6/8] Copying bundled plugins and user documentation...
+Traceback (most recent call last):
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PyInstaller\isolated\_child.py", line 100, in <module>
+    while run_next_command(read_fh, write_fh):
+          ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PyInstaller\isolated\_child.py", line 82, in run_next_command
+    write_fh.flush()
+    ~~~~~~~~~~~~~~^^
+OSError: [Errno 22] Invalid argument
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\PyInstaller\isolated\_child.py", line 96, in <module>
+    with _open(write_to_parent, "wb") as write_fh:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 22] Invalid argument
+Copied 58 upstream license documents; see docs/third_party/runtime/manifest.json
+Copying notices does not complete Qt corresponding-source or release obligations.
+ERROR: The expected executable was not created.

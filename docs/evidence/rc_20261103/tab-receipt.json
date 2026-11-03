@@ -1,0 +1,42 @@
+﻿{
+    "exe":  "8259A929A0D07C90783BC5E9A5DBD8D139D353D8083D8D1D7F94FE8B4CB3A5CC",
+    "exit":  0,
+    "tab_order":  [
+                      {
+                          "name":  "发动机代号",
+                          "automation_id":  "QApplication.QDialog.motorDraft_motor_designation",
+                          "index":  0
+                      },
+                      {
+                          "name":  "直径 [mm]",
+                          "automation_id":  "QApplication.QDialog.motorDraft_diameter_mm",
+                          "index":  1
+                      },
+                      {
+                          "name":  "长度 [mm]",
+                          "automation_id":  "QApplication.QDialog.motorDraft_length_mm",
+                          "index":  2
+                      },
+                      {
+                          "name":  "延迟 [s]",
+                          "automation_id":  "QApplication.QDialog.motorDraft_delay_s",
+                          "index":  3
+                      },
+                      {
+                          "name":  "推进剂质量 [kg]",
+                          "automation_id":  "QApplication.QDialog.motorDraft_propellant_mass_kg",
+                          "index":  4
+                      },
+                      {
+                          "name":  "发动机总质量 [kg]",
+                          "automation_id":  "QApplication.QDialog.motorDraft_total_motor_mass_kg",
+                          "index":  5
+                      },
+                      {
+                          "name":  "制造商",
+                          "automation_id":  "QApplication.QDialog.motorDraft_manufacturer",
+                          "index":  6
+                      }
+                  ],
+    "escape_returned":  true
+}

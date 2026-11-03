@@ -1,0 +1,6 @@
+Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+Collecting numpy==2.5.2
+  Downloading numpy-2.5.2-cp314-cp314-win_amd64.whl (12.6 MB)
+     ---------------------------------------- 12.6/12.6 MB 633.6 kB/s  0:00:19
+Installing collected packages: numpy
+Successfully installed numpy-2.5.2

@@ -1,0 +1,44 @@
+[
+  {
+    "executable": "D:\\python_software\\Underline_RETLDC\\dist\\rc_20261103\\Underline_RETLDC\\Underline_RETLDC.exe",
+    "working_directory": "D:\\python_software\\Underline_RETLDC\\dist\\rc_20261103\\Underline_RETLDC",
+    "arguments": [
+      "--release-smoke",
+      "D:\\python_software\\Underline_RETLDC\\.work\\rc-20261103\\packaged-final-zh-light-125",
+      "--candidate-flow",
+      "--locale",
+      "zh_CN",
+      "--theme",
+      "light"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 12.3793763,
+    "qt_platform": "windows",
+    "extra_scale": "1",
+    "observed_dpr": 1.25,
+    "completed_checks": 18,
+    "passed": true,
+    "errors": []
+  },
+  {
+    "executable": "D:\\python_software\\Underline_RETLDC\\dist\\rc_20261103\\Underline_RETLDC\\Underline_RETLDC.exe",
+    "working_directory": "D:\\python_software\\Underline_RETLDC\\dist\\rc_20261103\\Underline_RETLDC",
+    "arguments": [
+      "--release-smoke",
+      "D:\\python_software\\Underline_RETLDC\\.work\\rc-20261103\\packaged-final-en-dark-150",
+      "--candidate-flow",
+      "--locale",
+      "en_US",
+      "--theme",
+      "dark"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 13.6810383,
+    "qt_platform": "windows",
+    "extra_scale": "1.2",
+    "observed_dpr": 1.5,
+    "completed_checks": 18,
+    "passed": true,
+    "errors": []
+  }
+]

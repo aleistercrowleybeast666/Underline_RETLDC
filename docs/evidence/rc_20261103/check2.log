@@ -1,0 +1,10 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.1.1, pluggy-1.6.0 -- D:\python_software\Underline_RETLDC\.venv\Scripts\python.exe
+rootdir: D:\python_software\Underline_RETLDC
+configfile: pyproject.toml
+collecting ... collected 2 items
+
+tests/integration/test_release_candidate.py::test_data_cli_without_qt PASSED [ 50%]
+tests/integration/test_release_candidate.py::test_export_mass_and_processing_draft PASSED [100%]
+
+============================= 2 passed in 10.42s ==============================

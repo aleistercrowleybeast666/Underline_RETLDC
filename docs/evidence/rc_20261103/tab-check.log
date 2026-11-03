@@ -1,0 +1,7 @@
+Candidate window did not become active
+At D:\python_software\Underline_RETLDC\docs\evidence\rc_20261103\portable_tab_order.ps1:29 char:27
++ ... if($null -eq $window){throw 'Candidate window did not become active'}
++                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Candidate window did not become active:String) [], RuntimeException
+    + FullyQualifiedErrorId : Candidate window did not become active
+ 

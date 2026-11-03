@@ -1,0 +1,58 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+____________ test_abnormal_builder_exit_must_not_accept_an_old_exe ____________
+
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/rc-20261103/builder-before/test_abnormal_builder_exit_mus0')
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="Windows portable build batch file")
+    def test_abnormal_builder_exit_must_not_accept_an_old_exe(tmp_path: Path) -> None:
+        source = Path(__file__).resolve().parents[2] / "打包.bat"
+        shutil.copyfile(source, tmp_path / "candidate.bat")
+        venv.EnvBuilder(with_pip=False).create(tmp_path / ".venv")
+        (tmp_path / "plugins").mkdir()
+        for stage in ("pytest", "ruff"):
+            (tmp_path / f"{stage}.py").write_text(
+                "# Fault harness only; allow this prior stage to finish.\n", encoding="utf8")
+        (tmp_path / "PyInstaller.py").write_text(
+            "if __name__ == '__main__':\n"
+            " import ctypes\n"
+            " print('FAULT_INJECTION: native process exits 0xffffffff', flush=True)\n"
+            " ctypes.windll.kernel32.ExitProcess(0xffffffff)\n", encoding="utf8")
+        older = tmp_path / "dist/Underline_RETLDC/Underline_RETLDC.exe"
+        older.parent.mkdir(parents=True)
+        older.write_bytes(b"previous candidate sentinel")
+        env = dict(os.environ, CI="1")
+        env.pop("UNDERLINE_RC_20261103", None)
+        result = subprocess.run(
+            [os.environ["COMSPEC"], "/d", "/c", "candidate.bat"], cwd=tmp_path, env=env,
+            capture_output=True, timeout=60, check=False,
+        )
+        output = result.stdout.decode("utf8", errors="replace")
+        assert "FAULT_INJECTION" in output, output
+>       assert "[6/8]" not in output, output
+E       AssertionError: [1/8] Checking project environment...
+
+E         [2/8] Running release preflight: pytest...
+
+E         [3/8] Running release preflight: Ruff...
+
+E         [4/8] Checking PyInstaller...
+
+E         [5/8] Building the one-folder application...
+
+E         FAULT_INJECTION: native process exits 0xffffffff
+
+E         [6/8] Copying bundled plugins and user documentation...
+
+E         
+E       assert '[6/8]' not in '[1/8] Check...ation...\r\n'
+E         
+E         '[6/8]' is contained here:
+E           ffffffff
+E           [6/8] Copying bundled plugins and user documentation...
+E         ? +++++
+
+tests\integration\test_packaging_exit.py:37: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_packaging_exit.py::test_abnormal_builder_exit_must_not_accept_an_old_exe
+1 failed in 11.02s

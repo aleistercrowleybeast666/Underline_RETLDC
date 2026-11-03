@@ -1,0 +1,53 @@
+FF                                                                       [100%]
+================================== FAILURES ===================================
+__________________________ test_data_cli_without_qt ___________________________
+
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/rc-20261103/pre/test_data_cli_without_qt0')
+
+    def test_data_cli_without_qt(tmp_path: Path):
+        (tmp_path / "sitecustomize.py").write_text(
+            "import sys\nclass Guard:\n def find_spec(self, name, *args):\n"
+            "  if name.split('.')[0] in ('PySide6','pyqtgraph'): raise ImportError('Qt unavailable')\n"
+            "sys.meta_path.insert(0, Guard())\n", encoding="utf-8",
+        )
+        result = subprocess.run(
+            [sys.executable, "-m", "underline_retldc.cli", "export",
+             "tests/fixtures/motor_test_package/v1/synthetic_positive.retldc.json",
+             str(tmp_path / "engine.tdmotor.json")], cwd=PROJECT_ROOT,
+            env={**os.environ, "PYTHONPATH": os.pathsep.join((str(tmp_path), str(PROJECT_ROOT / "src")))},
+            capture_output=True, text=True, timeout=35,
+        )
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: Export failed: Plugin loading failed: (Diagnostic(severity=<DiagnosticSeverity.ERROR: 'ERROR'>, code='plugin.import_error', message='Unable to import plugin:ChamberPressureCsvExporter: Qt unavailable', source='D:\\python_software\\Underline_RETLDC\\plugins\\exporters\\chamber_pressure_csv', line=None, plugin_id='builtin.exporter.chamber_pressure_csv', details={'plugin_version': '1.0.0'}),); (Diagnostic(severity=<DiagnosticSeverity.ERROR: 'ERROR'>, code='plugin.import_error', message='Unable to import plugin:ChamberPressurePngExporter: Qt unavailable', source='D:\\python_software\\Underline_RETLDC\\plugins\\exporters\\chamber_pressure_curve_png', line=None, plugin_id='builtin.exporter.chamber_pressure_png', details={'plugin_version': '1.0.0'}),); (Diagnostic(severity=<DiagnosticSeverity.ERROR: 'ERROR'>, code='plugin.import_error', message='Unable to import plugin:TemperatureCsvExporter: Qt unavailable', source='D:\\python_software\\Underline_RETLDC\\plugins\\exporters\\temperature_csv', line=None, plugin_id='builtin.exporter.temperature_csv', details={'plugin_version': '1.0.0'}),); (Diagnostic(severity=<DiagnosticSeverity.ERROR: 'ERROR'>, code='plugin.import_error', message='Unable to import plugin:TemperaturePngExporter: Qt unavailable', source='D:\\python_software\\Underline_RETLDC\\plugins\\exporters\\temperature_curve_png', line=None, plugin_id='builtin.exporter.temperature_png', details={'plugin_version': '1.0.0'}),); (Diagnostic(severity=<DiagnosticSeverity.ERROR: 'ERROR'>, code='plugin.import_error', message='Unable to import plugin:ThrustCurvePngExporter: Qt unavailable', source='D:\\python_software\\Underline_RETLDC\\plugins\\exporters\\thrust_curve_png', line=None, plugin_id='builtin.exporter.thrust_png', details={'plugin_version': '1.0.0'}),)
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['D:\\python_software\\Underline_RETLDC\\.venv\\Scripts\\python.exe', '-m', 'underline_retldc.cl...rs\\\\thrust_curve_png', line=None, plugin_id='builtin.exporter.thrust_png', details={'plugin_version': '1.0.0'}),)\n").returncode
+
+tests\integration\test_release_candidate.py:27: AssertionError
+____________________ test_export_mass_and_processing_draft ____________________
+
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/rc-20261103/pre/test_export_mass_and_processin0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001E654761F30>
+
+    def test_export_mass_and_processing_draft(tmp_path, monkeypatch):
+        _application()
+        window, _ = _window_with_bound_measurements(tmp_path)
+        window.setup_page.motor_edits["propellant_mass_kg"].setText("0.15")
+        window._regions_store({"pre": [0, 2], "active_test": [3, 7], "post": [8, 10]})
+        window._processing_apply()
+        _task_wait(window)
+        window._analysis_calculate()
+        _task_wait(window)
+        initial = window.session.analysis_result
+        assert initial is not None
+        window._export_dialog_show()
+>       assert window.export_dialog.eng_edits["propellant_mass_kg"].isReadOnly()
+E       assert False
+E        +  where False = <built-in method isReadOnly of PySide6.QtWidgets.QLineEdit object at 0x000001E6587C0AC0>()
+E        +    where <built-in method isReadOnly of PySide6.QtWidgets.QLineEdit object at 0x000001E6587C0AC0> = <PySide6.QtWidgets.QLineEdit(0x1e658cf2690) at 0x000001E6587C0AC0>.isReadOnly
+
+tests\integration\test_release_candidate.py:43: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_release_candidate.py::test_data_cli_without_qt
+FAILED tests/integration/test_release_candidate.py::test_export_mass_and_processing_draft
+2 failed in 6.88s

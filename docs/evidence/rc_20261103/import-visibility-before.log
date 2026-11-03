@@ -1,0 +1,43 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+____________ test_raw_property_cancel_revokes_pending_calibration _____________
+
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/rc-20261103/import-before/test_raw_property_cancel_revok0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000286348B9480>
+
+    def test_raw_property_cancel_revokes_pending_calibration(tmp_path, monkeypatch):
+        from threading import Event
+    
+        from test_gui_workflow import _window
+    
+        from underline_retldc.app.settings import SettingsService
+        from underline_retldc.i18n.service import TranslationService
+    
+        app = _application()
+        window = _window(
+            TranslationService("en_US"), SettingsService(tmp_path / "settings.ini"), tmp_path
+        )
+        window.resize(980, 640)
+        window.show()
+        source = tmp_path / "loadcell.txt"
+        source.write_text("0,1\n1,2\n2,3\n3,4\n", encoding="utf8")
+        window.import_page.set_source_path(source)
+        window.import_page.set_parser_id("builtin.parser.tr_f")
+        window.import_page.set_parser_config({"time_unit": "s", "invalid_row_policy": "error"})
+        window._source_parse()
+        _task_wait(window)
+        app.processEvents()
+        from underline_retldc.core.diagnostics import Diagnostic, DiagnosticSeverity
+    
+        imported = window.import_page
+        imported.set_diagnostics(())
+>       assert imported.diagnostics_group.isHidden()
+E       assert False
+E        +  where False = <built-in method isHidden of PySide6.QtWidgets.QGroupBox object at 0x00000286375CDBC0>()
+E        +    where <built-in method isHidden of PySide6.QtWidgets.QGroupBox object at 0x00000286375CDBC0> = <PySide6.QtWidgets.QGroupBox(0x286356ec7b0) at 0x00000286375CDBC0>.isHidden
+E        +      where <PySide6.QtWidgets.QGroupBox(0x286356ec7b0) at 0x00000286375CDBC0> = <underline_retldc.gui.pages.import_page.ImportPage(0x286351d4280) at 0x00000286371EF380>.diagnostics_group
+
+tests\integration\test_release_candidate.py:221: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_release_candidate.py::test_raw_property_cancel_revokes_pending_calibration
+1 failed in 15.67s

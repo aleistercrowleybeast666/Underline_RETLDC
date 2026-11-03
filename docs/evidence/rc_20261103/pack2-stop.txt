@@ -1,0 +1,1 @@
+The complete preflight ran and passed. The agent stopped only its own PyInstaller phase after native-window review found the raw action and prior-result notice could be offscreen. This intermediate compiler run produced no accepted candidate. The final full preflight and fresh build follow in pack3.

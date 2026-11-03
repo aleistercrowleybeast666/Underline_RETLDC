@@ -1,0 +1,8 @@
+Candidate window Underline RETLDC — 0.1.0 handle=8718290
+Motor properties did not open
+At D:\python_software\Underline_RETLDC\docs\evidence\rc_20261103\portable_tab_order.ps1:53 char:27
++     if($null -eq $dialog){throw 'Motor properties did not open'}
++                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Motor properties did not open:String) [], RuntimeException
+    + FullyQualifiedErrorId : Motor properties did not open
+ 

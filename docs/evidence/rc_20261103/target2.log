@@ -1,0 +1,90 @@
+...E..................................                                   [100%]
+=================================== ERRORS ====================================
+___________ ERROR at teardown of test_mass_replay_and_unsaved_guard ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000023FDF345910>
+
+    @pytest.fixture(autouse=True)
+    def _gui_windows_release(monkeypatch) -> Iterator[None]:
+        """Dispose test-owned windows so global theme changes do not revisit old pages."""
+        # Previous fixture frames can keep Python signal cycles alive beyond Qt deletion.
+        # Reclaim them here, on the main thread and before any next-test worker starts.
+        from PySide6.QtWidgets import QMessageBox
+    
+        from underline_retldc.gui.main_window import MainWindow
+    
+        # Test-owned working projects are disposable. Dedicated leave-guard cases
+        # supply Save/Cancel or exercise the real prompt and native buttons.
+        monkeypatch.setattr(
+            MainWindow, "_leave_decision", lambda self: QMessageBox.StandardButton.Discard,
+        )
+        gc.collect()
+        yield
+        from PySide6.QtCore import QEvent
+        from PySide6.QtWidgets import QApplication
+    
+        from underline_retldc.gui.main_window import MainWindow
+    
+        application = QApplication.instance()
+        if application is not None:
+            for widget in application.topLevelWidgets():
+                if isinstance(widget, MainWindow):
+                    # A failed/time-limited test can leave a live worker. Finish cancellation
+                    # before deleting its owner or constructing the next window.
+                    widget.task_manager.shutdown(wait=True, cancel_pending=True)
+>                   widget.close()
+
+tests\conftest.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\underline_retldc\gui\main_window.py:4690: in closeEvent
+    self._leave_request(lambda: QTimer.singleShot(0, self, self._close_confirmed))
+src\underline_retldc\gui\main_window.py:1712: in _leave_request
+    self._project_save(after_save=proceed)
+src\underline_retldc\gui\main_window.py:3718: in _project_save
+    self._project_save_path(self.session.project_path, after_save=after_save)
+src\underline_retldc\gui\main_window.py:3820: in _project_save_path
+    self._task_start(self.translations.translate("export.save_project"), operation, success)
+src\underline_retldc\gui\main_window.py:1507: in _task_start
+    self._active_task = self.task_manager.submit(name, operation)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\underline_retldc\core\task.py:126: in submit
+    handle._future = self._executor.submit(run)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <concurrent.futures.thread.ThreadPoolExecutor object at 0x0000023FE2EA8E10>
+fn = <function TaskManager.submit.<locals>.run at 0x0000023FE53BD2D0>, args = ()
+kwargs = {}
+
+    def submit(self, fn, /, *args, **kwargs):
+        with self._shutdown_lock, _global_shutdown_lock:
+            if self._broken:
+                raise self.BROKEN(self._broken)
+    
+            if self._shutdown:
+>               raise RuntimeError('cannot schedule new futures after shutdown')
+E               RuntimeError: Error calling Python override of QMainWindow::closeEvent(): cannot schedule new futures after shutdown
+
+C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\concurrent\futures\thread.py:205: RuntimeError
+------------------------------ Captured log call ------------------------------
+ERROR    underline_retldc.gui.main_window:main_window.py:1574 Background task 保存工程 JSON… failed
+Traceback (most recent call last):
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\core\task.py", line 115, in run
+    value = operation(context)
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\gui\main_window.py", line 3793, in operation
+    Project_Save(document, path)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\core\project.py", line 619, in Project_Save
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\pathlib\__init__.py", line 1016, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+FileExistsError: [WinError 183] 当文件已存在时，无法创建该文件。: 'D:\\python_software\\Underline_RETLDC\\.work\\rc-20261103\\target2\\test_mass_replay_and_unsaved_g0\\not-a-directory'
+=========================== short test summary info ===========================
+ERROR tests/integration/test_release_candidate.py::test_mass_replay_and_unsaved_guard
+37 passed, 1 error in 44.13s

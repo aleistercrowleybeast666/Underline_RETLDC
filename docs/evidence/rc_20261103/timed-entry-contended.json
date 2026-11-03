@@ -1,0 +1,26 @@
+[
+  {
+    "exit": 0,
+    "seconds": 16.35600819999945,
+    "stderr": "",
+    "command": [
+      "D:\\python_software\\Underline_RETLDC\\.venv\\Scripts\\python.exe",
+      "-u",
+      "D:\\python_software\\Underline_RETLDC\\main.py",
+      "--smoke-test"
+    ],
+    "within_original_15s": false
+  },
+  {
+    "exit": 0,
+    "seconds": 16.79307030000018,
+    "stderr": "",
+    "command": [
+      "D:\\python_software\\Underline_RETLDC\\.venv\\Scripts\\python.exe",
+      "-u",
+      "D:\\python_software\\Underline_RETLDC\\src\\underline_retldc\\__main__.py",
+      "--smoke-test"
+    ],
+    "within_original_15s": false
+  }
+]

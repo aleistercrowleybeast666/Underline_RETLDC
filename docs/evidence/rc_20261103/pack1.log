@@ -1,0 +1,666 @@
+[1/8] Checking project environment...
+[2/8] Running release preflight: pytest...
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\python_software\Underline_RETLDC
+configfile: pyproject.toml
+testpaths: tests
+collected 387 items
+
+tests\integration\test_entry_points.py .....                             [  1%]
+tests\integration\test_export_selection.py .....                         [  2%]
+tests\integration\test_gui_lifecycle.py ..                               [  3%]
+tests\integration\test_gui_workflow.py ...............................F. [ 11%]
+                                                                         [ 11%]
+tests\integration\test_import_state_lifecycle.py ....................    [ 16%]
+tests\integration\test_motor_bridge.py ...............................   [ 24%]
+tests\integration\test_plot_analysis.py .................                [ 29%]
+tests\integration\test_plot_owner_lifecycle.py ..                        [ 29%]
+tests\integration\test_plot_svg.py ....                                  [ 30%]
+tests\integration\test_plot_ui_i18n.py .....                             [ 32%]
+tests\integration\test_plugin_install_gui.py .......                     [ 33%]
+tests\integration\test_plugin_installer_v003.py ...........              [ 36%]
+tests\integration\test_plugin_loader.py ....................             [ 41%]
+tests\integration\test_release_candidate.py ....                         [ 42%]
+tests\integration\test_release_plot_lifecycle.py ..                      [ 43%]
+tests\integration\test_source_alignment.py ....                          [ 44%]
+tests\integration\test_theory_overlay.py ............F........FF.F..FF   [ 51%]
+tests\unit\test_analyzer.py ..                                           [ 52%]
+tests\unit\test_calibration.py ...                                       [ 53%]
+tests\unit\test_exporters.py .........                                   [ 55%]
+tests\unit\test_i18n.py ....                                             [ 56%]
+tests\unit\test_measurement_statistics.py ...                            [ 57%]
+tests\unit\test_motor_parameters.py ......                               [ 58%]
+tests\unit\test_parser.py ................                               [ 63%]
+tests\unit\test_plot_fft_notice.py ...........                           [ 65%]
+tests\unit\test_plot_view.py .............                               [ 69%]
+tests\unit\test_primary_channels.py ...                                  [ 70%]
+tests\unit\test_processing.py .........                                  [ 72%]
+tests\unit\test_project.py .........                                     [ 74%]
+tests\unit\test_settings.py .....                                        [ 75%]
+tests\unit\test_source_alignment_core.py .........                       [ 78%]
+tests\unit\test_source_analysis.py ................                      [ 82%]
+tests\unit\test_tabular.py ....                                          [ 83%]
+tests\unit\test_tabular_auto_detector.py ......................          [ 89%]
+tests\unit\test_task.py ...                                              [ 89%]
+tests\unit\test_theoretical_sources.py ....................              [ 95%]
+tests\unit\test_units_and_defaults.py ...................                [100%]
+
+================================== FAILURES ===================================
+_______ test_new_project_defaults_none_and_restores_explicit_processor ________
+
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/rc-20261103/pack1/test_new_project_defaults_none0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002303F8458D0>
+
+    def test_new_project_defaults_none_and_restores_explicit_processor(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        app = _application()
+        window = _window(TranslationService("en_US"), SettingsService(tmp_path / "s.ini"), tmp_path)
+        processor_id = "builtin.processor.vertical_linear_baseline"
+        assert window.session.processor_id is None
+        assert window.process_page.processor_id() is None
+        assert window.process_page.processor_combo.currentText() == "None"
+        assert window.process_page.polarity_combo.isEnabled()
+        source = tmp_path / "raw.txt"
+        source.write_text("0,0\n1,5\n2,0\n", encoding="utf-8")
+        window.import_page.set_source_path(source)
+        window.import_page.set_parser_id("builtin.parser.tr_f")
+        window._source_parse()
+        _task_wait(window)
+        window.process_page.set_processing_config(processor_id, {})
+        project_path = tmp_path / "explicit.json"
+        Project_Save(window._project_document_create(), project_path)
+>       assert Project_Load(project_path).processors[0].id == processor_id
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       IndexError: tuple index out of range
+
+tests\integration\test_gui_workflow.py:2766: IndexError
+______ test_portable_source_workflow_uses_real_gui_and_generated_fixture ______
+
+window = <underline_retldc.gui.main_window.MainWindow(0x2303b3bdc50) at 0x00000230461F39C0>
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/rc-20261103/pack1/test_portable_source_workflow_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000023046CECF30>
+
+    def test_portable_source_workflow_uses_real_gui_and_generated_fixture(
+        window: MainWindow, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        from underline_retldc.app.release_smoke import _source_workflow_check, _xlsx_write
+    
+        monkeypatch.setattr(
+            window, "_tabular_preview_refresh", MainWindow._tabular_preview_refresh.__get__(window),
+        )
+        source = tmp_path / "generated_4001.xlsx"
+        _xlsx_write(source)
+        window.import_page.add_source_paths([source])
+        window._parser_detect()
+        _wait(window)
+        assert not window._test_errors
+        assert window.session.raw_dataset.sample_count == 4001
+        window._regions_store({"pre": [0, 1], "active_test": [2, 8], "post": [9, 10]})
+        window.process_page.apply_button.click()
+        _wait(window)
+        window.analyze_page.calculate_button.click()
+        _wait(window)
+        window.chamber_pressure_page.calculate_button.click()
+        window.temperature_page.calculate_button.click()
+        report = {"checks": [], "screenshots": []}
+    
+        def check(name: str, passed: bool) -> None:
+            assert passed, name
+            report["checks"].append(name)
+    
+>       _source_workflow_check(window, tmp_path, source, window._test_errors, report, check)
+
+tests\integration\test_theory_overlay.py:911: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\underline_retldc\app\release_smoke.py:643: in _source_workflow_check
+    check(f"plot_view_reopened_{workspace_id}", all(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'plot_view_reopened_thrust_analysis', passed = False
+
+    def check(name: str, passed: bool) -> None:
+>       assert passed, name
+E       AssertionError: plot_view_reopened_thrust_analysis
+E       assert False
+
+tests\integration\test_theory_overlay.py:908: AssertionError
+___________ test_plot_view_reopen_after_shift_and_page_switch[-8.5] ___________
+
+window = <underline_retldc.gui.main_window.MainWindow(0x2303b3be160) at 0x0000023046447D40>
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/rc-20261103/pack1/test_plot_view_reopen_after_sh0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000230462886E0>
+shift = -8.5
+
+    @pytest.mark.parametrize("shift", [-8.5, 4.25])
+    def test_plot_view_reopen_after_shift_and_page_switch(
+        window: MainWindow, tmp_path: Path, monkeypatch, shift: float,
+    ) -> None:
+        path = tmp_path / "view.csv"
+        _experimental_import(window, path)
+        window.import_page.new_kind_combo.setCurrentIndex(1)
+        window.import_page.add_source_paths([path])
+        _configure_theory_mapping(window, path)
+        window._source_parse()
+        _wait(window)
+        window.process_page.theory_overlay.shift_spin.setValue(shift)
+        raw_times = {key: stream.dataset.time.copy()
+                     for key, stream in window.session.project_data.streams.items()}
+        expected = {}
+        for index, (key, plot) in enumerate(window._plot_widgets().items()):
+            view = plot.plot_widget.getViewBox()
+            view.setRange(xRange=(-2.25 + index, 2.75 + index),
+                          yRange=(-10 - index, 10 + index), padding=0)
+            if key == "temperature":
+                view.enableAutoRange(axis=1, enable=.8)
+            expected[key] = tuple(tuple(pair) for pair in view.viewRange())
+        saved = window._plot_views_capture()
+        project = tmp_path / "view.json"
+        window._project_save_path(project)
+        _wait(window)
+        assert Project_Load(project).plot_views == saved
+        monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+        window._project_new()
+        window._project_open_dialog()
+        _wait(window)
+        for _ in range(2):
+            for key, plot in window._plot_widgets().items():
+                window._workspace_select(key)
+                QApplication.processEvents()
+                view = plot.plot_widget.getViewBox()
+>               np.testing.assert_allclose(view.viewRange()[0], expected[key][0])
+E               AssertionError: 
+E               Not equal to tolerance rtol=1e-07, atol=0
+E               
+E               Mismatched elements: 2 / 2 (100%)
+E               Mismatch at indices:
+E                [0]: -8.75 (ACTUAL), -2.25 (DESIRED)
+E                [1]: 4.25 (ACTUAL), 2.75 (DESIRED)
+E               Max absolute difference among violations: 6.5
+E               Max relative difference among violations: 2.88888889
+E                ACTUAL: array([-8.75,  4.25])
+E                DESIRED: array([-2.25,  2.75])
+
+tests\integration\test_theory_overlay.py:1218: AssertionError
+___________ test_plot_view_reopen_after_shift_and_page_switch[4.25] ___________
+
+window = <underline_retldc.gui.main_window.MainWindow(0x2303b3c0b90) at 0x0000023046217DC0>
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/rc-20261103/pack1/test_plot_view_reopen_after_sh1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000023045F6BEE0>
+shift = 4.25
+
+    @pytest.mark.parametrize("shift", [-8.5, 4.25])
+    def test_plot_view_reopen_after_shift_and_page_switch(
+        window: MainWindow, tmp_path: Path, monkeypatch, shift: float,
+    ) -> None:
+        path = tmp_path / "view.csv"
+        _experimental_import(window, path)
+        window.import_page.new_kind_combo.setCurrentIndex(1)
+        window.import_page.add_source_paths([path])
+        _configure_theory_mapping(window, path)
+        window._source_parse()
+        _wait(window)
+        window.process_page.theory_overlay.shift_spin.setValue(shift)
+        raw_times = {key: stream.dataset.time.copy()
+                     for key, stream in window.session.project_data.streams.items()}
+        expected = {}
+        for index, (key, plot) in enumerate(window._plot_widgets().items()):
+            view = plot.plot_widget.getViewBox()
+            view.setRange(xRange=(-2.25 + index, 2.75 + index),
+                          yRange=(-10 - index, 10 + index), padding=0)
+            if key == "temperature":
+                view.enableAutoRange(axis=1, enable=.8)
+            expected[key] = tuple(tuple(pair) for pair in view.viewRange())
+        saved = window._plot_views_capture()
+        project = tmp_path / "view.json"
+        window._project_save_path(project)
+        _wait(window)
+        assert Project_Load(project).plot_views == saved
+        monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+        window._project_new()
+        window._project_open_dialog()
+        _wait(window)
+        for _ in range(2):
+            for key, plot in window._plot_widgets().items():
+                window._workspace_select(key)
+                QApplication.processEvents()
+                view = plot.plot_widget.getViewBox()
+>               np.testing.assert_allclose(view.viewRange()[0], expected[key][0])
+E               AssertionError: 
+E               Not equal to tolerance rtol=1e-07, atol=0
+E               
+E               Mismatched elements: 2 / 2 (100%)
+E               Mismatch at indices:
+E                [0]: -0.165 (ACTUAL), -2.25 (DESIRED)
+E                [1]: 8.415 (ACTUAL), 2.75 (DESIRED)
+E               Max absolute difference among violations: 5.665
+E               Max relative difference among violations: 2.06
+E                ACTUAL: array([-0.165,  8.415])
+E                DESIRED: array([-2.25,  2.75])
+
+tests\integration\test_theory_overlay.py:1218: AssertionError
+___________________ test_fft_scope_sync_and_project_reopen ____________________
+
+window = <underline_retldc.gui.main_window.MainWindow(0x2303b3bd080) at 0x000002304640FEC0>
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/rc-20261103/pack1/test_fft_scope_sync_and_projec0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000023042CDBAF0>
+
+    def test_fft_scope_sync_and_project_reopen(
+        window: MainWindow, tmp_path: Path, monkeypatch,
+    ) -> None:
+        _experimental_import(window, tmp_path / "fft.csv")
+        window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+        window._processing_apply()
+        _wait(window)
+        window._analysis_calculate()
+        _wait(window)
+        analysis = window.session.analysis_result
+        processing = window.session.processing_result
+        bindings = window.session.project_data.primary_channels
+        export_ids = window.export_dialog.selected_exporter_ids()
+        plots = window._plot_widgets()
+        plots["temperature"].analysis_scope_check.setChecked(True)
+        assert window.session.plot_analysis_active_only
+        assert all(plot.analysis_scope_check.isChecked() for plot in plots.values())
+        for plot in plots.values():
+            plot.plot_widget.getPlotItem().ctrl.fftCheck.setChecked(True)
+            assert plot.bottom_axis.labelUnits == "Hz"
+        assert window.session.analysis_result is analysis
+        assert window.session.processing_result is processing
+        assert window.session.project_data.primary_channels == bindings
+        assert window.export_dialog.selected_exporter_ids() == export_ids
+        # Existing manual interval editor remains usable beyond the clipped viewport.
+        window.process_page.interval_editor.set_regions(
+            {"pre": None, "active_test": [.5, 3.5], "post": None},
+        )
+        window.process_page.burn_region.setRegion([.5, 3.5])
+        QApplication.processEvents()
+        assert window.session.regions["active_test"] == [.5, 3.5]
+        project = tmp_path / "fft.project.json"
+        window._project_save_path(project)
+        _wait(window)
+        assert Project_Load(project).plot_analysis_active_only
+        monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+        window._project_new()
+        window._project_open_dialog()
+        _wait(window)
+        for plot in window._plot_widgets().values():
+            assert plot.analysis_scope_check.isChecked()
+>           assert plot.plot_widget.getPlotItem().ctrl.fftCheck.isChecked()
+E           assert False
+E            +  where False = <built-in method isChecked of PySide6.QtWidgets.QCheckBox object at 0x0000023045F59D40>()
+E            +    where <built-in method isChecked of PySide6.QtWidgets.QCheckBox object at 0x0000023045F59D40> = <PySide6.QtWidgets.QCheckBox(0x2303da7c460, name="fftCheck") at 0x0000023045F59D40>.isChecked
+E            +      where <PySide6.QtWidgets.QCheckBox(0x2303da7c460, name="fftCheck") at 0x0000023045F59D40> = <pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_generic.Ui_Form object at 0x00000230461482F0>.fftCheck
+E            +        where <pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_generic.Ui_Form object at 0x00000230461482F0> = <pyqtgraph.graphicsItems.PlotItem.PlotItem.PlotItem(0x23044c49140, pos=0,0, flags=(ItemUsesExtendedStyleOption|ItemSendsGeometryChanges)) at 0x00000230464262C0>.ctrl
+E            +          where <pyqtgraph.graphicsItems.PlotItem.PlotItem.PlotItem(0x23044c49140, pos=0,0, flags=(ItemUsesExtendedStyleOption|ItemSendsGeometryChanges)) at 0x00000230464262C0> = getPlotItem()
+E            +            where getPlotItem = <pyqtgraph.widgets.PlotWidget.PlotWidget(0x2303b03d2b0, name="analysisPlot") at 0x0000023046424B80>.getPlotItem
+E            +              where <pyqtgraph.widgets.PlotWidget.PlotWidget(0x2303b03d2b0, name="analysisPlot") at 0x0000023046424B80> = <underline_retldc.gui.analysis_widgets.AnalysisPlotWidget(0x2303b3c9cb0) at 0x00000230467FB000>.plot_widget
+
+tests\integration\test_theory_overlay.py:1301: AssertionError
+______ test_legacy_missing_view_uses_default_after_another_project_zoom _______
+
+window = <underline_retldc.gui.main_window.MainWindow(0x2303b3bd740) at 0x00000230463ECC40>
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/rc-20261103/pack1/test_legacy_missing_view_uses_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000023046289240>
+
+    def test_legacy_missing_view_uses_default_after_another_project_zoom(
+        window: MainWindow, tmp_path: Path, monkeypatch,
+    ) -> None:
+        _experimental_import(window, tmp_path / "old-view.csv")
+        window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+        window._processing_apply()
+        _wait(window)
+        project = tmp_path / "old-view.json"
+        window._project_save_path(project)
+        _wait(window)
+        payload = json.loads(project.read_text(encoding="utf-8"))
+        payload.pop("plot_views")
+        project.write_text(json.dumps(payload), encoding="utf-8")
+        for plot in window._plot_widgets().values():
+            plot.plot_widget.getViewBox().setRange(
+                xRange=(-200, -100), yRange=(-20, -10), padding=0,
+            )
+        monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+        window._project_open_dialog()
+        _wait(window)
+        for key, plot in window._plot_widgets().items():
+            window._workspace_select(key)
+            QApplication.processEvents()
+            bounds = plot.plot_widget.getViewBox().viewRange()[0]
+>           assert bounds[0] <= 1 <= bounds[1], (key, bounds)
+E           AssertionError: ('chamber_pressure', [-200.0, -100.0])
+E           assert 1 <= -100.0
+
+tests\integration\test_theory_overlay.py:1429: AssertionError
+____________ test_plot_language_keeps_science_and_saved_viewports _____________
+
+window = <underline_retldc.gui.main_window.MainWindow(0x2303b3be820) at 0x0000023042C6E400>
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/rc-20261103/pack1/test_plot_language_keeps_scien0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002304623BA80>
+
+    def test_plot_language_keeps_science_and_saved_viewports(
+        window: MainWindow, tmp_path: Path, monkeypatch,
+    ) -> None:
+        path = tmp_path / "plot-locale.csv"
+        _experimental_import(window, path)
+        window._regions_store({"pre": None, "active_test": [1, 3], "post": None})
+        window._processing_apply()
+        _wait(window)
+        window.setup_page.motor_edits["propellant_mass_kg"].setText(".1")
+        window._analysis_calculate()
+        _wait(window)
+        window.import_page.new_kind_combo.setCurrentIndex(1)
+        window.import_page.add_source_paths([path])
+        _configure_theory_mapping(window, path)
+        window._source_parse()
+        _wait(window)
+        theory = next(source for source in window.session.project_data.sources.values()
+                      if source.source_kind == SourceKind.THEORETICAL)
+        profile = _source_result_calculate(window, window.analyze_page, theory.id)
+        window.process_page.theory_overlay.shift_spin.setValue(1.25)
+        processing = window.session.processing_result
+        analysis = window.session.analysis_result
+        bindings = window.session.project_data.primary_channels
+        regions = dict(window.session.regions)
+        for plot in window._plot_widgets().values():
+            plot.plot_widget.getViewBox().setRange(xRange=(-2, 8), yRange=(-10, 2500), padding=0)
+        before = window._plot_views_capture()
+        for locale in ("zh_CN", "en_US", "zh_CN"):
+            window._locale_select(locale)
+            QApplication.processEvents()
+            for plot in window._plot_widgets().values():
+                item = plot.plot_widget.getPlotItem()
+                assert item.ctrlMenu.title() == ("绘图选项" if locale == "zh_CN" else "Plot Options")
+                assert item.vb.menu.viewAll.text() == (
+                    "适应全部数据" if locale == "zh_CN" else "View All"
+                )
+            assert window._plot_views_capture() == before
+            assert window.session.processing_result is processing
+            assert window.session.analysis_result is analysis
+            assert window.session.source_analyses[profile.config.key] is profile
+            assert window.session.project_data.primary_channels == bindings
+            assert window.session.regions == regions
+            assert window.session.motor_parameters.propellant_mass_kg == .1
+        project = tmp_path / "plot-locale.json"
+        window._project_save_path(project)
+        _wait(window)
+        monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *_a, **_k: (str(project), ""))
+        window._project_new()
+        window._project_open_dialog()
+        _wait(window)
+>       assert window._plot_views_capture() == before
+E       AssertionError: assert {'thrust_anal..._mode=False)}} == {'thrust_anal..._mode=False)}}
+E         
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'thrust_analysis': {'x': AxisViewState(range=(-0.105, 5.355), auto_range=False, linked_to=None, fft_mode=False, log_m...e(range=(-320.0, 4320.0), auto_range=False, linked_to=None, fft_mode=False, log_mode=False, subtract_mean_mode=False)}} != {'thrust_analysis': {'x': AxisViewState(range=(-2.0, 8.0), auto_range=False, linked_to=None, fft_mode=False, log_mode=...te(range=(-10.0, 2500.0), auto_range=False, linked_to=None, fft_mode=False, log_mode=False, subtract_mean_mode=False)}}
+E         
+E         Full diff:
+E           {
+E               'thrust_analysis': {
+E                   'x': AxisViewState(
+E                       range=(
+E         -                       -2.0,
+E         ?                        ^
+E         +                       -0.105,
+E         ?                        ^ + +
+E         -                       8.0,
+E         ?                       ^ ^
+E         +                       5.355,
+E         ?                       ^ ^^^
+E                             ),
+E                       auto_range=False,
+E                       linked_to=None,
+E                       fft_mode=False,
+E                       log_mode=False,
+E                       subtract_mean_mode=False,
+E                   ),
+E                   'y': AxisViewState(
+E                       range=(
+E         -                       -10.0,
+E         ?                        ^
+E         +                       -320.0,
+E         ?                        ^^
+E         -                       2500.0,
+E         ?                        --
+E         +                       4320.0,
+E         ?                       ++
+E                             ),
+E                       auto_range=False,
+E                       linked_to=None,
+E                       fft_mode=False,
+E                       log_mode=False,
+E                       subtract_mean_mode=False,
+E                   ),
+E               },
+E               'chamber_pressure': {
+E                   'x': AxisViewState(
+E                       range=(
+E                                 -2.0,
+E                                 8.0,
+E                             ),
+E                       auto_range=False,
+E                       linked_to=None,
+E                       fft_mode=False,
+E                       log_mode=False,
+E                       subtract_mean_mode=False,
+E                   ),
+E                   'y': AxisViewState(
+E                       range=(
+E                                 -10.0,
+E                                 2500.0,
+E                             ),
+E                       auto_range=False,
+E                       linked_to=None,
+E                       fft_mode=False,
+E                       log_mode=False,
+E                       subtract_mean_mode=False,
+E                   ),
+E               },
+E               'temperature': {
+E                   'x': AxisViewState(
+E                       range=(
+E                                 -2.0,
+E                                 8.0,
+E                             ),
+E                       auto_range=False,
+E                       linked_to=None,
+E                       fft_mode=False,
+E                       log_mode=False,
+E                       subtract_mean_mode=False,
+E                   ),
+E                   'y': AxisViewState(
+E                       range=(
+E                                 -10.0,
+E                                 2500.0,
+E                             ),
+E                       auto_range=False,
+E                       linked_to=None,
+E                       fft_mode=False,
+E                       log_mode=False,
+E                       subtract_mean_mode=False,
+E                   ),
+E               },
+E               'data_explorer': {
+E                   'x': AxisViewState(
+E                       range=(
+E                                 -2.0,
+E                                 8.0,
+E                             ),
+E                       auto_range=False,
+E                       linked_to=None,
+E                       fft_mode=False,
+E                       log_mode=False,
+E                       subtract_mean_mode=False,
+E                   ),
+E                   'y': AxisViewState(
+E                       range=(
+E                                 -10.0,
+E                                 2500.0,
+E                             ),
+E                       auto_range=False,
+E                       linked_to=None,
+E                       fft_mode=False,
+E                       log_mode=False,
+E                       subtract_mean_mode=False,
+E                   ),
+E               },
+E           }
+
+tests\integration\test_theory_overlay.py:1484: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_gui_workflow.py::test_new_project_defaults_none_and_restores_explicit_processor - IndexError: tuple index out of range
+FAILED tests/integration/test_theory_overlay.py::test_portable_source_workflow_uses_real_gui_and_generated_fixture - AssertionError: plot_view_reopened_thrust_analysis
+assert False
+FAILED tests/integration/test_theory_overlay.py::test_plot_view_reopen_after_shift_and_page_switch[-8.5] - AssertionError: 
+Not equal to tolerance rtol=1e-07, atol=0
+
+Mismatched elements: 2 / 2 (100%)
+Mismatch at indices:
+ [0]: -8.75 (ACTUAL), -2.25 (DESIRED)
+ [1]: 4.25 (ACTUAL), 2.75 (DESIRED)
+Max absolute difference among violations: 6.5
+Max relative difference among violations: 2.88888889
+ ACTUAL: array([-8.75,  4.25])
+ DESIRED: array([-2.25,  2.75])
+FAILED tests/integration/test_theory_overlay.py::test_plot_view_reopen_after_shift_and_page_switch[4.25] - AssertionError: 
+Not equal to tolerance rtol=1e-07, atol=0
+
+Mismatched elements: 2 / 2 (100%)
+Mismatch at indices:
+ [0]: -0.165 (ACTUAL), -2.25 (DESIRED)
+ [1]: 8.415 (ACTUAL), 2.75 (DESIRED)
+Max absolute difference among violations: 5.665
+Max relative difference among violations: 2.06
+ ACTUAL: array([-0.165,  8.415])
+ DESIRED: array([-2.25,  2.75])
+FAILED tests/integration/test_theory_overlay.py::test_fft_scope_sync_and_project_reopen - assert False
+ +  where False = <built-in method isChecked of PySide6.QtWidgets.QCheckBox object at 0x0000023045F59D40>()
+ +    where <built-in method isChecked of PySide6.QtWidgets.QCheckBox object at 0x0000023045F59D40> = <PySide6.QtWidgets.QCheckBox(0x2303da7c460, name="fftCheck") at 0x0000023045F59D40>.isChecked
+ +      where <PySide6.QtWidgets.QCheckBox(0x2303da7c460, name="fftCheck") at 0x0000023045F59D40> = <pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_generic.Ui_Form object at 0x00000230461482F0>.fftCheck
+ +        where <pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_generic.Ui_Form object at 0x00000230461482F0> = <pyqtgraph.graphicsItems.PlotItem.PlotItem.PlotItem(0x23044c49140, pos=0,0, flags=(ItemUsesExtendedStyleOption|ItemSendsGeometryChanges)) at 0x00000230464262C0>.ctrl
+ +          where <pyqtgraph.graphicsItems.PlotItem.PlotItem.PlotItem(0x23044c49140, pos=0,0, flags=(ItemUsesExtendedStyleOption|ItemSendsGeometryChanges)) at 0x00000230464262C0> = getPlotItem()
+ +            where getPlotItem = <pyqtgraph.widgets.PlotWidget.PlotWidget(0x2303b03d2b0, name="analysisPlot") at 0x0000023046424B80>.getPlotItem
+ +              where <pyqtgraph.widgets.PlotWidget.PlotWidget(0x2303b03d2b0, name="analysisPlot") at 0x0000023046424B80> = <underline_retldc.gui.analysis_widgets.AnalysisPlotWidget(0x2303b3c9cb0) at 0x00000230467FB000>.plot_widget
+FAILED tests/integration/test_theory_overlay.py::test_legacy_missing_view_uses_default_after_another_project_zoom - AssertionError: ('chamber_pressure', [-200.0, -100.0])
+assert 1 <= -100.0
+FAILED tests/integration/test_theory_overlay.py::test_plot_language_keeps_science_and_saved_viewports - AssertionError: assert {'thrust_anal..._mode=False)}} == {'thrust_anal..._mode=False)}}
+  
+  Omitting 3 identical items, use -vv to show
+  Differing items:
+  {'thrust_analysis': {'x': AxisViewState(range=(-0.105, 5.355), auto_range=False, linked_to=None, fft_mode=False, log_m...e(range=(-320.0, 4320.0), auto_range=False, linked_to=None, fft_mode=False, log_mode=False, subtract_mean_mode=False)}} != {'thrust_analysis': {'x': AxisViewState(range=(-2.0, 8.0), auto_range=False, linked_to=None, fft_mode=False, log_mode=...te(range=(-10.0, 2500.0), auto_range=False, linked_to=None, fft_mode=False, log_mode=False, subtract_mean_mode=False)}}
+  
+  Full diff:
+    {
+        'thrust_analysis': {
+            'x': AxisViewState(
+                range=(
+  -                       -2.0,
+  ?                        ^
+  +                       -0.105,
+  ?                        ^ + +
+  -                       8.0,
+  ?                       ^ ^
+  +                       5.355,
+  ?                       ^ ^^^
+                      ),
+                auto_range=False,
+                linked_to=None,
+                fft_mode=False,
+                log_mode=False,
+                subtract_mean_mode=False,
+            ),
+            'y': AxisViewState(
+                range=(
+  -                       -10.0,
+  ?                        ^
+  +                       -320.0,
+  ?                        ^^
+  -                       2500.0,
+  ?                        --
+  +                       4320.0,
+  ?                       ++
+                      ),
+                auto_range=False,
+                linked_to=None,
+                fft_mode=False,
+                log_mode=False,
+                subtract_mean_mode=False,
+            ),
+        },
+        'chamber_pressure': {
+            'x': AxisViewState(
+                range=(
+                          -2.0,
+                          8.0,
+                      ),
+                auto_range=False,
+                linked_to=None,
+                fft_mode=False,
+                log_mode=False,
+                subtract_mean_mode=False,
+            ),
+            'y': AxisViewState(
+                range=(
+                          -10.0,
+                          2500.0,
+                      ),
+                auto_range=False,
+                linked_to=None,
+                fft_mode=False,
+                log_mode=False,
+                subtract_mean_mode=False,
+            ),
+        },
+        'temperature': {
+            'x': AxisViewState(
+                range=(
+                          -2.0,
+                          8.0,
+                      ),
+                auto_range=False,
+                linked_to=None,
+                fft_mode=False,
+                log_mode=False,
+                subtract_mean_mode=False,
+            ),
+            'y': AxisViewState(
+                range=(
+                          -10.0,
+                          2500.0,
+                      ),
+                auto_range=False,
+                linked_to=None,
+                fft_mode=False,
+                log_mode=False,
+                subtract_mean_mode=False,
+            ),
+        },
+        'data_explorer': {
+            'x': AxisViewState(
+                range=(
+                          -2.0,
+                          8.0,
+                      ),
+                auto_range=False,
+                linked_to=None,
+                fft_mode=False,
+                log_mode=False,
+                subtract_mean_mode=False,
+            ),
+            'y': AxisViewState(
+                range=(
+                          -10.0,
+                          2500.0,
+                      ),
+                auto_range=False,
+                linked_to=None,
+                fft_mode=False,
+                log_mode=False,
+                subtract_mean_mode=False,
+            ),
+        },
+    }
+================== 7 failed, 380 passed in 570.24s (0:09:30) ==================
+ERROR: pytest failed. Portable build was not started.
