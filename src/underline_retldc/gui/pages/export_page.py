@@ -79,6 +79,7 @@ class ExportDialog(QDialog):
         self._availability_refreshing = False
         self._has_processing_draft = False
         self._has_applied_result = False
+        self._needs_calculation = False
         self.setModal(True)
         self.resize(820, 620)
 
@@ -256,9 +257,12 @@ class ExportDialog(QDialog):
         self.close_button.setText(t("common.cancel"))
         self._result_notice_refresh()
 
-    def set_result_state(self, *, draft: bool, has_result: bool, identity: str) -> None:
+    def set_result_state(
+        self, *, draft: bool, has_result: bool, identity: str, needs_calculation: bool = False,
+    ) -> None:
         self._has_processing_draft = draft
         self._has_applied_result = has_result
+        self._needs_calculation = needs_calculation
         self.result_identity.setText(identity)
         self.result_identity.setVisible(bool(identity))
         self._result_notice_refresh()
@@ -266,10 +270,13 @@ class ExportDialog(QDialog):
     def _result_notice_refresh(self) -> None:
         t = self._translations.translate
         previous = self._has_processing_draft and self._has_applied_result
-        self.result_notice.setText(t("export.previous_result"))
-        self.result_notice.setVisible(previous)
-        self.return_to_calculation.setText(t("export.return_calculation"))
-        self.return_to_calculation.setVisible(self._has_processing_draft)
+        self.result_notice.setText(t(
+            "export.previous_result" if previous else "export.current_needs_calculation"))
+        self.result_notice.setVisible(previous or self._needs_calculation)
+        self.return_to_calculation.setText(t(
+            "export.return_calculation" if self._has_processing_draft
+            else "export.return_current_calculation"))
+        self.return_to_calculation.setVisible(self._has_processing_draft or self._needs_calculation)
         self.export_button.setText(t("export.run_previous" if previous else "export.run"))
 
     def set_exporters(self, exporters: tuple[Any, ...]) -> None:

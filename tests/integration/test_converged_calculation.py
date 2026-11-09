@@ -140,6 +140,38 @@ def test_export_with_draft_discloses_applied_result(imported_window):
     assert window._processing_draft() is not None
 
 
+def test_interval_text_then_export_explains_committed_change_and_recalculation(imported_window):
+    window = imported_window
+    window.calculate_action.trigger()
+    _task_wait(window)
+    assert window.session.analysis_result.metrics["total_impulse_ns"] == pytest.approx(220)
+    window.show()
+    end = window.process_page.interval_editor.region_edits["active_test"][1]
+    window.thrust_analysis_page.shell.controls_scroll.ensureWidgetVisible(end)
+    end.setFocus()
+    end.selectAll()
+    QTest.keyClicks(end, "3.95")
+    QTest.mouseClick(
+        window.toolbar.widgetForAction(window.export_action), Qt.MouseButton.LeftButton)
+    _application().processEvents()
+    assert window.session.regions["active_test"] == [2.0, 3.95]
+    assert window.session.analysis_result is None
+    assert window.session.processing_result is None
+    assert window._processing_draft() is None
+    dialog = window.export_dialog
+    assert dialog.result_notice.isVisible()
+    assert "current inputs or test interval" in dialog.result_notice.text()
+    assert dialog.return_to_calculation.isVisible()
+    assert not dialog.exporter_checks["builtin.exporter.treediagram_motor"].isEnabled()
+    dialog.return_to_calculation.click()
+    assert window.calculate_action.isEnabled()
+    window.calculate_action.trigger()
+    _task_wait(window)
+    assert window.session.analysis_result.metrics["total_impulse_ns"] == pytest.approx(219.25)
+    assert not window.analyze_page.applied_notice.isVisible()
+    assert not window._test_errors
+
+
 @pytest.mark.parametrize("cancel", [False, True])
 def test_cancel_or_newer_draft_does_not_replace_valid_result(imported_window, monkeypatch, cancel):
     from threading import Event

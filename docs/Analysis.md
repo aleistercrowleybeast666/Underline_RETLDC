@@ -72,6 +72,10 @@ the duplicate generic metrics without recomputation. The Export dialog labels th
 source, interval and impulse. With a draft it says that new changes are excluded, provides a
 return-to-calculation action, and labels its explicit export button **Export applied results**.
 Export still uses the existing immutable snapshot and atomic multi-file publication.
+Test-interval edits are different from a processing-form draft: they immediately commit to
+the single Project segmentation owner and invalidate dependent results. The results panel and
+Export dialog explain the need to calculate the current inputs/interval and provide the same
+return-to-calculation entry. They never export an old result with newly committed boundaries.
 
 The three analysis pages share right-panel margins and a Results / Diagnostics arrangement,
 with a 2:1 stretch ratio when diagnostics exist. Chamber Pressure

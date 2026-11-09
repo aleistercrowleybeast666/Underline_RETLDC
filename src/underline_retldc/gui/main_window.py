@@ -1745,18 +1745,21 @@ class MainWindow(QMainWindow, ProjectPipeline):
             return
         draft = self._processing_has_draft()
         result = self.session.analysis_result is not None
+        needs_calculation = not result and not self._primary_calculation_blocker()
         t = self.translations.translate
         self.process_page.restore_button.setVisible(draft)
         self.process_page.draft_status.setText(t(
             "process.previous_result" if draft and result else "process.unapplied" if draft
-            else "process.valid" if result else "process.needs_calculation"
+            else "process.valid" if result else "process.current_needs_calculation"
+            if needs_calculation else "process.needs_calculation"
         ))
         status = t("project.unsaved" if self._project_key() != self._saved_key
                    else "project.saved" if self.session.project_path else "project.new")
         self.document_status.setText(
             status + " · " + t("process.unapplied") if draft else status)
-        self.analyze_page.applied_notice.setText(t("process.previous_result"))
-        self.analyze_page.applied_notice.setVisible(draft and result)
+        self.analyze_page.applied_notice.setText(t(
+            "process.previous_result" if draft and result else "process.current_needs_calculation"))
+        self.analyze_page.applied_notice.setVisible((draft and result) or needs_calculation)
         self.process_page.apply_button.setText(t(
             "process.apply" if draft else "analyze.calculate_relative"
             if self._primary_relative_only() else "analyze.update" if result
@@ -1781,6 +1784,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self.export_dialog.set_result_state(
             draft=self._processing_has_draft(), has_result=result is not None,
             identity=identity,
+            needs_calculation=result is None and not self._primary_calculation_blocker(),
         )
 
     def _export_calculation_focus(self) -> None:
