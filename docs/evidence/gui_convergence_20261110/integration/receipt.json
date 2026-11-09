@@ -1,0 +1,40 @@
+{
+  "scope": "New synthetic software fixture; not a device measurement or calibration",
+  "command": [
+    "D:\\python_software\\Underline_RETLDC\\.venv\\Scripts\\python.exe",
+    "-X",
+    "utf8",
+    "-m",
+    "underline_retldc.cli",
+    "export",
+    "D:\\python_software\\Underline_RETLDC\\.work\\gui-convergence-20261110\\integration\\Synthetic_20261110.retldc.json",
+    "D:\\python_software\\Underline_RETLDC\\.work\\gui-convergence-20261110\\integration\\motor.tdmotor.json"
+  ],
+  "exit_code": 0,
+  "source_sha256": "fe46ccce39dc92765e6848021df540558b40d3d4bb95b7f00ba0c1b181e6a615",
+  "files": {
+    "synthetic_20261110.csv": {
+      "bytes": 4310,
+      "sha256": "fe46ccce39dc92765e6848021df540558b40d3d4bb95b7f00ba0c1b181e6a615"
+    },
+    "Synthetic_20261110.retldc.json": {
+      "bytes": 11750,
+      "sha256": "1f2c4168fcda6d18d13332febfdf6e693eec4d941d027b789917b203b1354516"
+    },
+    "motor.tdmotor.json": {
+      "bytes": 10507,
+      "sha256": "eed976bb0d95d90f680a6b72988e42b2a93b5342d5756a1d4a0a437930f017e3"
+    }
+  },
+  "content_sha256": "fc07e75df6171d5da31e54adb0417ff8babc93f38be254a2d9667dbb2dcedd66",
+  "metrics": {
+    "total_impulse_ns": 225.0
+  },
+  "motor": {
+    "name": "Synthetic-225-20261110",
+    "propellant_mass_kg": 0.18,
+    "total_mass_kg": 0.42,
+    "diameter_m": 0.054,
+    "length_m": 0.24
+  }
+}

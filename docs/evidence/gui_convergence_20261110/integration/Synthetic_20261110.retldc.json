@@ -1,0 +1,442 @@
+{
+  "schema": "underline-retldc-project/2",
+  "source_analyses": {},
+  "calibrated_stream_ids": [
+    "stream_1"
+  ],
+  "software_version": "0.1.0",
+  "source": {
+    "path": "D:\\python_software\\Underline_RETLDC\\.work\\gui-convergence-20261110\\integration\\synthetic_20261110.csv",
+    "sha256": "fe46ccce39dc92765e6848021df540558b40d3d4bb95b7f00ba0c1b181e6a615"
+  },
+  "sources": [
+    {
+      "source_id": "source_1",
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\gui-convergence-20261110\\integration\\synthetic_20261110.csv",
+      "sha256": "fe46ccce39dc92765e6848021df540558b40d3d4bb95b7f00ba0c1b181e6a615",
+      "parser": {
+        "id": "builtin.parser.generic_delimited",
+        "version": "1.0.0",
+        "api_version": "1",
+        "config": {
+          "delimiter": ",",
+          "custom_delimiter": "",
+          "encoding": "auto",
+          "header_row": 1,
+          "data_start_row": 2,
+          "data_end_row": null,
+          "time": {
+            "mode": "column",
+            "column": 0,
+            "unit": "s"
+          },
+          "columns": [
+            {
+              "column": 0,
+              "usage": "time",
+              "expected_header": null,
+              "unit": "s"
+            },
+            {
+              "column": 1,
+              "usage": "data",
+              "expected_header": null,
+              "display_name": "thrust_N",
+              "channel_id": "thrust",
+              "quantity": "force",
+              "role": "thrust",
+              "unit": "N"
+            },
+            {
+              "column": 2,
+              "usage": "data",
+              "expected_header": null,
+              "display_name": "pressure_Pa",
+              "channel_id": "pressure",
+              "quantity": "pressure",
+              "role": "chamber_pressure",
+              "unit": "Pa"
+            },
+            {
+              "column": 3,
+              "usage": "data",
+              "expected_header": null,
+              "display_name": "temperature_degC",
+              "channel_id": "temperature",
+              "quantity": "temperature",
+              "role": "temperature",
+              "unit": "°C"
+            }
+          ],
+          "invalid_row_policy": "error"
+        }
+      },
+      "source_kind": "experimental",
+      "display_transform": {
+        "shift_s": 0.0,
+        "zero_start": false,
+        "hidden_curve_ids": [],
+        "detected_test": null
+      }
+    }
+  ],
+  "streams": [
+    {
+      "stream_id": "stream_1",
+      "source_id": "source_1",
+      "time_offset_s": 0.0,
+      "name": "synthetic_20261110.csv"
+    }
+  ],
+  "parser": {
+    "id": "builtin.parser.generic_delimited",
+    "version": "1.0.0",
+    "api_version": "1",
+    "config": {
+      "delimiter": ",",
+      "custom_delimiter": "",
+      "encoding": "auto",
+      "header_row": 1,
+      "data_start_row": 2,
+      "data_end_row": null,
+      "time": {
+        "mode": "column",
+        "column": 0,
+        "unit": "s"
+      },
+      "columns": [
+        {
+          "column": 0,
+          "usage": "time",
+          "expected_header": null,
+          "unit": "s"
+        },
+        {
+          "column": 1,
+          "usage": "data",
+          "expected_header": null,
+          "display_name": "thrust_N",
+          "channel_id": "thrust",
+          "quantity": "force",
+          "role": "thrust",
+          "unit": "N"
+        },
+        {
+          "column": 2,
+          "usage": "data",
+          "expected_header": null,
+          "display_name": "pressure_Pa",
+          "channel_id": "pressure",
+          "quantity": "pressure",
+          "role": "chamber_pressure",
+          "unit": "Pa"
+        },
+        {
+          "column": 3,
+          "usage": "data",
+          "expected_header": null,
+          "display_name": "temperature_degC",
+          "channel_id": "temperature",
+          "quantity": "temperature",
+          "role": "temperature",
+          "unit": "°C"
+        }
+      ],
+      "invalid_row_policy": "error"
+    }
+  },
+  "calibration": {
+    "id": "builtin.calibration.identity",
+    "version": "1.0.0",
+    "api_version": "1",
+    "config": {
+      "input_channel_id": "thrust",
+      "output_channel_id": "thrust_calibrated",
+      "quantity": "force",
+      "unit": "N",
+      "parameters": {},
+      "data_quantity": "force",
+      "data_unit": "N",
+      "display_unit": "N",
+      "semantic_role": "thrust"
+    }
+  },
+  "processors": [],
+  "regions": {
+    "pre": [
+      0.0,
+      1.0
+    ],
+    "active_test": [
+      2.0,
+      4.0
+    ],
+    "post": [
+      5.0,
+      6.0
+    ]
+  },
+  "channels": {
+    "thrust": {
+      "channel_id": "thrust",
+      "quantity": "force",
+      "data_unit": "N",
+      "unit_source": "plugin_declared",
+      "source_id": "source_1",
+      "stream_id": "stream_1",
+      "display_unit": null,
+      "semantic_role": "thrust",
+      "calibration": {
+        "id": "builtin.calibration.identity",
+        "version": "1.0.0",
+        "api_version": "1",
+        "config": {
+          "input_channel_id": "thrust",
+          "output_channel_id": "thrust_calibrated",
+          "quantity": "force",
+          "unit": "N",
+          "parameters": {},
+          "data_quantity": "force",
+          "data_unit": "N",
+          "display_unit": "N",
+          "semantic_role": "thrust"
+        }
+      },
+      "output_channel_id": "thrust_calibrated"
+    },
+    "pressure": {
+      "channel_id": "pressure",
+      "quantity": "pressure",
+      "data_unit": "Pa",
+      "unit_source": "plugin_declared",
+      "source_id": "source_1",
+      "stream_id": "stream_1",
+      "display_unit": null,
+      "semantic_role": "chamber_pressure",
+      "calibration": {
+        "id": "builtin.calibration.identity",
+        "version": "1.0.0",
+        "api_version": "1",
+        "config": {
+          "input_channel_id": "pressure",
+          "output_channel_id": "pressure_calibrated",
+          "quantity": "pressure",
+          "unit": "Pa",
+          "parameters": {},
+          "data_quantity": "pressure",
+          "data_unit": "Pa",
+          "display_unit": "MPa",
+          "semantic_role": "chamber_pressure"
+        }
+      },
+      "output_channel_id": "pressure_calibrated"
+    },
+    "temperature": {
+      "channel_id": "temperature",
+      "quantity": "temperature",
+      "data_unit": "°C",
+      "unit_source": "plugin_declared",
+      "source_id": "source_1",
+      "stream_id": "stream_1",
+      "display_unit": null,
+      "semantic_role": "temperature",
+      "calibration": {
+        "id": "builtin.calibration.identity",
+        "version": "1.0.0",
+        "api_version": "1",
+        "config": {
+          "input_channel_id": "temperature",
+          "output_channel_id": "temperature_calibrated",
+          "quantity": "temperature",
+          "unit": "°C",
+          "parameters": {},
+          "data_quantity": "temperature",
+          "data_unit": "°C",
+          "display_unit": "°C",
+          "semantic_role": "temperature"
+        }
+      },
+      "output_channel_id": "temperature_calibrated"
+    }
+  },
+  "primary_channels": {
+    "thrust": {
+      "source_id": "source_1",
+      "stream_id": "stream_1",
+      "channel_id": "thrust"
+    },
+    "chamber_pressure": {
+      "source_id": "source_1",
+      "stream_id": "stream_1",
+      "channel_id": "pressure"
+    },
+    "temperature_channels": [
+      {
+        "source_id": "source_1",
+        "stream_id": "stream_1",
+        "channel_id": "temperature"
+      }
+    ]
+  },
+  "thrust_polarity": 1,
+  "reference_pressure_pa": 101325.0,
+  "pressure_reference_visible": true,
+  "processing_metadata": {
+    "compensation": "none",
+    "processor_id": null,
+    "thrust_polarity": 1
+  },
+  "analyzer": {
+    "id": "builtin.analyzer.thrust",
+    "version": "1.0.0",
+    "api_version": "1",
+    "config": {
+      "propellant_mass_kg": 0.18,
+      "total_motor_mass_kg": 0.42,
+      "diameter_mm": 54.0,
+      "length_mm": 240.0,
+      "channel_id": "thrust_processed",
+      "ignition": 2.0,
+      "burnout": 4.0,
+      "equivalent_mass_change_kg": null
+    }
+  },
+  "motor_metadata": {
+    "motor_designation": "Synthetic-225-20261110",
+    "diameter_mm": 54.0,
+    "length_mm": 240.0,
+    "propellant_mass_kg": 0.18,
+    "total_motor_mass_kg": 0.42,
+    "manufacturer": "Software fixture"
+  },
+  "plot_views": {
+    "thrust_analysis": {
+      "x": {
+        "range": [
+          -0.12,
+          6.12
+        ],
+        "auto_range": false,
+        "linked_to": null,
+        "fft_mode": false,
+        "log_mode": false,
+        "subtract_mean_mode": false
+      },
+      "y": {
+        "range": [
+          -18.0,
+          243.0
+        ],
+        "auto_range": false,
+        "linked_to": null,
+        "fft_mode": false,
+        "log_mode": false,
+        "subtract_mean_mode": false
+      }
+    },
+    "chamber_pressure": {
+      "x": {
+        "range": [
+          0.0,
+          1.0
+        ],
+        "auto_range": true,
+        "linked_to": null,
+        "fft_mode": false,
+        "log_mode": false,
+        "subtract_mean_mode": false
+      },
+      "y": {
+        "range": [
+          0.0,
+          1.0
+        ],
+        "auto_range": true,
+        "linked_to": null,
+        "fft_mode": false,
+        "log_mode": false,
+        "subtract_mean_mode": false
+      }
+    },
+    "temperature": {
+      "x": {
+        "range": [
+          0.0,
+          1.0
+        ],
+        "auto_range": true,
+        "linked_to": null,
+        "fft_mode": false,
+        "log_mode": false,
+        "subtract_mean_mode": false
+      },
+      "y": {
+        "range": [
+          0.0,
+          1.0
+        ],
+        "auto_range": true,
+        "linked_to": null,
+        "fft_mode": false,
+        "log_mode": false,
+        "subtract_mean_mode": false
+      }
+    },
+    "data_explorer": {
+      "x": {
+        "range": [
+          0.0,
+          1.0
+        ],
+        "auto_range": true,
+        "linked_to": null,
+        "fft_mode": false,
+        "log_mode": false,
+        "subtract_mean_mode": false
+      },
+      "y": {
+        "range": [
+          0.0,
+          1.0
+        ],
+        "auto_range": true,
+        "linked_to": null,
+        "fft_mode": false,
+        "log_mode": false,
+        "subtract_mean_mode": false
+      }
+    }
+  },
+  "plot_analysis_active_only": false,
+  "export_settings": {
+    "directory": "D:\\python_software\\Underline_RETLDC\\.work\\gui-convergence-20261110\\integration\\Synthetic_20261110_exports",
+    "selected_exporter_ids": [
+      "builtin.exporter.analysis_txt",
+      "builtin.exporter.analysis_json",
+      "builtin.exporter.csv",
+      "builtin.exporter.thrust_png",
+      "builtin.exporter.openrocket_eng",
+      "builtin.exporter.treediagram_motor"
+    ],
+    "selection_initialized_exporter_ids": [
+      "builtin.exporter.analysis_txt",
+      "builtin.exporter.analysis_json",
+      "builtin.exporter.csv",
+      "builtin.exporter.thrust_png",
+      "builtin.exporter.openrocket_eng",
+      "builtin.exporter.treediagram_motor"
+    ],
+    "annotate_metrics": true,
+    "output_locale": "follow_ui"
+  },
+  "workflow_state": {
+    "parsed": true,
+    "calibrated": true,
+    "processed": true,
+    "analyzed": true,
+    "chamber_pressure_analyzed": false,
+    "temperature_analyzed": false
+  },
+  "locale": "en_US",
+  "diagnostics": []
+}

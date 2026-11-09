@@ -1,0 +1,2 @@
+integration/*.csv -text
+*.json -text

@@ -1,0 +1,85 @@
+F.....                                                                   [100%]
+================================== FAILURES ===================================
+_______ test_unit_mode_axes_results_and_analysis_layout_are_consistent ________
+
+tmp_path = WindowsPath('D:/python_software/Underline_RETLDC/.work/gui-convergence-20261110/regression/test_unit_mode_axes_results_an0')
+
+    def test_unit_mode_axes_results_and_analysis_layout_are_consistent(
+        tmp_path: Path,
+    ) -> None:
+        app = _application()
+        window, _dataset = _window_with_bound_measurements(tmp_path)
+        window.show()
+        window.resize(980, 640)
+        window.navigation.setCurrentRow(0)
+        app.processEvents()
+    
+        project_page = window.project_page
+        assert project_page.splitter.orientation() is Qt.Orientation.Vertical
+        assert not project_page.splitter.childrenCollapsible()
+        assert all(not project_page.splitter.isCollapsible(index) for index in range(2))
+        assert project_page.import_scroll.horizontalScrollBarPolicy() is (
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        assert project_page.setup_scroll.horizontalScrollBarPolicy() is (
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+    
+        window.navigation.setCurrentRow(1)
+        app.processEvents()
+    
+        shell = window.thrust_analysis_page.shell
+        header_theme_right = window.theme_combo.mapTo(
+            window.header_widget,
+            window.theme_combo.rect().bottomRight(),
+        ).x()
+        assert header_theme_right <= window.header_widget.contentsRect().right()
+        assert shell.controls_scroll.verticalScrollBarPolicy() is (
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        assert shell.controls_scroll.horizontalScrollBarPolicy() is (
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        assert not shell.splitter.childrenCollapsible()
+        assert all(not shell.splitter.isCollapsible(index) for index in range(3))
+        assert shell.controls_scroll.maximumWidth() == 360
+        assert shell.controls_scroll.minimumWidth() == 280
+        assert shell.results.minimumWidth() == 220
+        assert shell.results.maximumWidth() == 310
+        assert shell.plot.minimumWidth() == 250
+        assert shell.controls_scroll.width() >= 280
+        assert shell.results.width() >= 220
+        assert shell.plot.width() >= 250
+        compact_plot_width = shell.plot.width()
+        shell.splitter.setSizes([0, 1000, 0])
+        app.processEvents()
+        assert shell.controls_scroll.width() >= 280
+        assert shell.results.width() >= 220
+        assert shell.plot.width() >= 250
+    
+        window.navigation.setCurrentRow(2)
+        app.processEvents()
+        pressure_shell = window.chamber_pressure_page.shell
+        assert not pressure_shell.splitter.childrenCollapsible()
+        assert pressure_shell.controls_scroll.width() >= 280
+        assert pressure_shell.results.width() >= 220
+        pressure_editor = window.chamber_pressure_page.interval_editor
+        assert pressure_editor is not None
+        assert pressure_editor.detect_button.text() == (
+            "Auto-Detect Interval from Chamber Pressure"
+        )
+        assert pressure_editor.minimumSizeHint().width() <= pressure_editor.width()
+>       assert pressure_editor.width() <= pressure_shell.controls_scroll.viewport().width()
+E       assert 276 <= 267
+E        +  where 276 = <built-in method width of TestIntervalEditor object at 0x0000017104D0FF00>()
+E        +    where <built-in method width of TestIntervalEditor object at 0x0000017104D0FF00> = <underline_retldc.gui.test_interval_widget.TestIntervalEditor(0x1710552d9c0) at 0x0000017104D0FF00>.width
+E        +  and   267 = <built-in method width of PySide6.QtWidgets.QWidget object at 0x000001710320CF80>()
+E        +    where <built-in method width of PySide6.QtWidgets.QWidget object at 0x000001710320CF80> = <PySide6.QtWidgets.QWidget(0x17105bd04a0, name="qt_scrollarea_viewport") at 0x000001710320CF80>.width
+E        +      where <PySide6.QtWidgets.QWidget(0x17105bd04a0, name="qt_scrollarea_viewport") at 0x000001710320CF80> = <built-in method viewport of PySide6.QtWidgets.QScrollArea object at 0x000001710607D2C0>()
+E        +        where <built-in method viewport of PySide6.QtWidgets.QScrollArea object at 0x000001710607D2C0> = <PySide6.QtWidgets.QScrollArea(0x17105b3dc30, name="analysisControlsScroll") at 0x000001710607D2C0>.viewport
+E        +          where <PySide6.QtWidgets.QScrollArea(0x17105b3dc30, name="analysisControlsScroll") at 0x000001710607D2C0> = <underline_retldc.gui.analysis_widgets.AnalysisWorkspaceShell(0x171059b4fc0) at 0x000001710607D300>.controls_scroll
+
+tests\integration\test_gui_workflow.py:2236: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_gui_workflow.py::test_unit_mode_axes_results_and_analysis_layout_are_consistent
+1 failed, 5 passed in 57.90s

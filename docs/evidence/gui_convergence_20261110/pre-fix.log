@@ -1,0 +1,102 @@
+FFFF                                                                     [100%]
+================================== FAILURES ===================================
+____________ test_first_toolbar_calculation_processes_and_analyzes ____________
+
+imported_window = <underline_retldc.gui.main_window.MainWindow(0x1c874025be0) at 0x000001C87648A500>
+
+    def test_first_toolbar_calculation_processes_and_analyzes(imported_window):
+        window = imported_window
+        assert window.session.processing_result is None
+>       assert window.calculate_action.isEnabled()
+E       assert False
+E        +  where False = <built-in method isEnabled of PySide6.QtGui.QAction object at 0x000001C8788D0600>()
+E        +    where <built-in method isEnabled of PySide6.QtGui.QAction object at 0x000001C8788D0600> = <PySide6.QtGui.QAction(0x1c87831b990 text="Calculate Analysis Results" toolTip="Calculate Analysis Results" menuRole=TextHeuristicRole enabled=false visible=true) at 0x000001C8788D0600>.isEnabled
+E        +      where <PySide6.QtGui.QAction(0x1c87831b990 text="Calculate Analysis Results" toolTip="Calculate Analysis Results" menuRole=TextHeuristicRole enabled=false visible=true) at 0x000001C8788D0600> = <underline_retldc.gui.main_window.MainWindow(0x1c874025be0) at 0x000001C87648A500>.calculate_action
+
+tests\integration\test_converged_calculation.py:63: AssertionError
+________________ test_toolbar_applies_current_processing_draft ________________
+
+imported_window = <underline_retldc.gui.main_window.MainWindow(0x1c877226e20) at 0x000001C87691FE00>
+
+    def test_toolbar_applies_current_processing_draft(imported_window):
+        window = imported_window
+        old_processing, old_result = _previous_result(window)
+        window.process_page.processor_combo.setCurrentIndex(1)
+        assert window._processing_draft() is not None
+        assert window.session.analysis_result is old_result
+        window.calculate_action.trigger()
+        _task_wait(window)
+>       assert window._processing_draft() is None
+E       AssertionError: assert {'plugin_id': 'builtin.processor.vertical_linear_baseline', 'parameters': {}} is None
+E        +  where {'plugin_id': 'builtin.processor.vertical_linear_baseline', 'parameters': {}} = _processing_draft()
+E        +    where _processing_draft = <underline_retldc.gui.main_window.MainWindow(0x1c877226e20) at 0x000001C87691FE00>._processing_draft
+
+tests\integration\test_converged_calculation.py:79: AssertionError
+_____________ test_analysis_failure_retains_previous_applied_pair _____________
+
+imported_window = <underline_retldc.gui.main_window.MainWindow(0x1c877222aa0) at 0x000001C876892D80>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001C87614B650>
+
+    def test_analysis_failure_retains_previous_applied_pair(imported_window, monkeypatch):
+        window = imported_window
+        old_processing, old_result = _previous_result(window)
+        window.process_page.processor_combo.setCurrentIndex(1)
+    
+        def fail(*_args):
+            raise ValueError("injected analyzer failure")
+    
+        monkeypatch.setattr(window.registry.get("builtin.analyzer.thrust"), "analyze", fail)
+        window.process_page.apply_button.click()
+        _task_wait(window)
+>       assert window.session.processing_result is old_processing
+E       AssertionError: assert ProcessingResult(dataset=Dataset(time=array([0.  , 0.05, 0.1 , 0.15, 0.2 , 0.25, 0.3 , 0.35, 0.4 , 0.45, 0.5 ,\n       ...age': 'manual_reference_only', 'regions': {'pre': [0.0, 1.0], 'burn': [2.0, 4.0], 'post': [5.0, 6.0]}}, diagnostics=()) is ProcessingResult(dataset=Dataset(time=array([0.  , 0.05, 0.1 , 0.15, 0.2 , 0.25, 0.3 , 0.35, 0.4 , 0.45, 0.5 ,\n       ...s=('thrust_processed',), metadata={'compensation': 'none', 'processor_id': None, 'thrust_polarity': 1}, diagnostics=())
+E        +  where ProcessingResult(dataset=Dataset(time=array([0.  , 0.05, 0.1 , 0.15, 0.2 , 0.25, 0.3 , 0.35, 0.4 , 0.45, 0.5 ,\n       ...age': 'manual_reference_only', 'regions': {'pre': [0.0, 1.0], 'burn': [2.0, 4.0], 'post': [5.0, 6.0]}}, diagnostics=()) = AnalysisSession(project_path=None, source_path=WindowsPath('D:/python_software/Underline_RETLDC/.work/gui-convergence-...nge=True, linked_to=None, fft_mode=False, log_mode=False, subtract_mean_mode=False)}}, plot_analysis_active_only=False).processing_result
+E        +    where AnalysisSession(project_path=None, source_path=WindowsPath('D:/python_software/Underline_RETLDC/.work/gui-convergence-...nge=True, linked_to=None, fft_mode=False, log_mode=False, subtract_mean_mode=False)}}, plot_analysis_active_only=False) = <underline_retldc.gui.main_window.MainWindow(0x1c877222aa0) at 0x000001C876892D80>.session
+
+tests\integration\test_converged_calculation.py:96: AssertionError
+------------------------------ Captured log call ------------------------------
+ERROR    underline_retldc.gui.main_window:main_window.py:1574 Background task Analyzing thrust�� failed
+Traceback (most recent call last):
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Users\chdxm\AppData\Local\Programs\Python\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\core\task.py", line 115, in run
+    value = operation(context)
+  File "D:\python_software\Underline_RETLDC\src\underline_retldc\gui\main_window.py", line 3437, in operation
+    result = analyzer.analyze(processing.dataset, config, context)
+  File "D:\python_software\Underline_RETLDC\tests\integration\test_converged_calculation.py", line 91, in fail
+    raise ValueError("injected analyzer failure")
+ValueError: injected analyzer failure
+_______________ test_export_with_draft_discloses_applied_result _______________
+
+imported_window = <underline_retldc.gui.main_window.MainWindow(0x1c877227180) at 0x000001C879BB5280>
+
+    def test_export_with_draft_discloses_applied_result(imported_window):
+        window = imported_window
+        _previous_result(window)
+        window.process_page.processor_combo.setCurrentIndex(1)
+        window.export_action.trigger()
+        _application().processEvents()
+        dialog = window.export_dialog
+>       assert dialog.result_notice.isVisible()
+               ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'ExportDialog' object has no attribute 'result_notice'
+
+tests\integration\test_converged_calculation.py:109: AttributeError
+============================== warnings summary ===============================
+.venv\Lib\site-packages\_pytest\cacheprovider.py:469
+  D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\cacheprovider.py:469: PytestCacheWarning: could not create cache path D:\python_software\Underline_RETLDC\.pytest_cache\v\cache\nodeids: [WinError 183] ���ļ��Ѵ���ʱ���޷��������ļ���: 'D:\\python_software\\Underline_RETLDC\\.pytest_cache\\v\\cache'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+.venv\Lib\site-packages\_pytest\cacheprovider.py:423
+  D:\python_software\Underline_RETLDC\.venv\Lib\site-packages\_pytest\cacheprovider.py:423: PytestCacheWarning: could not create cache path D:\python_software\Underline_RETLDC\.pytest_cache\v\cache\lastfailed: [WinError 183] ���ļ��Ѵ���ʱ���޷��������ļ���: 'D:\\python_software\\Underline_RETLDC\\.pytest_cache\\v\\cache'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/integration/test_converged_calculation.py::test_first_toolbar_calculation_processes_and_analyzes
+FAILED tests/integration/test_converged_calculation.py::test_toolbar_applies_current_processing_draft
+FAILED tests/integration/test_converged_calculation.py::test_analysis_failure_retains_previous_applied_pair
+FAILED tests/integration/test_converged_calculation.py::test_export_with_draft_discloses_applied_result
+4 failed, 2 warnings in 36.61s

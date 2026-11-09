@@ -1,0 +1,16 @@
+{
+  "source_commit": "72390b900427b1f57c12b8688390351a762dc1ff",
+  "executable": "D:\\python_software\\Underline_RETLDC\\dist\\gui-convergence-20261110\\Underline_RETLDC\\Underline_RETLDC.exe",
+  "executable_sha256": "c524f271a643dd29e4f561881a1b3fc58fec1c7678848fde5d9c4be713ffc9c8",
+  "command_arguments": [
+    "export",
+    "D:\\python_software\\Underline_RETLDC\\docs\\evidence\\gui_convergence_20261110\\integration\\Synthetic_20261110.retldc.json",
+    "D:\\python_software\\Underline_RETLDC\\.work\\gui-convergence-20261110\\portable.tdmotor.json",
+    "--relocate",
+    "source_1=D:\\python_software\\Underline_RETLDC\\docs\\evidence\\gui_convergence_20261110\\integration\\synthetic_20261110.csv"
+  ],
+  "exit_code": 0,
+  "output": "D:\\python_software\\Underline_RETLDC\\.work\\gui-convergence-20261110\\portable.tdmotor.json",
+  "output_sha256": "eed976bb0d95d90f680a6b72988e42b2a93b5342d5756a1d4a0a437930f017e3",
+  "source_sha256": "fe46ccce39dc92765e6848021df540558b40d3d4bb95b7f00ba0c1b181e6a615"
+}

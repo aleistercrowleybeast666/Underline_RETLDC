@@ -1,0 +1,34 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_ test_interval_text_then_export_explains_committed_change_and_recalculation __
+
+imported_window = <underline_retldc.gui.main_window.MainWindow(0x207c7dbddf0) at 0x00000207C9E37140>
+
+    def test_interval_text_then_export_explains_committed_change_and_recalculation(imported_window):
+        window = imported_window
+        window.calculate_action.trigger()
+        _task_wait(window)
+        assert window.session.analysis_result.metrics["total_impulse_ns"] == pytest.approx(220)
+        window.show()
+        end = window.process_page.interval_editor.region_edits["active_test"][1]
+        window.thrust_analysis_page.shell.controls_scroll.ensureWidgetVisible(end)
+        end.setFocus()
+        end.selectAll()
+        QTest.keyClicks(end, "3.95")
+        QTest.mouseClick(window.toolbar.widgetForAction(window.export_action), Qt.MouseButton.LeftButton)
+        _application().processEvents()
+        assert window.session.regions["active_test"] == [2.0, 3.95]
+        assert window.session.analysis_result is None
+        assert window.session.processing_result is None
+        assert window._processing_draft() is None
+        dialog = window.export_dialog
+>       assert dialog.result_notice.isVisible()
+E       assert False
+E        +  where False = <built-in method isVisible of PySide6.QtWidgets.QLabel object at 0x00000207CB284940>()
+E        +    where <built-in method isVisible of PySide6.QtWidgets.QLabel object at 0x00000207CB284940> = <PySide6.QtWidgets.QLabel(0x207cbc14200, name="warningLabel") at 0x00000207CB284940>.isVisible
+E        +      where <PySide6.QtWidgets.QLabel(0x207cbc14200, name="warningLabel") at 0x00000207CB284940> = <underline_retldc.gui.pages.export_page.ExportDialog(0x207cb907600) at 0x00000207C9ECC5C0>.result_notice
+
+tests\integration\test_converged_calculation.py:161: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/integration/test_converged_calculation.py::test_interval_text_then_export_explains_committed_change_and_recalculation
+1 failed in 5.60s
