@@ -75,7 +75,9 @@ def test_packaging_preflight_runs_before_pyinstaller_and_fails_fast() -> None:
 
 
 @pytest.mark.parametrize("available_size", [(1536, 816), (1280, 680)])
-def test_initial_native_frame_fits_available_logical_screen(tmp_path, available_size) -> None:
+def test_initial_native_frame_fits_available_logical_screen(
+    tmp_path: Path, available_size: tuple[int, int],
+) -> None:
     from PySide6.QtCore import QRect
     from test_gui_workflow import _application, _window
 
@@ -97,7 +99,7 @@ def test_initial_native_frame_fits_available_logical_screen(tmp_path, available_
     assert window.rect().contains(export_button.mapTo(window, export_button.rect().bottomRight()))
 
 
-def test_initial_geometry_preserves_valid_position_and_later_view_changes(tmp_path) -> None:
+def test_initial_geometry_preserves_valid_position_and_later_view_changes(tmp_path: Path) -> None:
     from PySide6.QtCore import QRect
     from test_gui_workflow import _application, _window
 
