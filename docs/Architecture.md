@@ -391,6 +391,12 @@ official `plugins/` tree stays beside the executable as ordinary files. Built-in
 is collected at its package-relative path. README, plugin-authoring prompts, docs, and examples are
 copied into the distribution.
 
+Normal application startup constrains the complete native frame to the selected screen's
+available geometry in Qt logical coordinates. It accounts for native frame margins and preserves
+already-valid initial sizes/positions and maximized/fullscreen states. A single queued startup
+correction handles margins that settle after show; theme/language refreshes do not repeat it.
+This placement policy belongs to the application entry point, not scientific Project state.
+
 After copying documentation, `scripts/collect_licenses.py` copies the installed runtime
 distributions' upstream legal documents, the base Python license, the root third-party notice,
 and any existing owner-selected root legal files. A version/hash manifest is written under

@@ -8,8 +8,8 @@ import traceback
 from contextlib import suppress
 from pathlib import Path
 
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QRect, QTimer
+from PySide6.QtWidgets import QApplication, QMainWindow
 
 from underline_retldc.app.native_diagnostics import NativeDiagnostics_FromEnvironment
 from underline_retldc.app.settings import SettingsService
@@ -39,6 +39,33 @@ def Application_ProjectRoot() -> Path:
     if bool(getattr(sys, "frozen", False)):
         return Path(sys.executable).resolve().parent
     return Path(__file__).resolve().parents[3]
+
+
+def Application_ConstrainInitialGeometry(
+    window: QMainWindow, available: QRect | None = None,
+) -> None:
+    """Keep the initial native frame on its screen without resetting valid geometry."""
+    if window.isMaximized() or window.isFullScreen():
+        return
+    if available is None:
+        screen = window.screen()
+        if screen is None:
+            return
+        available = screen.availableGeometry()
+    frame = window.frameGeometry()
+    if not available.isValid() or available.contains(frame):
+        return
+    border_width = max(0, frame.width() - window.width())
+    border_height = max(0, frame.height() - window.height())
+    width = max(1, available.width() - border_width)
+    height = max(1, available.height() - border_height)
+    window.setMinimumSize(min(window.minimumWidth(), width), min(window.minimumHeight(), height))
+    window.resize(min(window.width(), width), min(window.height(), height))
+    frame = window.frameGeometry()
+    window.move(
+        max(available.left(), min(frame.left(), available.right() - frame.width() + 1)),
+        max(available.top(), min(frame.top(), available.bottom() - frame.height() + 1)),
+    )
 
 
 def _smoke_failure_write(details: str) -> None:
@@ -119,6 +146,9 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         raise
     window.show()
+    Application_ConstrainInitialGeometry(window)
+    # Native frame margins can settle after show; this is a startup-only correction.
+    QTimer.singleShot(0, window, lambda: Application_ConstrainInitialGeometry(window))
     if diagnostics is not None:
         diagnostics.phase("window.shown")
     if options.release_smoke is not None:

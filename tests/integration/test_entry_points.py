@@ -72,3 +72,51 @@ def test_packaging_preflight_runs_before_pyinstaller_and_fails_fast() -> None:
     for start, end in ((pytest_index, ruff_index), (ruff_index, build_index)):
         assert "if errorlevel 1 (" in script[start:end]
         assert "exit /b 1" in script[start:end]
+
+
+@pytest.mark.parametrize("available_size", [(1536, 816), (1280, 680)])
+def test_initial_native_frame_fits_available_logical_screen(tmp_path, available_size) -> None:
+    from PySide6.QtCore import QRect
+    from test_gui_workflow import _application, _window
+
+    from underline_retldc.app.settings import SettingsService
+    from underline_retldc.i18n.service import TranslationService
+
+    app = _application()
+    window = _window(
+        TranslationService("en_US"), SettingsService(tmp_path / "settings.ini"), tmp_path)
+    window.show()
+    window.move(100, 80)
+    app.processEvents()
+    available = QRect(0, 0, *available_size)
+    assert not available.contains(window.frameGeometry())
+    application.Application_ConstrainInitialGeometry(window, available)
+    app.processEvents()
+    assert available.contains(window.frameGeometry())
+    export_button = window.toolbar.widgetForAction(window.export_action)
+    assert window.rect().contains(export_button.mapTo(window, export_button.rect().bottomRight()))
+
+
+def test_initial_geometry_preserves_valid_position_and_later_view_changes(tmp_path) -> None:
+    from PySide6.QtCore import QRect
+    from test_gui_workflow import _application, _window
+
+    from underline_retldc.app.settings import SettingsService
+    from underline_retldc.i18n.service import TranslationService
+
+    app = _application()
+    window = _window(
+        TranslationService("en_US"), SettingsService(tmp_path / "settings.ini"), tmp_path)
+    window.show()
+    window.resize(980, 600)
+    window.move(20, 20)
+    app.processEvents()
+    available = QRect(0, 0, 1280, 680)
+    before = window.frameGeometry()
+    assert available.contains(before)
+    application.Application_ConstrainInitialGeometry(window, available)
+    assert window.frameGeometry() == before
+    window._theme_select("dark")
+    window._locale_select("zh_CN")
+    app.processEvents()
+    assert window.frameGeometry() == before
