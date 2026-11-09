@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "root": "D:\\python_software\\Underline_RETLDC",
+  "scope": "scripts",
+  "owner": "Underline convergence 20261110 cache cleanup",
+  "records": [
+    {
+      "path": "scripts/__pycache__/collect_licenses.cpython-314.pyc",
+      "kind": "file",
+      "size": 8006,
+      "mtime_ns": 1792057044047553800,
+      "device": 15190911442371306337,
+      "inode": 1407374885420929,
+      "sha256": "039ff4d7e0d15bb549fb660aed216cf7702b9ae5a7e3ebbda99a18abb9bf5b57"
+    },
+    {
+      "path": "scripts/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1792057044048560500,
+      "device": 15190911442371306337,
+      "inode": 2251799815552896,
+      "children": [
+        "collect_licenses.cpython-314.pyc"
+      ]
+    }
+  ],
+  "retained": {
+    "scripts/collect_licenses.py": "tracked",
+    "scripts/lint.ps1": "tracked",
+    "scripts/reassemble_qt_binding.py": "tracked",
+    "scripts/run.ps1": "tracked",
+    "scripts/test.ps1": "tracked"
+  }
+}

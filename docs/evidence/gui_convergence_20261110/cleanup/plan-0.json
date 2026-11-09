@@ -1,0 +1,1042 @@
+{
+  "schema": 1,
+  "root": "D:\\python_software\\Underline_RETLDC",
+  "scope": "src",
+  "owner": "Underline convergence 20261110 cache cleanup",
+  "records": [
+    {
+      "path": "src/underline_retldc/gui/pages/__pycache__/__init__.cpython-314.pyc",
+      "kind": "file",
+      "size": 231,
+      "mtime_ns": 1791824784917618800,
+      "device": 15190911442371306337,
+      "inode": 2251799815120610,
+      "sha256": "7016409c655e64d4b5962c1cee2a918884882352cf9993ad09c852ee3bf53078"
+    },
+    {
+      "path": "src/underline_retldc/gui/pages/__pycache__/analyze_page.cpython-314.pyc",
+      "kind": "file",
+      "size": 13162,
+      "mtime_ns": 1794245346750126000,
+      "device": 15190911442371306337,
+      "inode": 3377699720765683,
+      "sha256": "7b4a35ad9f4d3277a207ad92c6f0288c28060a0a8d77d06b38bd490b8e831af0"
+    },
+    {
+      "path": "src/underline_retldc/gui/pages/__pycache__/export_page.cpython-314.pyc",
+      "kind": "file",
+      "size": 51332,
+      "mtime_ns": 1794249347244677100,
+      "device": 15190911442371306337,
+      "inode": 1407374884917801,
+      "sha256": "226fc7d22f58c1ad55a5020e2f705728d472a6cc4a90644ebdb3c25c72a13d9b"
+    },
+    {
+      "path": "src/underline_retldc/gui/pages/__pycache__/import_page.cpython-314.pyc",
+      "kind": "file",
+      "size": 66178,
+      "mtime_ns": 1793718649257457500,
+      "device": 15190911442371306337,
+      "inode": 562949956945533,
+      "sha256": "45b0d16f62af8cf9e1833c89b778de6c73dd69e2a59728d3d19e98f46eb62fa9"
+    },
+    {
+      "path": "src/underline_retldc/gui/pages/__pycache__/plugins_page.cpython-314.pyc",
+      "kind": "file",
+      "size": 8325,
+      "mtime_ns": 1791824784971231500,
+      "device": 15190911442371306337,
+      "inode": 2533274791831337,
+      "sha256": "ce1e2150e6739c91270c8782af0597e2b18eb35e5fe1c39777e67fb2c2874980"
+    },
+    {
+      "path": "src/underline_retldc/gui/pages/__pycache__/process_page.cpython-314.pyc",
+      "kind": "file",
+      "size": 46971,
+      "mtime_ns": 1794246225618520900,
+      "device": 15190911442371306337,
+      "inode": 1407374884637475,
+      "sha256": "0ce391b4f8918e654b2a0a74245fd266770624250186de199b6e7cd2829550b6"
+    },
+    {
+      "path": "src/underline_retldc/gui/pages/__pycache__/settings_page.cpython-314.pyc",
+      "kind": "file",
+      "size": 14241,
+      "mtime_ns": 1791824785006231300,
+      "device": 15190911442371306337,
+      "inode": 2251799815120833,
+      "sha256": "d2c8429997bb440d543c826e325d1d7e3634d7a408b898e57d0eb0e2460522aa"
+    },
+    {
+      "path": "src/underline_retldc/gui/pages/__pycache__/setup_page.cpython-314.pyc",
+      "kind": "file",
+      "size": 42844,
+      "mtime_ns": 1793716210504109400,
+      "device": 15190911442371306337,
+      "inode": 1688849861522014,
+      "sha256": "d481547df9eb63e700d740df1e336a8a74c8deaea36bd09b4b4b8179a17495a8"
+    },
+    {
+      "path": "src/underline_retldc/gui/pages/__pycache__/workspace_pages.cpython-314.pyc",
+      "kind": "file",
+      "size": 80537,
+      "mtime_ns": 1794246048677167700,
+      "device": 15190911442371306337,
+      "inode": 1407374883938637,
+      "sha256": "2bfdda7f3b7eff055f670021f26dc67a4134c2011d4f9d5f82bfa2864bc27448"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/__init__.cpython-314.pyc",
+      "kind": "file",
+      "size": 221,
+      "mtime_ns": 1791824779267441600,
+      "device": 15190911442371306337,
+      "inode": 2533274790785597,
+      "sha256": "a93c564598dec15567ff422da650465d9c3b69f88f8ba11db30b59e1fce613bc"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/application.cpython-314.pyc",
+      "kind": "file",
+      "size": 15400,
+      "mtime_ns": 1794251593377876800,
+      "device": 15190911442371306337,
+      "inode": 844424932323434,
+      "sha256": "de1fb1d6df52aaa4534e9dd00c3900177880863faea2cd07375f95f2c5778491"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/candidate_smoke.cpython-314.pyc",
+      "kind": "file",
+      "size": 14667,
+      "mtime_ns": 1793717332490831800,
+      "device": 15190911442371306337,
+      "inode": 844424933630735,
+      "sha256": "9b13ec9bb94ce88db598c4b2ef04a0c5659614b6dad002eeee50fa72a675a7c9"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/export_batch.cpython-314.pyc",
+      "kind": "file",
+      "size": 4317,
+      "mtime_ns": 1793716210299990100,
+      "device": 15190911442371306337,
+      "inode": 562949956909050,
+      "sha256": "629267f7d0d2b38ac545ffd4684879ef1bcc0a2cfe20e127ba4f6eb0b7e671d6"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/export_snapshot.cpython-314.pyc",
+      "kind": "file",
+      "size": 12180,
+      "mtime_ns": 1793717321194890900,
+      "device": 15190911442371306337,
+      "inode": 562949956919743,
+      "sha256": "e08f16fe692e7db76f8ed33aca5c83adc753483efa419bccc4ee2088923da363"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/native_diagnostics.cpython-314.pyc",
+      "kind": "file",
+      "size": 3546,
+      "mtime_ns": 1792000669322728300,
+      "device": 15190911442371306337,
+      "inode": 1407374883557380,
+      "sha256": "56a0d88d75d283c8efe17979fb514a7d3105464a711547476960ad20ad0abe6a"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/project_pipeline.cpython-314.pyc",
+      "kind": "file",
+      "size": 41472,
+      "mtime_ns": 1793467069699612700,
+      "device": 15190911442371306337,
+      "inode": 4222124650905185,
+      "sha256": "7f74a4d602b8a2707ff689e7553c8830c7c6512198a56535b7fd88e9d927468c"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/release_smoke.cpython-314.pyc",
+      "kind": "file",
+      "size": 90334,
+      "mtime_ns": 1793714626286959200,
+      "device": 15190911442371306337,
+      "inode": 562949956891076,
+      "sha256": "23bfc243171dbd6a03bd03d76e427a3c239f4e4a08bc712a3e5c7d01c5fc0220"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/session.cpython-314.pyc",
+      "kind": "file",
+      "size": 7444,
+      "mtime_ns": 1792061401850537700,
+      "device": 15190911442371306337,
+      "inode": 2814749768561877,
+      "sha256": "2c1571dbb0b6dca55216d31cb7a3b54cb1425c66319f8476f4b810d41facbe23"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/settings.cpython-314.pyc",
+      "kind": "file",
+      "size": 9819,
+      "mtime_ns": 1791824781955321900,
+      "device": 15190911442371306337,
+      "inode": 2251799815120587,
+      "sha256": "ab5e8daa2e179a72ef3eb0cf627313c253d1bc58c148a44bc56e4866ce9e67ea"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/source_analysis.cpython-314.pyc",
+      "kind": "file",
+      "size": 14231,
+      "mtime_ns": 1791992193004628100,
+      "device": 15190911442371306337,
+      "inode": 4503599627374400,
+      "sha256": "83ca2e52ca55b6e66cfbb934eb82901c67bedbb1dbf3017d6aa2c1afada60f24"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/source_input.cpython-314.pyc",
+      "kind": "file",
+      "size": 1923,
+      "mtime_ns": 1793466508669255800,
+      "device": 15190911442371306337,
+      "inode": 2251799813895128,
+      "sha256": "37e29c70858d4fbcae907e2f476991a053ee1f35f07682147a681647442e02e4"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__/version.cpython-314.pyc",
+      "kind": "file",
+      "size": 410,
+      "mtime_ns": 1791824779270340900,
+      "device": 15190911442371306337,
+      "inode": 2533274790785602,
+      "sha256": "3a8b795109fe678d027c70ac18fc1cc97610326737d93679f5d3800975697222"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/__init__.cpython-314.pyc",
+      "kind": "file",
+      "size": 240,
+      "mtime_ns": 1791824779273892700,
+      "device": 15190911442371306337,
+      "inode": 2533274790785605,
+      "sha256": "8a49f97d006ce0a9ad71207ba54c4a9086cc0138be0973768b95a592d05a6893"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/calibration.cpython-314.pyc",
+      "kind": "file",
+      "size": 9072,
+      "mtime_ns": 1791824781884315700,
+      "device": 15190911442371306337,
+      "inode": 2251799815120582,
+      "sha256": "7a16a1489644383b7c0da7562bc55eb4a1b7f9b6a808ea413e75b2530067889f"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/channel.cpython-314.pyc",
+      "kind": "file",
+      "size": 8188,
+      "mtime_ns": 1791824780036539200,
+      "device": 15190911442371306337,
+      "inode": 2251799815120541,
+      "sha256": "f9c4ad23127eebd33998d1270c3467df35fbea5a6450cdf6e991933fdf1a079e"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/curve_display.cpython-314.pyc",
+      "kind": "file",
+      "size": 2518,
+      "mtime_ns": 1791824784773410500,
+      "device": 15190911442371306337,
+      "inode": 2251799815120596,
+      "sha256": "6e49a2a7389cd287c07354381b23a393ffdac7e3520d58a4d372d2539391c904"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/data_quality.cpython-314.pyc",
+      "kind": "file",
+      "size": 7560,
+      "mtime_ns": 1791824781924267300,
+      "device": 15190911442371306337,
+      "inode": 2251799815120585,
+      "sha256": "14d6eace6dc15d9090cd6fd8370e720f1604500f25193b84d71bd4bbf691197e"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/dataset.cpython-314.pyc",
+      "kind": "file",
+      "size": 8673,
+      "mtime_ns": 1791824779306104000,
+      "device": 15190911442371306337,
+      "inode": 2251799815120540,
+      "sha256": "f509beb6941004830c65ef7baa7167429b1273e9b8bf6d2dc60c2a6e2eac5e18"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/defaults.cpython-314.pyc",
+      "kind": "file",
+      "size": 1723,
+      "mtime_ns": 1791824781960330600,
+      "device": 15190911442371306337,
+      "inode": 2251799815120588,
+      "sha256": "1a60169bc0584bae890045934f1c4bf3384cb2a52ea6b10349eb2e1c0a26c6cf"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/diagnostics.cpython-314.pyc",
+      "kind": "file",
+      "size": 3160,
+      "mtime_ns": 1791824779282098700,
+      "device": 15190911442371306337,
+      "inode": 2533274791831185,
+      "sha256": "a8067b974db31393fca5300dba5362603ffd9728b1a2880754c29ac55c4c030b"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/measurement_export.cpython-314.pyc",
+      "kind": "file",
+      "size": 2459,
+      "mtime_ns": 1791824787097789300,
+      "device": 15190911442371306337,
+      "inode": 2251799815121953,
+      "sha256": "f436d706c48cfc4259cdf453110155356ea606c3e6647c0e4d638ff8cc2c14d0"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/measurement_statistics.cpython-314.pyc",
+      "kind": "file",
+      "size": 5035,
+      "mtime_ns": 1791824785030974600,
+      "device": 15190911442371306337,
+      "inode": 2251799815120836,
+      "sha256": "ff71c55033dd5ed7e19cdc87ddbe258267f7cf05e3dc50eed1f11c920525db30"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/motor_parameters.cpython-314.pyc",
+      "kind": "file",
+      "size": 3048,
+      "mtime_ns": 1791992192862571900,
+      "device": 15190911442371306337,
+      "inode": 3940649674061598,
+      "sha256": "2e6906bdccacd160a91309de0da5e16b5fddf4574f21c64dcb986454d709f872"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/parser_selection.cpython-314.pyc",
+      "kind": "file",
+      "size": 3122,
+      "mtime_ns": 1791824784778410800,
+      "device": 15190911442371306337,
+      "inode": 2251799815120598,
+      "sha256": "bd2dc31471789300197fc25c56e018efbac0ab1c992474dd71c44de9fa68b76c"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/pipeline.cpython-314.pyc",
+      "kind": "file",
+      "size": 7589,
+      "mtime_ns": 1791824780667459900,
+      "device": 15190911442371306337,
+      "inode": 2251799815120565,
+      "sha256": "c36e8bcf89880d939aa49b07822ee9bccc70ed0fd86d2b1fc6554f2dd239886a"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/plot_analysis.cpython-314.pyc",
+      "kind": "file",
+      "size": 3360,
+      "mtime_ns": 1792071040193864700,
+      "device": 15190911442371306337,
+      "inode": 2814749768984372,
+      "sha256": "518fbee52ffdacff5bcfa63d3fa441d53442ed889a590315fab21242361d41b6"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/plot_view.cpython-314.pyc",
+      "kind": "file",
+      "size": 7079,
+      "mtime_ns": 1792061400334367100,
+      "device": 15190911442371306337,
+      "inode": 1688849861706706,
+      "sha256": "29ace4533e807d885f991294a5c8cc8189ed227ea1ea2277e48ba3ed943b7d00"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/primary_channels.cpython-314.pyc",
+      "kind": "file",
+      "size": 5769,
+      "mtime_ns": 1791824780644459600,
+      "device": 15190911442371306337,
+      "inode": 2251799815120562,
+      "sha256": "b4efca9f6b4ab9ef39fd96e22e4280741e32532879ba4c55f8a9a43510eac771"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/project.cpython-314.pyc",
+      "kind": "file",
+      "size": 39340,
+      "mtime_ns": 1793717321332434400,
+      "device": 15190911442371306337,
+      "inode": 7318349394713329,
+      "sha256": "ffa244ef48e6779360e6e1809fef47f65353a9a6b56c564de26ca1c7a23f10fb"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/project_data.cpython-314.pyc",
+      "kind": "file",
+      "size": 27131,
+      "mtime_ns": 1791894038805911200,
+      "device": 15190911442371306337,
+      "inode": 1125899908144992,
+      "sha256": "4380b20513570a81b2b6a41d58f0410be153cc476a265375283426bdbcc08087"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/region_detection.cpython-314.pyc",
+      "kind": "file",
+      "size": 7899,
+      "mtime_ns": 1791824784785410800,
+      "device": 15190911442371306337,
+      "inode": 2251799815120600,
+      "sha256": "b0fa9df7b34cd92274ddfbcb7a0a95ad86b76af8f46d5f9f253839d7fb7124ff"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/regions.cpython-314.pyc",
+      "kind": "file",
+      "size": 5058,
+      "mtime_ns": 1791824781942267700,
+      "device": 15190911442371306337,
+      "inode": 2251799815120586,
+      "sha256": "d809595f726ef158d4dec44b7b11a67d2e3b688d2c4670d1fd8b10d04e48bf62"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/registry.cpython-314.pyc",
+      "kind": "file",
+      "size": 6762,
+      "mtime_ns": 1793714248859872500,
+      "device": 15190911442371306337,
+      "inode": 7036874418002670,
+      "sha256": "64fb1885275b4f805bee6e53dc76b151739987151ba9dbe6e435b44f27b62154"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/segmentation.cpython-314.pyc",
+      "kind": "file",
+      "size": 8048,
+      "mtime_ns": 1791824784801776200,
+      "device": 15190911442371306337,
+      "inode": 2251799815120602,
+      "sha256": "44777708df9646c6e63981ff1a499832eb0fbec8a6e996da3da0a40610764784"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/source_alignment.cpython-314.pyc",
+      "kind": "file",
+      "size": 3853,
+      "mtime_ns": 1791898227923819900,
+      "device": 15190911442371306337,
+      "inode": 1688849861594579,
+      "sha256": "aa8db422ef3f5d683145089ab4d1d43f962642c2cb1e90fa6c3f7e420dbce4cd"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/source_analysis.cpython-314.pyc",
+      "kind": "file",
+      "size": 14340,
+      "mtime_ns": 1791992572060501500,
+      "device": 15190911442371306337,
+      "inode": 1407374884996930,
+      "sha256": "7bb7879fcd2e73a7019e87dd9206d64367a809b54412e1c22356c73e2ec294c6"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/tabular.cpython-314.pyc",
+      "kind": "file",
+      "size": 48029,
+      "mtime_ns": 1791824780100540400,
+      "device": 15190911442371306337,
+      "inode": 2251799815120550,
+      "sha256": "334c43caebf554f9957e463afbdf5dda205ebd8332e626bedad4ede7649449ba"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/tabular_auto_detector.cpython-314.pyc",
+      "kind": "file",
+      "size": 38075,
+      "mtime_ns": 1791824784812200000,
+      "device": 15190911442371306337,
+      "inode": 2251799815120603,
+      "sha256": "4a389e5c995092b9d18283b787368f50cd1f87b4a763a7d9b1b9a6f02bc2cb35"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/task.cpython-314.pyc",
+      "kind": "file",
+      "size": 10607,
+      "mtime_ns": 1791897830367188100,
+      "device": 15190911442371306337,
+      "inode": 5066549581015503,
+      "sha256": "bd97555c40f2de97e73a7efe0dabe461a2ab961f63fd8b3b7a2f6f88c2ffa45d"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/units.cpython-314.pyc",
+      "kind": "file",
+      "size": 21184,
+      "mtime_ns": 1791824780042539000,
+      "device": 15190911442371306337,
+      "inode": 2251799815120542,
+      "sha256": "1755a60c51f82c82ca26c19336ae77568024a4a3b013048f712336868125d2fb"
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__/workspace_capabilities.cpython-314.pyc",
+      "kind": "file",
+      "size": 7339,
+      "mtime_ns": 1791824780105538800,
+      "device": 15190911442371306337,
+      "inode": 2251799815120552,
+      "sha256": "2e2a61a78c0767ec1b0679ae8553ee46184b169a0a24b5b5a7e4da58cd7208f8"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/__init__.cpython-314.pyc",
+      "kind": "file",
+      "size": 209,
+      "mtime_ns": 1791824781969322400,
+      "device": 15190911442371306337,
+      "inode": 2251799815120590,
+      "sha256": "5c112ac23c40618b38fbc7b0203d3f83a7e2a86d94d92496720beb74d52d420f"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/analysis_widgets.cpython-314.pyc",
+      "kind": "file",
+      "size": 50846,
+      "mtime_ns": 1794245343899491800,
+      "device": 15190911442371306337,
+      "inode": 3096224744054984,
+      "sha256": "e3a0ce131dba12c7299cd128dc8c42aa7ab047587ad2bfab5db9a4aa68c14364"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/main_window.cpython-314.pyc",
+      "kind": "file",
+      "size": 329179,
+      "mtime_ns": 1794249346959002800,
+      "device": 15190911442371306337,
+      "inode": 1970324838465447,
+      "sha256": "fbc4a24254e723af72418d68e6d32247e33aaed1d69fb4f41449132c12ee2006"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/plot_analysis.cpython-314.pyc",
+      "kind": "file",
+      "size": 5552,
+      "mtime_ns": 1792071041234150100,
+      "device": 15190911442371306337,
+      "inode": 3659174699116345,
+      "sha256": "ff40b25227e5dc98ef18471c953c4214a9225ecfefabc226713dffbfccffbac4"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/plot_svg.cpython-314.pyc",
+      "kind": "file",
+      "size": 27046,
+      "mtime_ns": 1792044338177694700,
+      "device": 15190911442371306337,
+      "inode": 9007199256241382,
+      "sha256": "c65ae489dc256baecd6995ebf494e3226bd130001f05b0f9d0bea5a164111fd9"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/plot_ui_i18n.cpython-314.pyc",
+      "kind": "file",
+      "size": 27206,
+      "mtime_ns": 1793513122750044800,
+      "device": 15190911442371306337,
+      "inode": 844424933528657,
+      "sha256": "fb36419873336965a844df62dc1796e2d5b924f40262620ed1246f1a005aec89"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/plot_view.cpython-314.pyc",
+      "kind": "file",
+      "size": 5817,
+      "mtime_ns": 1792061400479688400,
+      "device": 15190911442371306337,
+      "inode": 844424932197255,
+      "sha256": "3890e20773cc48d148deda91fbe4024d08ba6b64291e87a7f2e266d878b85f53"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/plugin_install_dialog.cpython-314.pyc",
+      "kind": "file",
+      "size": 17447,
+      "mtime_ns": 1791824785044970500,
+      "device": 15190911442371306337,
+      "inode": 2251799815120838,
+      "sha256": "95a576f647af131e88da9089ebb0b359c35ebb319528661a79f510bdb800eb54"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/primary_channels_widget.cpython-314.pyc",
+      "kind": "file",
+      "size": 11927,
+      "mtime_ns": 1791826095383536100,
+      "device": 15190911442371306337,
+      "inode": 1970324836979213,
+      "sha256": "d74187fa431915e804f4e031d1334ba2235866fbfe0ddd98fe38c169d550ef2f"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/schema_form.cpython-314.pyc",
+      "kind": "file",
+      "size": 17187,
+      "mtime_ns": 1794246225601024700,
+      "device": 15190911442371306337,
+      "inode": 1970324837358255,
+      "sha256": "e57b6e8a323057d677b9288a761908586306a7f6d6d117aec8b4cb4c521ea764"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/source_analysis_widget.cpython-314.pyc",
+      "kind": "file",
+      "size": 29506,
+      "mtime_ns": 1793513122923899500,
+      "device": 15190911442371306337,
+      "inode": 844424933528651,
+      "sha256": "1b4ec93be424a831d571611f9abd6d0beff9e23ea46430778d6a23aef27ee842"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/tabular_mapping_editor.cpython-314.pyc",
+      "kind": "file",
+      "size": 79071,
+      "mtime_ns": 1791903481471254100,
+      "device": 15190911442371306337,
+      "inode": 3096224745149993,
+      "sha256": "b81927bbd3c178e0aaf98a0424e7e41c1e530f79170b0fad7cb87de8e8cba580"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/test_interval_widget.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 19570,
+      "mtime_ns": 1791824784989232300,
+      "device": 15190911442371306337,
+      "inode": 2251799815120815,
+      "sha256": "393b37e7fee52a2aaa8679ae6057c424b073e68cc122bad538dd9369467ca954"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/test_interval_widget.cpython-314.pyc",
+      "kind": "file",
+      "size": 19456,
+      "mtime_ns": 1791825370454851100,
+      "device": 15190911442371306337,
+      "inode": 1125899906847159,
+      "sha256": "8d978d73ad2cd90842b25f2fcd0732a65f6cb35b7b5e29ff44544a8725ce57c8"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/theme.cpython-314.pyc",
+      "kind": "file",
+      "size": 32154,
+      "mtime_ns": 1791824785121578100,
+      "device": 15190911442371306337,
+      "inode": 2251799815120840,
+      "sha256": "a7dd5ac14f08541c6ae602be3145a2f8db4906a3f20999666bdc4ed251b405ed"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/theory_overlay_widget.cpython-314.pyc",
+      "kind": "file",
+      "size": 27290,
+      "mtime_ns": 1793714250893009400,
+      "device": 15190911442371306337,
+      "inode": 3940649674170385,
+      "sha256": "965ad0238f0480f75efb6e8c47dc647d0de804f9a97e06e45b6b830927732460"
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__/widgets.cpython-314.pyc",
+      "kind": "file",
+      "size": 5731,
+      "mtime_ns": 1791824784934231400,
+      "device": 15190911442371306337,
+      "inode": 2251799815120613,
+      "sha256": "8750ac9d32e232e2bcabc047915fb95e66a0b8de3cc3ccb38b5ebf2e67a301c6"
+    },
+    {
+      "path": "src/underline_retldc/gui/pages/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794249347246678200,
+      "device": 15190911442371306337,
+      "inode": 2251799815120609,
+      "children": [
+        "__init__.cpython-314.pyc",
+        "analyze_page.cpython-314.pyc",
+        "export_page.cpython-314.pyc",
+        "import_page.cpython-314.pyc",
+        "plugins_page.cpython-314.pyc",
+        "process_page.cpython-314.pyc",
+        "settings_page.cpython-314.pyc",
+        "setup_page.cpython-314.pyc",
+        "workspace_pages.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "src/underline_retldc/i18n/__pycache__/__init__.cpython-314.pyc",
+      "kind": "file",
+      "size": 238,
+      "mtime_ns": 1791824784703099300,
+      "device": 15190911442371306337,
+      "inode": 2533274791831249,
+      "sha256": "f44db5377d70ad39d4b1997dff08bba7a352d55aa6d566fe842fb89d7367c6cd"
+    },
+    {
+      "path": "src/underline_retldc/i18n/__pycache__/plot_qt.cpython-314.pyc",
+      "kind": "file",
+      "size": 6923,
+      "mtime_ns": 1791997368384282100,
+      "device": 15190911442371306337,
+      "inode": 3659174697520518,
+      "sha256": "e962dbbfd7d2bf93e2ec2454c83bd6786593027ff2749aa4e6c8b8fe09f6d7e0"
+    },
+    {
+      "path": "src/underline_retldc/i18n/__pycache__/service.cpython-314.pyc",
+      "kind": "file",
+      "size": 5897,
+      "mtime_ns": 1791824784707098500,
+      "device": 15190911442371306337,
+      "inode": 2251799815120594,
+      "sha256": "4923f97bb80ffeac2fc829570da99869d7c1fc78892585295e5ede817e6fcad7"
+    },
+    {
+      "path": "src/underline_retldc/plugin_api/__pycache__/__init__.cpython-314.pyc",
+      "kind": "file",
+      "size": 224,
+      "mtime_ns": 1791824779287133100,
+      "device": 15190911442371306337,
+      "inode": 2251799815120537,
+      "sha256": "f52842a59f6526d714cc2354feb2d98e3d04e58064e4dc4a9af49e1a898afa20"
+    },
+    {
+      "path": "src/underline_retldc/plugin_api/__pycache__/analyzer.cpython-314.pyc",
+      "kind": "file",
+      "size": 1863,
+      "mtime_ns": 1791824780076538900,
+      "device": 15190911442371306337,
+      "inode": 2251799815120546,
+      "sha256": "17a406d351a43a3e9785c0311012c2a9ff0ed99eb576cb37b44f33c85482f295"
+    },
+    {
+      "path": "src/underline_retldc/plugin_api/__pycache__/calibration.cpython-314.pyc",
+      "kind": "file",
+      "size": 2218,
+      "mtime_ns": 1791824780079549500,
+      "device": 15190911442371306337,
+      "inode": 2251799815120547,
+      "sha256": "442686070fa1470429bcfb61b1b146e6f7392a48524b0b3c819be8bc51ba37db"
+    },
+    {
+      "path": "src/underline_retldc/plugin_api/__pycache__/common.cpython-314.pyc",
+      "kind": "file",
+      "size": 9407,
+      "mtime_ns": 1791824779302103900,
+      "device": 15190911442371306337,
+      "inode": 2251799815120538,
+      "sha256": "8f4f05bdac1d48460c7f67e7e890a1bd2d8c5ee57fddfa8ca8bfa83c8bd384d4"
+    },
+    {
+      "path": "src/underline_retldc/plugin_api/__pycache__/export_curve.cpython-314.pyc",
+      "kind": "file",
+      "size": 6761,
+      "mtime_ns": 1791824787167797000,
+      "device": 15190911442371306337,
+      "inode": 2533274791832620,
+      "sha256": "22f62efff9d28da1236066f92c68dc63ca9c6f2ee0bc94fefdfcc7caba07933e"
+    },
+    {
+      "path": "src/underline_retldc/plugin_api/__pycache__/exporter.cpython-314.pyc",
+      "kind": "file",
+      "size": 2558,
+      "mtime_ns": 1791824780082539900,
+      "device": 15190911442371306337,
+      "inode": 2251799815120548,
+      "sha256": "63766890925ca33c397d38e881aac4ec881493aad402467bfbcb110abf450125"
+    },
+    {
+      "path": "src/underline_retldc/plugin_api/__pycache__/parser.cpython-314.pyc",
+      "kind": "file",
+      "size": 3463,
+      "mtime_ns": 1791824780086538500,
+      "device": 15190911442371306337,
+      "inode": 2251799815120549,
+      "sha256": "154f9344684c9e299eab293a95fb7813af3cdff32d956db28efc3c3b6f8c4e4f"
+    },
+    {
+      "path": "src/underline_retldc/plugin_api/__pycache__/processor.cpython-314.pyc",
+      "kind": "file",
+      "size": 2244,
+      "mtime_ns": 1791824780117538600,
+      "device": 15190911442371306337,
+      "inode": 2251799815120554,
+      "sha256": "5cf1ccf386c8026483acf6d2ca1ae98981dedf10b183ac554646bf3689a4d686"
+    },
+    {
+      "path": "src/underline_retldc/plugin_api/__pycache__/two_column.cpython-314.pyc",
+      "kind": "file",
+      "size": 12013,
+      "mtime_ns": 1791824787288636300,
+      "device": 15190911442371306337,
+      "inode": 2533274791832637,
+      "sha256": "870aeb8f2fae5ff8bf6c7acd1468ed6f8664213a32231bec4c6d7ce26db70693"
+    },
+    {
+      "path": "src/underline_retldc/plugins/__pycache__/__init__.cpython-314.pyc",
+      "kind": "file",
+      "size": 238,
+      "mtime_ns": 1791824780058538600,
+      "device": 15190911442371306337,
+      "inode": 2251799815120544,
+      "sha256": "bc138c0c5ab6167f9caeec6b5edbf2d6b276fcd0b233fe22e74da31041cbc823"
+    },
+    {
+      "path": "src/underline_retldc/plugins/__pycache__/installer.cpython-314.pyc",
+      "kind": "file",
+      "size": 61186,
+      "mtime_ns": 1791824785055974600,
+      "device": 15190911442371306337,
+      "inode": 2251799815120839,
+      "sha256": "2a1819c9deaf2919c0b64769209f11b23457f231b8404c634ccda26dc744c3d2"
+    },
+    {
+      "path": "src/underline_retldc/plugins/__pycache__/loader.cpython-314.pyc",
+      "kind": "file",
+      "size": 14655,
+      "mtime_ns": 1793714628085000400,
+      "device": 15190911442371306337,
+      "inode": 4222124651993581,
+      "sha256": "884c8c760bb060d9f924374ef8f5bbc2f6b8dfe4926560062e38e3d45c2cadfa"
+    },
+    {
+      "path": "src/underline_retldc/plugins/__pycache__/measurement_export.cpython-314.pyc",
+      "kind": "file",
+      "size": 15308,
+      "mtime_ns": 1793714254238620600,
+      "device": 15190911442371306337,
+      "inode": 844424933597728,
+      "sha256": "9173846197584149354a855a583479312fc28655eac6466f1394faf854fe893a"
+    },
+    {
+      "path": "src/underline_retldc/__pycache__/__init__.cpython-314.pyc",
+      "kind": "file",
+      "size": 376,
+      "mtime_ns": 1791824779264342000,
+      "device": 15190911442371306337,
+      "inode": 4503599627756774,
+      "sha256": "f013cff2a197483de9edc62a393d4cd4ebeb3dc54c8a511cf6fced0f512b91b2"
+    },
+    {
+      "path": "src/underline_retldc/__pycache__/__main__.cpython-314.pyc",
+      "kind": "file",
+      "size": 1071,
+      "mtime_ns": 1791825507359743800,
+      "device": 15190911442371306337,
+      "inode": 1125899906847224,
+      "sha256": "b59c62ded263b335016d124d4bfdbbbe704a0b632e10a120a6d3128c20055645"
+    },
+    {
+      "path": "src/underline_retldc/__pycache__/cli.cpython-314.pyc",
+      "kind": "file",
+      "size": 7908,
+      "mtime_ns": 1793714978355597000,
+      "device": 15190911442371306337,
+      "inode": 562949956893707,
+      "sha256": "249353368915d592cda2d14210c54cd81d88f70f5c6c025242e7f7d9cc8028d2"
+    },
+    {
+      "path": "src/underline_retldc/app/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794251593378875800,
+      "device": 15190911442371306337,
+      "inode": 3377699720916743,
+      "children": [
+        "__init__.cpython-314.pyc",
+        "application.cpython-314.pyc",
+        "candidate_smoke.cpython-314.pyc",
+        "export_batch.cpython-314.pyc",
+        "export_snapshot.cpython-314.pyc",
+        "native_diagnostics.cpython-314.pyc",
+        "project_pipeline.cpython-314.pyc",
+        "release_smoke.cpython-314.pyc",
+        "session.cpython-314.pyc",
+        "settings.cpython-314.pyc",
+        "source_analysis.cpython-314.pyc",
+        "source_input.cpython-314.pyc",
+        "version.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "src/underline_retldc/core/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1793717321333443000,
+      "device": 15190911442371306337,
+      "inode": 2533274790785604,
+      "children": [
+        "__init__.cpython-314.pyc",
+        "calibration.cpython-314.pyc",
+        "channel.cpython-314.pyc",
+        "curve_display.cpython-314.pyc",
+        "data_quality.cpython-314.pyc",
+        "dataset.cpython-314.pyc",
+        "defaults.cpython-314.pyc",
+        "diagnostics.cpython-314.pyc",
+        "measurement_export.cpython-314.pyc",
+        "measurement_statistics.cpython-314.pyc",
+        "motor_parameters.cpython-314.pyc",
+        "parser_selection.cpython-314.pyc",
+        "pipeline.cpython-314.pyc",
+        "plot_analysis.cpython-314.pyc",
+        "plot_view.cpython-314.pyc",
+        "primary_channels.cpython-314.pyc",
+        "project.cpython-314.pyc",
+        "project_data.cpython-314.pyc",
+        "region_detection.cpython-314.pyc",
+        "regions.cpython-314.pyc",
+        "registry.cpython-314.pyc",
+        "segmentation.cpython-314.pyc",
+        "source_alignment.cpython-314.pyc",
+        "source_analysis.cpython-314.pyc",
+        "tabular.cpython-314.pyc",
+        "tabular_auto_detector.cpython-314.pyc",
+        "task.cpython-314.pyc",
+        "units.cpython-314.pyc",
+        "workspace_capabilities.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "src/underline_retldc/gui/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794249346960003500,
+      "device": 15190911442371306337,
+      "inode": 2251799815120589,
+      "children": [
+        "__init__.cpython-314.pyc",
+        "analysis_widgets.cpython-314.pyc",
+        "main_window.cpython-314.pyc",
+        "plot_analysis.cpython-314.pyc",
+        "plot_svg.cpython-314.pyc",
+        "plot_ui_i18n.cpython-314.pyc",
+        "plot_view.cpython-314.pyc",
+        "plugin_install_dialog.cpython-314.pyc",
+        "primary_channels_widget.cpython-314.pyc",
+        "schema_form.cpython-314.pyc",
+        "source_analysis_widget.cpython-314.pyc",
+        "tabular_mapping_editor.cpython-314.pyc",
+        "test_interval_widget.cpython-314-pytest-9.1.1.pyc",
+        "test_interval_widget.cpython-314.pyc",
+        "theme.cpython-314.pyc",
+        "theory_overlay_widget.cpython-314.pyc",
+        "widgets.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "src/underline_retldc/i18n/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1791997368385281800,
+      "device": 15190911442371306337,
+      "inode": 2251799815120592,
+      "children": [
+        "__init__.cpython-314.pyc",
+        "plot_qt.cpython-314.pyc",
+        "service.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "src/underline_retldc/plugin_api/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1791824787289662800,
+      "device": 15190911442371306337,
+      "inode": 2533274791831191,
+      "children": [
+        "__init__.cpython-314.pyc",
+        "analyzer.cpython-314.pyc",
+        "calibration.cpython-314.pyc",
+        "common.cpython-314.pyc",
+        "export_curve.cpython-314.pyc",
+        "exporter.cpython-314.pyc",
+        "parser.cpython-314.pyc",
+        "processor.cpython-314.pyc",
+        "two_column.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "src/underline_retldc/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1793714978356139200,
+      "device": 15190911442371306337,
+      "inode": 6755399441380769,
+      "children": [
+        "__init__.cpython-314.pyc",
+        "__main__.cpython-314.pyc",
+        "cli.cpython-314.pyc"
+      ]
+    }
+  ],
+  "retained": {
+    "src/underline_retldc/cli.py": "tracked",
+    "src/underline_retldc/__init__.py": "tracked",
+    "src/underline_retldc/__main__.py": "tracked",
+    "src/underline_retldc/app/application.py": "tracked",
+    "src/underline_retldc/app/candidate_smoke.py": "tracked",
+    "src/underline_retldc/app/export_batch.py": "tracked",
+    "src/underline_retldc/app/export_snapshot.py": "tracked",
+    "src/underline_retldc/app/native_diagnostics.py": "tracked",
+    "src/underline_retldc/app/project_pipeline.py": "tracked",
+    "src/underline_retldc/app/release_smoke.py": "tracked",
+    "src/underline_retldc/app/session.py": "tracked",
+    "src/underline_retldc/app/settings.py": "tracked",
+    "src/underline_retldc/app/source_analysis.py": "tracked",
+    "src/underline_retldc/app/source_input.py": "tracked",
+    "src/underline_retldc/app/version.py": "tracked",
+    "src/underline_retldc/app/__init__.py": "tracked",
+    "src/underline_retldc/core/calibration.py": "tracked",
+    "src/underline_retldc/core/channel.py": "tracked",
+    "src/underline_retldc/core/curve_display.py": "tracked",
+    "src/underline_retldc/core/dataset.py": "tracked",
+    "src/underline_retldc/core/data_quality.py": "tracked",
+    "src/underline_retldc/core/defaults.py": "tracked",
+    "src/underline_retldc/core/diagnostics.py": "tracked",
+    "src/underline_retldc/core/measurement_export.py": "tracked",
+    "src/underline_retldc/core/measurement_statistics.py": "tracked",
+    "src/underline_retldc/core/motor_parameters.py": "tracked",
+    "src/underline_retldc/core/parser_selection.py": "tracked",
+    "src/underline_retldc/core/pipeline.py": "tracked",
+    "src/underline_retldc/core/plot_analysis.py": "tracked",
+    "src/underline_retldc/core/plot_view.py": "tracked",
+    "src/underline_retldc/core/primary_channels.py": "tracked",
+    "src/underline_retldc/core/project.py": "tracked",
+    "src/underline_retldc/core/project_data.py": "tracked",
+    "src/underline_retldc/core/regions.py": "tracked",
+    "src/underline_retldc/core/region_detection.py": "tracked",
+    "src/underline_retldc/core/registry.py": "tracked",
+    "src/underline_retldc/core/segmentation.py": "tracked",
+    "src/underline_retldc/core/source_alignment.py": "tracked",
+    "src/underline_retldc/core/source_analysis.py": "tracked",
+    "src/underline_retldc/core/tabular.py": "tracked",
+    "src/underline_retldc/core/tabular_auto_detector.py": "tracked",
+    "src/underline_retldc/core/task.py": "tracked",
+    "src/underline_retldc/core/units.py": "tracked",
+    "src/underline_retldc/core/workspace_capabilities.py": "tracked",
+    "src/underline_retldc/core/__init__.py": "tracked",
+    "src/underline_retldc/gui/analysis_widgets.py": "tracked",
+    "src/underline_retldc/gui/main_window.py": "tracked",
+    "src/underline_retldc/gui/plot_analysis.py": "tracked",
+    "src/underline_retldc/gui/plot_svg.py": "tracked",
+    "src/underline_retldc/gui/plot_ui_i18n.py": "tracked",
+    "src/underline_retldc/gui/plot_view.py": "tracked",
+    "src/underline_retldc/gui/plugin_install_dialog.py": "tracked",
+    "src/underline_retldc/gui/primary_channels_widget.py": "tracked",
+    "src/underline_retldc/gui/schema_form.py": "tracked",
+    "src/underline_retldc/gui/source_analysis_widget.py": "tracked",
+    "src/underline_retldc/gui/tabular_mapping_editor.py": "tracked",
+    "src/underline_retldc/gui/test_interval_widget.py": "tracked",
+    "src/underline_retldc/gui/theme.py": "tracked",
+    "src/underline_retldc/gui/theory_overlay_widget.py": "tracked",
+    "src/underline_retldc/gui/widgets.py": "tracked",
+    "src/underline_retldc/gui/__init__.py": "tracked",
+    "src/underline_retldc/gui/pages/analyze_page.py": "tracked",
+    "src/underline_retldc/gui/pages/export_page.py": "tracked",
+    "src/underline_retldc/gui/pages/import_page.py": "tracked",
+    "src/underline_retldc/gui/pages/plugins_page.py": "tracked",
+    "src/underline_retldc/gui/pages/process_page.py": "tracked",
+    "src/underline_retldc/gui/pages/settings_page.py": "tracked",
+    "src/underline_retldc/gui/pages/setup_page.py": "tracked",
+    "src/underline_retldc/gui/pages/workspace_pages.py": "tracked",
+    "src/underline_retldc/gui/pages/__init__.py": "tracked",
+    "src/underline_retldc/i18n/en_US.json": "tracked",
+    "src/underline_retldc/i18n/plot_qt.py": "tracked",
+    "src/underline_retldc/i18n/service.py": "tracked",
+    "src/underline_retldc/i18n/zh_CN.json": "tracked",
+    "src/underline_retldc/i18n/__init__.py": "tracked",
+    "src/underline_retldc/plugins/installer.py": "tracked",
+    "src/underline_retldc/plugins/loader.py": "tracked",
+    "src/underline_retldc/plugins/manifest.py": "tracked",
+    "src/underline_retldc/plugins/measurement_export.py": "tracked",
+    "src/underline_retldc/plugins/__init__.py": "tracked",
+    "src/underline_retldc/plugins/__pycache__/manifest.cpython-314.pyc": "input, source, evidence, link or unclassified content",
+    "src/underline_retldc/plugin_api/analyzer.py": "tracked",
+    "src/underline_retldc/plugin_api/calibration.py": "tracked",
+    "src/underline_retldc/plugin_api/common.py": "tracked",
+    "src/underline_retldc/plugin_api/exporter.py": "tracked",
+    "src/underline_retldc/plugin_api/export_curve.py": "tracked",
+    "src/underline_retldc/plugin_api/parser.py": "tracked",
+    "src/underline_retldc/plugin_api/processor.py": "tracked",
+    "src/underline_retldc/plugin_api/two_column.py": "tracked",
+    "src/underline_retldc/plugin_api/__init__.py": "tracked",
+    "src/underline_retldc.egg-info/dependency_links.txt": "input, source, evidence, link or unclassified content",
+    "src/underline_retldc.egg-info/entry_points.txt": "input, source, evidence, link or unclassified content",
+    "src/underline_retldc.egg-info/PKG-INFO": "input, source, evidence, link or unclassified content",
+    "src/underline_retldc.egg-info/requires.txt": "input, source, evidence, link or unclassified content",
+    "src/underline_retldc.egg-info/SOURCES.txt": "input, source, evidence, link or unclassified content",
+    "src/underline_retldc.egg-info/top_level.txt": "input, source, evidence, link or unclassified content"
+  }
+}

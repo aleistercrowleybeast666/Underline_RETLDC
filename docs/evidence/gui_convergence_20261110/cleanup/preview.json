@@ -1,0 +1,99 @@
+{
+  "timestamp_utc": "2026-11-09T19:27:21.943338+00:00",
+  "root": "D:\\python_software\\Underline_RETLDC",
+  "api_path": "D:\\python_software\\SilverStar\\apps\\FLP\\tools\\clean_workspace.py",
+  "api_sha256": "35ebd3b83c3b89b98f6a1f2cec27e601caa9c1afec988d27e88926694ef5a321",
+  "api_source_commit": "737126081adec290721c783310ed0b36537f8a8c",
+  "plans": [
+    {
+      "path": ".work\\gui-convergence-20261110\\cleanup\\plan-0.json",
+      "sha256": "af2c30e12f65e78a0174da63393657d1aa2d52747d061b3409d9f359b45d158e",
+      "scope": "src",
+      "records": 94,
+      "files": 87,
+      "logical_bytes": 1715790,
+      "retained_reasons": {
+        "tracked": 89,
+        "input, source, evidence, link or unclassified content": 7
+      }
+    },
+    {
+      "path": ".work\\gui-convergence-20261110\\cleanup\\plan-1.json",
+      "sha256": "166e8e32c92345ac484856f9d1894d222ed363d5af7990dd69a918e29037d14b",
+      "scope": "plugins",
+      "records": 39,
+      "files": 20,
+      "logical_bytes": 196768,
+      "retained_reasons": {
+        "tracked": 77
+      }
+    },
+    {
+      "path": ".work\\gui-convergence-20261110\\cleanup\\plan-2.json",
+      "sha256": "b90b5c06750716e39933b580534d3a981164a3a07f8f35f01f55c756f3675c38",
+      "scope": "tests",
+      "records": 47,
+      "files": 44,
+      "logical_bytes": 2411652,
+      "retained_reasons": {
+        "protected directory or link": 1,
+        "tracked": 42
+      }
+    },
+    {
+      "path": ".work\\gui-convergence-20261110\\cleanup\\plan-3.json",
+      "sha256": "f47ae413b756f4d295baf91eaac8501605fcd4d69e3e61c0150431b290ac48a7",
+      "scope": "scripts",
+      "records": 2,
+      "files": 1,
+      "logical_bytes": 8006,
+      "retained_reasons": {
+        "tracked": 5
+      }
+    },
+    {
+      "path": ".work\\gui-convergence-20261110\\cleanup\\plan-4.json",
+      "sha256": "5fca2a3a09a1becdb18ab671eafbf43793b1f8d7ac9afe36344ac6919d6659d3",
+      "scope": "tools",
+      "records": 2,
+      "files": 1,
+      "logical_bytes": 6516,
+      "retained_reasons": {
+        "tracked": 2
+      }
+    },
+    {
+      "path": ".work\\gui-convergence-20261110\\cleanup\\plan-5.json",
+      "sha256": "0101a1f3f8a6c61a03aae5a100af850ea541284b1ee88d5833c068729a3f85c4",
+      "scope": "__pycache__",
+      "records": 1,
+      "files": 1,
+      "logical_bytes": 6150,
+      "retained_reasons": {}
+    },
+    {
+      "path": ".work\\gui-convergence-20261110\\cleanup\\plan-6.json",
+      "sha256": "98073dc49b3a2a250cb4b6b3a29bbd4f650fcaa23e08b24d3aca2c927ca39d5d",
+      "scope": ".work/gui-convergence-20261110",
+      "records": 173,
+      "files": 99,
+      "logical_bytes": 153223,
+      "retained_reasons": {
+        "input, source, evidence, link or unclassified content": 1154,
+        "protected directory or link": 12
+      }
+    }
+  ],
+  "protected_files": 845,
+  "protected_inventory_sha256": "37a58be19b94ee0f6eac0b17826770a3880bfa49217ebdc4ece3a3c2f85c134b",
+  "free_bytes_at_preview": 30306828288,
+  "excluded_scopes": [
+    "dist",
+    "build",
+    ".venv",
+    "docs",
+    "fixtures",
+    ".work outside this task",
+    "root extensionless caches"
+  ]
+}

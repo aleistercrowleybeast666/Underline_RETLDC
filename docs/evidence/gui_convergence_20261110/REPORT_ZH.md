@@ -4,7 +4,10 @@
 本轮功能实现为 [094777c](https://github.com/aleistercrowleybeast666/Underline_RETLDC/commit/094777c70b61a1742f89ad05ee06e7c0c732da1c)。
 相对统计兼容补齐为 [437c7bc](https://github.com/aleistercrowleybeast666/Underline_RETLDC/commit/437c7bce196fdc6fef8af308fdfb393c5bc1a344)。
 随后补充双主按钮数字输入覆盖：[3584cc4](https://github.com/aleistercrowleybeast666/Underline_RETLDC/commit/3584cc4488baefc1eae19480420dc1d8a59b3914)。
-原生审阅后补清晰的已提交区间状态：[72390b9](https://github.com/aleistercrowleybeast666/Underline_RETLDC/commit/72390b900427b1f57c12b8688390351a762dc1ff)，也是下列便携产物的源码身份。
+原生审阅后补清晰的已提交区间状态：[72390b9](https://github.com/aleistercrowleybeast666/Underline_RETLDC/commit/72390b900427b1f57c12b8688390351a762dc1ff)，也是首个完整便携产物的源码身份。
+实际 150% 桌面审阅发现首次窗口越屏后，补启动时尺寸/位置限制：
+[04ac660](https://github.com/aleistercrowleybeast666/Underline_RETLDC/commit/04ac660eb30d685a723b586e3e03c906b9f82bea)。
+仓库新增产物治理为 [4aa2e7a](https://github.com/aleistercrowleybeast666/Underline_RETLDC/commit/4aa2e7aa0885ab34a0b201b6d7763875ac38e7cd)。
 保留原五工作区、科学插件、Project schema、motor-test-package /1、源数据只读与既有原子导出。
 原未跟踪的 `docs/Repository_Showcase_Review_20261016.md` 未改动或纳入提交。
 
@@ -47,12 +50,16 @@ SciPy 1.18.0，pyqtgraph 0.14.0，pytest 9.1.1，Ruff 0.16.2，PyInstaller 6.22.
 | 最终源码无 Qt 的默认 CLI 实际导出 | exit 0；导出的包与本轮 GUI 首次计算后的包逐字节一致；[日志](integration/cli-final.log) |
 | 第一次正常打包预检 | **409 passed in 702.20s**；随后 Ruff 发现并行新增治理脚本的 3 处 import/行宽问题，batch exit 1，PyInstaller 未开始；[完整日志](package-preflight1.log) |
 | 原生发现的区间状态缺口 | 真实键盘将 end 从 4 改为 3.95，直接 Export；原先缺就地说明，回归 1 failed；补提示后与旧草稿路径共 2 passed in 19.59s。新区间计算为 219.25 N·s，旧 220 N·s 不与新区间混用；[修复前](interval-before.log) · [修复后](interval-after.log) |
-| 最终正常 `打包.bat` | **410 passed in 829.74s** → Ruff **All checks passed** → 实际 PyInstaller → 便携 EXE 浅/深两次 smoke，完整八步骤 **exit 0**；[完整日志](package-final.log) |
-| 最终便携 EXE 默认 CLI | 新工程实际重放并使用正式副本重新定位来源，exit 0，新 motor 包仍为相同 `eed976…017e3`；[回执](portable-cli.json) |
+| 首个完成的正常 `打包.bat` | **410 passed in 829.74s** → Ruff **All checks passed** → 实际 PyInstaller → 便携 EXE 浅/深两次 smoke，完整八步骤 **exit 0**；[完整日志](package-final.log) |
+| 首个完成的便携 EXE 默认 CLI | 新工程实际重放并使用正式副本重新定位来源，exit 0，新 motor 包仍为相同 `eed976…017e3`；[回执](portable-cli.json) |
+| 首次窗口尺寸回归 | 3 passed in 43.84s；真实 Qt 窗体在 1536×816、1280×680 逻辑可用区完整约束，合法位置保持，语言/主题切换不重新定位；[日志](startup-geometry.log)。offscreen 几何用例不冒充原生缩放验收 |
+| 清理后实际 CLI | 当前源码与首个完整便携包均 exit 0；重新定位同一保存工程后 motor 字节仍一致，输入来源/工程哈希不变；[回执](cleanup/cli.json) |
+| 启动修复后的正常 `打包.bat` | **413 passed in 1189.76s** → Ruff **All checks passed** → 实际 PyInstaller → 浅/深便携 EXE smoke，完整八步骤 **exit 0**；[完整日志](package-fit.log) |
+| 新 fit 便携 EXE 默认 CLI | exit 0，重新定位正式副本后实际默认导出，仍得到相同 `eed976…017e3`，来源/保存工程未变；[回执](portable-fit-cli.json) |
 
-首次完整结果未被定向通过拼接为全套通过；409 和 410 均为各自独立的完整执行。
+首次完整结果未被定向通过拼接为全套通过；409、410 和 413 均为各自独立的完整执行。
 第一次正常 `打包.bat` 在 Ruff 失败处停止，第二次通过完整测试和 Ruff 后才进入 PyInstaller。
-最终八步骤全部完成；预检与便携 smoke 使用 offscreen，不以它们替代桌面验收。
+两个候选各自完成正常八步骤；预检与便携 smoke 使用 offscreen，不以它们替代桌面验收。
 
 测试命令：
 
@@ -100,26 +107,37 @@ TreeDiagram 使用这份新包实际导入并完成 run `4008f769-9d31-4182-bee5
 便携版完整解压后运行 `Underline_RETLDC/Underline_RETLDC.exe`，无参即正常 GUI，
 可附加 `--locale en_US --theme dark`。整个文件夹是运行单元，不能只复制 EXE。
 
-本机目录为 `D:\python_software\Underline_RETLDC\dist\gui-convergence-20261110\Underline_RETLDC`。
-同级 ZIP 为 `Underline_RETLDC_GUI_20261110_Windows_Portable.zip`，98,650,426 字节。
+当前候选含首次窗口限制，其源码身份为
+[6933851](https://github.com/aleistercrowleybeast666/Underline_RETLDC/commit/69338514e9017f2801a779fd9811b78e848591f5)。
+本机目录为 `D:\python_software\Underline_RETLDC\dist\gui-convergence-20261110-fit\Underline_RETLDC`。
+同级 ZIP 为 `Underline_RETLDC_GUI_20261110_Fit_Windows_Portable.zip`，98,654,508 字节。
 
 | 产物 | SHA-256 |
 | --- | --- |
-| 便携 ZIP | `aa47c148ed9eaf81948f9f1b0b316cd41d19761d4194401ea927025027a367d6` |
-| Underline_RETLDC.exe | `c524f271a643dd29e4f561881a1b3fc58fec1c7678848fde5d9c4be713ffc9c8` |
+| 当前 fit 便携 ZIP | `7d518a16f927a0fd643e158ca7bec0b95d24823896a350af710bb94d8da7c58a` |
+| 当前 fit Underline_RETLDC.exe | `87e4d65154db99cad5f07587a8c7bd6af35351d2cb83637ff99dae46474b3840` |
 
 ZIP 的 891 个文件均重新读取并与原目录逐项核对大小和 SHA-256。472 个实际打包输入的
-起止清单逐字节一致；本次随机构建标记 `c5725d2c7704457e9cfe4d163ba1ae7b` 与收集目录一致。
-[产物及验证清单](portable-manifest.json) · [唯一输入清单](source-inputs.json)
+起止清单逐字节一致，清单 SHA-256 为
+`aa501c9f7e942e7cfbb4a8f5c5d6067933a07b2ec0cc001383491b84fe6b70b4`。
+本次随机构建标记 `da7c572138624450af48e949a47f408b` 与收集目录一致。
+[当前产物及验证清单](portable-fit-manifest.json) · [当前输入清单](source-fit-inputs.json)
 
-正常打包使用以下环境，中间文件始终归本轮唯一 `.work/gui-convergence-20261110/`：
+首个完整候选保留于 `dist/gui-convergence-20261110/`，源码 72390b9，ZIP 98,650,426 字节、
+SHA-256 `aa47c148ed9eaf81948f9f1b0b316cd41d19761d4194401ea927025027a367d6`，
+EXE SHA-256 `c524f271a643dd29e4f561881a1b3fc58fec1c7678848fde5d9c4be713ffc9c8`。
+其首次窗口越屏已由新候选修复；保留旧身份用于追溯，不把它当作新修复的产物。
+[首个产物清单](portable-manifest.json) · [首个输入清单](source-inputs.json)
+
+当前候选正常打包使用以下环境；测试和回执仍在本轮同一任务目录，打包中间产物由
+新标签隔离在 `.work/gui-convergence-20261110-fit/package/`：
 
 ```powershell
 $env:CI='1'
 $env:PYTHONUTF8='1'
-$env:UNDERLINE_BUILD_TAG='gui-convergence-20261110'
+$env:UNDERLINE_BUILD_TAG='gui-convergence-20261110-fit'
 $env:QT_QPA_PLATFORM='offscreen'
-$env:PYTEST_ADDOPTS='-v --tb=short --durations=10 --basetemp=.work/gui-convergence-20261110/package-tests -o cache_dir=.work/gui-convergence-20261110/cache'
+$env:PYTEST_ADDOPTS='-v --tb=short --durations=10 --basetemp=.work/gui-convergence-20261110/package-fit-tests -o cache_dir=.work/gui-convergence-20261110/cache'
 .\打包.bat
 ```
 
@@ -134,11 +152,62 @@ $env:PYTEST_ADDOPTS='-v --tb=short --durations=10 --basetemp=.work/gui-convergen
 原截图统一保留于 SilverStar 的
 `docs/evidence/gui_convergence_20261110/gui_native/underline-en-dark-150.png`，不重复复制。
 
-最终便携 EXE 的原生补偿草稿 → 明确旧结果导出 → 返回顶部重算路径，及其他原生代表组合
-由主负责人继续操作并补充回执；此条在回执到达前明确保留为未完成。
+主负责人随后用首个完成的便携 EXE，真实执行 None → Linear Weight-Change Compensation
+草稿：主按钮变为 Apply and recalculate；Export 明确显示 previous applied result、2–4 s / 225 N·s、
+Return 与 Export applied results。Return 后用顶部主按钮一次重算成功，仍为 225 N·s，
+Result up to date 且仅剩 Unsaved changes。关闭显示 Save/Discard/Cancel，测试修改已 Discard，
+原工程未变。截图统一保留于 SilverStar 的
+`docs/evidence/gui_convergence_20261110/gui_native/underline-portable-draft-export-150.png`。
+
+这次原生操作还确认默认 1280×820 窗口超出实际 1280×680 逻辑工作区，手动最大化不算修复。
+04ac660 在正常应用启动时按目标 QScreen 的 availableGeometry 约束包含原生边框的尺寸和位置，
+已合法的几何不变；只在首次 show 与边框确定后的单次回调执行，不挂接语言、主题或普通刷新。
+真实 Windows QScreen 查询为 DPR 1.5、availableGeometry 1280×680，与故障一致。
+修复后已以独立标签 `gui-convergence-20261110-fit` 完成正常 413 项和全部打包步骤。
+主负责人随后运行该新 EXE（上表 `87e4d651…3840`），参数 `--locale en_US --theme dark`，
+OS 125% × `QT_SCALE_FACTOR=1.2` 为实际 150%。没有手动最大化、移动或缩放，首次窗口
+完整可见，含工具栏和状态栏。真实 Open Project → 本轮 Synthetic 工程 → Thrust，
+Update results 保持可见，225 N·s 结果、主图和 Saved 状态准确。Alt+F4 正常退出，无工程修改；
+Computer Use 随后已退出。原生截图由 SilverStar 统一保留：
+[150% 首次窗口](https://github.com/aleistercrowleybeast666/SilverStar/blob/b5f9d645313db7dbf39e0737012fe31db11353d5/docs/evidence/gui_convergence_20261110/gui_native/underline-fit-first-show-150.png) ·
+[150% 实际结果](https://github.com/aleistercrowleybeast666/SilverStar/blob/b5f9d645313db7dbf39e0737012fe31db11353d5/docs/evidence/gui_convergence_20261110/gui_native/underline-fit-result-150.png)。
+此前 410 项与旧截图不被当作新窗口验证。
+
+同一 fit EXE 随后以 `--locale zh_CN --theme light` 在 OS 125% × factor 1 的原生环境首次启动。
+未手动移动、缩放或最大化，主导航、顶部动作和底栏完整可见，正常关闭且 stderr 为空，
+Computer Use 再次退出。[125% 首次窗口](https://github.com/aleistercrowleybeast666/SilverStar/blob/b5f9d645313db7dbf39e0737012fe31db11353d5/docs/evidence/gui_convergence_20261110/gui_native/underline-fit-first-show-125.png)。
+自动逻辑几何回归与这两次实际原生缩放观察分别记录，没有用 offscreen 替代桌面验收。
+
+## 可确认的本地清理与防回流
+
+治理脚本只检查 Git 新增/修改 blob，2 MiB 上限、工作区/构建目录限制和原测试输入例外均保留。
+实际 staged 5 项和基线之后 55 项通过；精确 2 MiB 边界、超限、工作区、build 与二进制分类核对通过。
+忽略规则补 `.qa/`、`.test-tmp/`、`.codex-remote-attachments/`；CI 对 push/pull request 调用同一检查。
+
+清理复用 SilverStar 已提交的 `apps/FLP/tools/clean_workspace.py` Python API，
+来源提交 `737126081adec290721c783310ed0b36537f8a8c`，文件 SHA-256
+`35ebd3b83c3b89b98f6a1f2cec27e601caa9c1afec988d27e88926694ef5a321`。
+显式 root 为本 Underline 仓，scope 为 src、plugins、tests、scripts、tools、根 __pycache__
+及本任务 `.work/gui-convergence-20261110`。未运行默认指向 FLP 的 CLI，没有复制第二套删除框架。
+先调用 Plan/PlanSave，逐项审阅后 PlanLoad/Apply；保留检查、文件哈希/身份、索引检查与空目录
+rmdir 均由同一 API 实施。实际删除仅 253 个 `.pyc` 与 105 个空缓存目录，共 **4,498,105 字节**。
+[预览及 API 身份](cleanup/preview.json) · [删除回执](cleanup/applied.json) ·
+[保护清单](cleanup/protected-before.json)。7 个 plan 文件保留了删除前每个路径的身份与 SHA-256。
+
+磁盘可用空间在 Apply 前后从 30,248,079,360 到 30,252,523,520 字节，区间增量 4,444,160 字节。
+同时其他仓有工作，区间变化不能完全归因于本次删除；逻辑删除量以上述逐文件记录为准。
+845 个跟踪或明确保护文件哈希完全一致，包括原 Showcase、新 CSV/工程/motor 和旧 ZIP/EXE。
+dist、build、.venv、docs、fixtures、其他任务 work 与小型根缓存均保留；未分类试验文件、
+当前/历史产物和唯一输入不因目录名称被视为可丢弃。清理后实际运行两条 CLI，结果见上表。
+正常后续运行可以重新生成缓存；不通过反复删除追求空目录，也不把本次清理当作改写 Git 历史。
+
+需要逐字节校验的 JSON 保留原始 Windows CRLF。Git 的通用 whitespace 检查因此把 CR
+报告为行尾空白；逐行核对没有尾随空格/Tab，14 份 staged JSON 均可解析且与原文件字节一致，
+7 个清理 plan、保护清单和新包输入清单的哈希均匹配回执。普通文本的 whitespace 检查通过，
+未修改门禁或证据字节。[字节校验记录](evidence-byte-check.log)
 
 PyInstaller 保留可选 `pyqtgraph.opengl/OpenGL` 和 `scipy.special._cdflib` 发现 warning；
 本轮验收为已有二维离线工作流，未声明第三方 OpenGL 功能可用。未执行真实采集、
 实物控制或传感器标定准确性验证。候选包在本机生成，未创建正式 Release；上游对应源码、
 库替换等正式分发事项沿用原发布说明与许可材料，不能由 smoke 通过代替。
-跨仓清理与推送由主负责人统一完成。
+跨仓汇总与推送由主负责人统一完成。

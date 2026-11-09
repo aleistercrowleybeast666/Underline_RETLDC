@@ -1,0 +1,523 @@
+{
+  "schema": 1,
+  "root": "D:\\python_software\\Underline_RETLDC",
+  "scope": "tests",
+  "owner": "Underline convergence 20261110 cache cleanup",
+  "records": [
+    {
+      "path": "tests/integration/__pycache__/test_converged_calculation.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 71824,
+      "mtime_ns": 1794249595346871200,
+      "device": 15190911442371306337,
+      "inode": 2251799815182922,
+      "sha256": "bf61ea7a0949a7d5a3ac5937728537de199b9cb6e56d7409c2e0a3214c63ae11"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_entry_points.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 25172,
+      "mtime_ns": 1794251593358875000,
+      "device": 15190911442371306337,
+      "inode": 844424932323427,
+      "sha256": "6b0b5d21c84986a78f6061bb2fedb41fc77c6f21fe764f7996114a3538e97814"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_export_selection.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 26281,
+      "mtime_ns": 1791957452539008800,
+      "device": 15190911442371306337,
+      "inode": 2533274790673735,
+      "sha256": "6171f30632d0ede30044306a3af4d0e0a3b97b1a352a4e1ff4e515a0d20a2c7f"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_gui_lifecycle.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 11465,
+      "mtime_ns": 1791897830050675600,
+      "device": 15190911442371306337,
+      "inode": 2533274790678355,
+      "sha256": "8b2182b750ca4d264aa2b767227d7149df9b11787c94d0432975395d99818c36"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_gui_workflow.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 635119,
+      "mtime_ns": 1794247006997657600,
+      "device": 15190911442371306337,
+      "inode": 1688849861455214,
+      "sha256": "3529bd7212b9d1b14559f669605a90e584becfe862956e247e05f26ebcfcf135"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_gui_workflow.cpython-314.pyc",
+      "kind": "file",
+      "size": 176967,
+      "mtime_ns": 1794245968369072100,
+      "device": 15190911442371306337,
+      "inode": 1688849860647466,
+      "sha256": "b14ab63f5f4c2ff1efb284a411eb4effc163004bc041c34b6b821105d70f3ab6"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_import_state_lifecycle.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 74653,
+      "mtime_ns": 1791903690821970600,
+      "device": 15190911442371306337,
+      "inode": 3096224745149939,
+      "sha256": "f9166b92b1d4e7d03d413bdb8f0495b87f46d807d1cdd08821a2bce45964e168"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_motor_bridge.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 70077,
+      "mtime_ns": 1794246358764730200,
+      "device": 15190911442371306337,
+      "inode": 2533274791482410,
+      "sha256": "f731e3508e6296cf366e29665dbe0e7e1c2237f98650dbdaa083cb233c7102c5"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_packaging_exit.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 12799,
+      "mtime_ns": 1794247007027673100,
+      "device": 15190911442371306337,
+      "inode": 1688849860649263,
+      "sha256": "c2e0985ad0cad582fd9a75fa7bfa53579e6f382b22257f235a6334c7e8d098dc"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_plot_analysis.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 73957,
+      "mtime_ns": 1792071040231640700,
+      "device": 15190911442371306337,
+      "inode": 2533274792273718,
+      "sha256": "428f058e26bfe395a40711b4447ad1209ad45e71535852d7e5b7a274e32e0432"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_plot_owner_lifecycle.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 11609,
+      "mtime_ns": 1793513074191576800,
+      "device": 15190911442371306337,
+      "inode": 562949956816823,
+      "sha256": "b4025edcdaa6e46dcf8d3766d1d6ce2249a0a5bad4eb649664d66697dac6fce2"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_plot_svg.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 28846,
+      "mtime_ns": 1792044200446267900,
+      "device": 15190911442371306337,
+      "inode": 2251799815166901,
+      "sha256": "03e397d3c3306e99f83ea492dd7837741b6d96a0f87910745c6fcce0060d5bf5"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_plot_ui_i18n.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 57763,
+      "mtime_ns": 1792044201190528200,
+      "device": 15190911442371306337,
+      "inode": 36310271997174856,
+      "sha256": "458e6918bd6b1611eefcba36f63ef4895c7f42f38a862d8b6186f58669505be9"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_plugin_install_gui.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 38881,
+      "mtime_ns": 1791825367668816800,
+      "device": 15190911442371306337,
+      "inode": 1125899906846725,
+      "sha256": "0e715323bff6eb4c2875fe7f28267fb41db6923e04ebeb4e60ebd3c61b86e696"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_plugin_installer_v003.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 53941,
+      "mtime_ns": 1791825367691815700,
+      "device": 15190911442371306337,
+      "inode": 1125899906846741,
+      "sha256": "261154baae26c7acb61ce04392bc60ff61e114fb5cc574c150567f48f385eee1"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_plugin_loader.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 80265,
+      "mtime_ns": 1791825367745481200,
+      "device": 15190911442371306337,
+      "inode": 1125899906846867,
+      "sha256": "3ff9f083a14dd4be49ba8a3d5f6d8cb8fa1cb5b2e4dd9743d6005dc46c412516"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_release_candidate.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 56210,
+      "mtime_ns": 1793718615073952600,
+      "device": 15190911442371306337,
+      "inode": 562949956945232,
+      "sha256": "f3a14e0e9bbc1f2c6897bfea8869cbf47dbb357328f3250400c1e6ea8c208846"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_release_plot_lifecycle.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 11326,
+      "mtime_ns": 1793511041584562900,
+      "device": 15190911442371306337,
+      "inode": 1970324840310302,
+      "sha256": "d7ba946d3e4388191d69d1a234130dd24d5eb65c10573df285f14f65186269bd"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_source_alignment.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 48672,
+      "mtime_ns": 1791973832741063200,
+      "device": 15190911442371306337,
+      "inode": 3096224745252250,
+      "sha256": "efe4b40af60e0cb8d9cbb1d3e4c1a8459279f440123be413beb35a3356f3e563"
+    },
+    {
+      "path": "tests/integration/__pycache__/test_theory_overlay.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 355894,
+      "mtime_ns": 1792061935496237600,
+      "device": 15190911442371306337,
+      "inode": 1688849862337159,
+      "sha256": "ea832b3a855529495eafec41372363e5f8a8095d8d08dcc6ad706fc230149e9c"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_analyzer.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 6371,
+      "mtime_ns": 1791825367782318800,
+      "device": 15190911442371306337,
+      "inode": 1125899906846877,
+      "sha256": "a15b9a330530eb46c0f6fcdb58f13a701eb90455bfaca4cde2bb678511de5722"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_calibration.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 3828,
+      "mtime_ns": 1791825367789311800,
+      "device": 15190911442371306337,
+      "inode": 117656540265058465,
+      "sha256": "2ec2b9fe0d2b578e9674544f45c072152b48f3395fcf16e1b1bf8798128f57e7"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_export_batch.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 6894,
+      "mtime_ns": 1794246358973790900,
+      "device": 15190911442371306337,
+      "inode": 1970324838061104,
+      "sha256": "cd7795fc34b9f08e061b7072ae5df21aa2f260518c8373fddbb92d5ec04ed805"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_exporters.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 46483,
+      "mtime_ns": 1791825367828304600,
+      "device": 15190911442371306337,
+      "inode": 1125899906846884,
+      "sha256": "6bbcc8c425eac55003ea0ee2e47bc7aa7905592ebe346876fe7ddcc3aa8909ce"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_fft_preprocessing.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 15915,
+      "mtime_ns": 1792067621301292200,
+      "device": 15190911442371306337,
+      "inode": 3096224745694983,
+      "sha256": "889424dea0c380a5a7050b2e74a1d178b79b27c0be8c863a5f93be470e928d34"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_i18n.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 15409,
+      "mtime_ns": 1791825367844396900,
+      "device": 15190911442371306337,
+      "inode": 1125899906846887,
+      "sha256": "7b7e9029b6fcbb5c8f808f53516f5e038308ac739846bad54b44300795dd41ee"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_measurement_statistics.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 8972,
+      "mtime_ns": 1791825367860316100,
+      "device": 15190911442371306337,
+      "inode": 1125899906846891,
+      "sha256": "385d115c4f6a03b86e156fc096600df2bd06f3659a98029ff32927bddc17333f"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_motor_parameters.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 12442,
+      "mtime_ns": 1791992401946800600,
+      "device": 15190911442371306337,
+      "inode": 3659174698673475,
+      "sha256": "3dac05877eb9cb24428b465b6109f70acb631937247e1d85efbb8381f6a5024b"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_parser.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 58352,
+      "mtime_ns": 1791825367905352900,
+      "device": 15190911442371306337,
+      "inode": 1125899906846895,
+      "sha256": "ca93aa6c9dd44a5d1956a821fe39baf12bf547c801d4dc3d9f3350a0ac7a4d27"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_plot_analysis.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 15911,
+      "mtime_ns": 1792067566697646600,
+      "device": 15190911442371306337,
+      "inode": 2251799815563061,
+      "sha256": "2d8643043bb23c5632935c052cddeff30e926355bc704ba4382f14f619729e78"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_plot_fft_notice.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 6006,
+      "mtime_ns": 1792071040190114100,
+      "device": 15190911442371306337,
+      "inode": 3940649675826954,
+      "sha256": "54da80aa10d9e76a916fac4ed269a8ea55ec439cbc118fbfaa24d106b688bc04"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_plot_view.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 6553,
+      "mtime_ns": 1792061548463343600,
+      "device": 15190911442371306337,
+      "inode": 2251799815165792,
+      "sha256": "a0b4040074c302e4fcf0669cbaba83afea85f94b1f1e8e54fc227cec27846a62"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_primary_channels.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 13070,
+      "mtime_ns": 1791824780641450200,
+      "device": 15190911442371306337,
+      "inode": 2251799815120561,
+      "sha256": "0cae94740d42dfa8b83afacd45c3a902e720aa651a62c01d49b1c168dd744bb1"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_processing.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 29127,
+      "mtime_ns": 1791825367941465100,
+      "device": 15190911442371306337,
+      "inode": 1125899906846901,
+      "sha256": "17f3c247f02f802a30a04b19dd5817094df97820571fcce70b4b58ebd3b26cf3"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_project.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 32824,
+      "mtime_ns": 1791824780695398500,
+      "device": 15190911442371306337,
+      "inode": 2251799815120577,
+      "sha256": "bbffe30fc7a6314b02d893a76933d68b76ccade67723456b2dac9a4e81c1d11b"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_settings.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 17570,
+      "mtime_ns": 1791825367964657400,
+      "device": 15190911442371306337,
+      "inode": 1125899906847119,
+      "sha256": "c6b4df3d4e5b2c4db6f609ac713bfd01fec911ca58e72ccf4841fb3be63b5739"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_source_alignment_core.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 17051,
+      "mtime_ns": 1791898228553060400,
+      "device": 15190911442371306337,
+      "inode": 4222124650663826,
+      "sha256": "331a980fb4295f92a8a9ba524f61173fb18958ddaca43a2566138b51c4861aaa"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_source_analysis.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 32980,
+      "mtime_ns": 1791907039417411600,
+      "device": 15190911442371306337,
+      "inode": 3940649675281971,
+      "sha256": "2418dc7006c7d8f3f825807a3ee3b683a74694abd5c55bb5cb6a33a889721802"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_tabular.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 15818,
+      "mtime_ns": 1791825367979820400,
+      "device": 15190911442371306337,
+      "inode": 1125899906847127,
+      "sha256": "3670b1148db56421a853006ba1ee88cf8a60b1cf9a68775c9b882ef544220a96"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_tabular_auto_detector.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 41090,
+      "mtime_ns": 1791825368014550100,
+      "device": 15190911442371306337,
+      "inode": 1125899906847132,
+      "sha256": "6cf662fc5a490b54d7e79bcdfe15cb6a3a5eec7e0be9e74851277325ce77e712"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_task.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 11104,
+      "mtime_ns": 1791825368029555500,
+      "device": 15190911442371306337,
+      "inode": 1407374883557794,
+      "sha256": "89de58befd25665f4589c07057b1ca7c0f311924383173484328698d81ca3d08"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_theoretical_sources.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 26644,
+      "mtime_ns": 1791827021345824600,
+      "device": 15190911442371306337,
+      "inode": 1970324836978544,
+      "sha256": "b84646d9e641bc8c0efde20ac708575a0cac3062bcbb047452a650f2b2405605"
+    },
+    {
+      "path": "tests/unit/__pycache__/test_units_and_defaults.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 44898,
+      "mtime_ns": 1791825368063939700,
+      "device": 15190911442371306337,
+      "inode": 1125899906847143,
+      "sha256": "69e3151aebd8034793482390668099a54b144c280004f4c5fd50fa2b82178924"
+    },
+    {
+      "path": "tests/__pycache__/conftest.cpython-314-pytest-9.1.1.pyc",
+      "kind": "file",
+      "size": 4619,
+      "mtime_ns": 1793714756552618600,
+      "device": 15190911442371306337,
+      "inode": 1688849863733793,
+      "sha256": "ba8f9bd0268cf7a50a42f6bd9e6b99c9b7f5f2bf681d19eef662cf7a4647f02f"
+    },
+    {
+      "path": "tests/integration/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794251593359874700,
+      "device": 15190911442371306337,
+      "inode": 2251799815120579,
+      "children": [
+        "test_converged_calculation.cpython-314-pytest-9.1.1.pyc",
+        "test_entry_points.cpython-314-pytest-9.1.1.pyc",
+        "test_export_selection.cpython-314-pytest-9.1.1.pyc",
+        "test_gui_lifecycle.cpython-314-pytest-9.1.1.pyc",
+        "test_gui_workflow.cpython-314-pytest-9.1.1.pyc",
+        "test_gui_workflow.cpython-314.pyc",
+        "test_import_state_lifecycle.cpython-314-pytest-9.1.1.pyc",
+        "test_motor_bridge.cpython-314-pytest-9.1.1.pyc",
+        "test_packaging_exit.cpython-314-pytest-9.1.1.pyc",
+        "test_plot_analysis.cpython-314-pytest-9.1.1.pyc",
+        "test_plot_owner_lifecycle.cpython-314-pytest-9.1.1.pyc",
+        "test_plot_svg.cpython-314-pytest-9.1.1.pyc",
+        "test_plot_ui_i18n.cpython-314-pytest-9.1.1.pyc",
+        "test_plugin_install_gui.cpython-314-pytest-9.1.1.pyc",
+        "test_plugin_installer_v003.cpython-314-pytest-9.1.1.pyc",
+        "test_plugin_loader.cpython-314-pytest-9.1.1.pyc",
+        "test_release_candidate.cpython-314-pytest-9.1.1.pyc",
+        "test_release_plot_lifecycle.cpython-314-pytest-9.1.1.pyc",
+        "test_source_alignment.cpython-314-pytest-9.1.1.pyc",
+        "test_theory_overlay.cpython-314-pytest-9.1.1.pyc"
+      ]
+    },
+    {
+      "path": "tests/unit/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794246358974791700,
+      "device": 15190911442371306337,
+      "inode": 2251799815120559,
+      "children": [
+        "test_analyzer.cpython-314-pytest-9.1.1.pyc",
+        "test_calibration.cpython-314-pytest-9.1.1.pyc",
+        "test_export_batch.cpython-314-pytest-9.1.1.pyc",
+        "test_exporters.cpython-314-pytest-9.1.1.pyc",
+        "test_fft_preprocessing.cpython-314-pytest-9.1.1.pyc",
+        "test_i18n.cpython-314-pytest-9.1.1.pyc",
+        "test_measurement_statistics.cpython-314-pytest-9.1.1.pyc",
+        "test_motor_parameters.cpython-314-pytest-9.1.1.pyc",
+        "test_parser.cpython-314-pytest-9.1.1.pyc",
+        "test_plot_analysis.cpython-314-pytest-9.1.1.pyc",
+        "test_plot_fft_notice.cpython-314-pytest-9.1.1.pyc",
+        "test_plot_view.cpython-314-pytest-9.1.1.pyc",
+        "test_primary_channels.cpython-314-pytest-9.1.1.pyc",
+        "test_processing.cpython-314-pytest-9.1.1.pyc",
+        "test_project.cpython-314-pytest-9.1.1.pyc",
+        "test_settings.cpython-314-pytest-9.1.1.pyc",
+        "test_source_alignment_core.cpython-314-pytest-9.1.1.pyc",
+        "test_source_analysis.cpython-314-pytest-9.1.1.pyc",
+        "test_tabular.cpython-314-pytest-9.1.1.pyc",
+        "test_tabular_auto_detector.cpython-314-pytest-9.1.1.pyc",
+        "test_task.cpython-314-pytest-9.1.1.pyc",
+        "test_theoretical_sources.cpython-314-pytest-9.1.1.pyc",
+        "test_units_and_defaults.cpython-314-pytest-9.1.1.pyc"
+      ]
+    },
+    {
+      "path": "tests/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1793714756553690400,
+      "device": 15190911442371306337,
+      "inode": 9007199254935833,
+      "children": [
+        "conftest.cpython-314-pytest-9.1.1.pyc"
+      ]
+    }
+  ],
+  "retained": {
+    "tests/fixtures": "protected directory or link",
+    "tests/conftest.py": "tracked",
+    "tests/data/valid_tr_f.txt": "tracked",
+    "tests/integration/test_converged_calculation.py": "tracked",
+    "tests/integration/test_entry_points.py": "tracked",
+    "tests/integration/test_export_selection.py": "tracked",
+    "tests/integration/test_gui_lifecycle.py": "tracked",
+    "tests/integration/test_gui_workflow.py": "tracked",
+    "tests/integration/test_import_state_lifecycle.py": "tracked",
+    "tests/integration/test_motor_bridge.py": "tracked",
+    "tests/integration/test_packaging_exit.py": "tracked",
+    "tests/integration/test_plot_analysis.py": "tracked",
+    "tests/integration/test_plot_owner_lifecycle.py": "tracked",
+    "tests/integration/test_plot_svg.py": "tracked",
+    "tests/integration/test_plot_ui_i18n.py": "tracked",
+    "tests/integration/test_plugin_installer_v003.py": "tracked",
+    "tests/integration/test_plugin_install_gui.py": "tracked",
+    "tests/integration/test_plugin_loader.py": "tracked",
+    "tests/integration/test_release_candidate.py": "tracked",
+    "tests/integration/test_release_plot_lifecycle.py": "tracked",
+    "tests/integration/test_source_alignment.py": "tracked",
+    "tests/integration/test_theory_overlay.py": "tracked",
+    "tests/unit/test_analyzer.py": "tracked",
+    "tests/unit/test_calibration.py": "tracked",
+    "tests/unit/test_exporters.py": "tracked",
+    "tests/unit/test_export_batch.py": "tracked",
+    "tests/unit/test_i18n.py": "tracked",
+    "tests/unit/test_measurement_statistics.py": "tracked",
+    "tests/unit/test_motor_parameters.py": "tracked",
+    "tests/unit/test_parser.py": "tracked",
+    "tests/unit/test_plot_fft_notice.py": "tracked",
+    "tests/unit/test_plot_view.py": "tracked",
+    "tests/unit/test_primary_channels.py": "tracked",
+    "tests/unit/test_processing.py": "tracked",
+    "tests/unit/test_project.py": "tracked",
+    "tests/unit/test_settings.py": "tracked",
+    "tests/unit/test_source_alignment_core.py": "tracked",
+    "tests/unit/test_source_analysis.py": "tracked",
+    "tests/unit/test_tabular.py": "tracked",
+    "tests/unit/test_tabular_auto_detector.py": "tracked",
+    "tests/unit/test_task.py": "tracked",
+    "tests/unit/test_theoretical_sources.py": "tracked",
+    "tests/unit/test_units_and_defaults.py": "tracked"
+  }
+}

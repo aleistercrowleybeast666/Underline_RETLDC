@@ -1,0 +1,4 @@
+PASS: 14 staged JSON evidence blobs preserve exact working-file bytes and have no trailing spaces/tabs.
+PASS: all 7 cleanup plan hashes, protected inventory hash and new portable source-input manifest hash match their receipts.
+PASS: ordinary text changes pass git diff --cached --check.
+NOTE: unscoped git diff --cached --check exits 2: byte-preserved Windows CRLF JSON is reported as trailing whitespace; original evidence bytes were retained.

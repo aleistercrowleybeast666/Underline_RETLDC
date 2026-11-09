@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "root": "D:\\python_software\\Underline_RETLDC",
+  "scope": "__pycache__",
+  "owner": "Underline convergence 20261110 cache cleanup",
+  "records": [
+    {
+      "path": "__pycache__/main.cpython-314.pyc",
+      "kind": "file",
+      "size": 6150,
+      "mtime_ns": 1793719410369394500,
+      "device": 15190911442371306337,
+      "inode": 562949956954777,
+      "sha256": "95cef2c8c4822b929fa748bbe9c8ca931d1fc91285ad4293c714e275b589a3f6"
+    }
+  ],
+  "retained": {}
+}

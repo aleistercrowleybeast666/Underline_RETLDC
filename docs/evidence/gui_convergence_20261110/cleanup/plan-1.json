@@ -1,0 +1,477 @@
+{
+  "schema": 1,
+  "root": "D:\\python_software\\Underline_RETLDC",
+  "scope": "plugins",
+  "owner": "Underline convergence 20261110 cache cleanup",
+  "records": [
+    {
+      "path": "plugins/analyzers/thrust/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 7244,
+      "mtime_ns": 1791824787051786600,
+      "device": 15190911442371306337,
+      "inode": 2251799815120857,
+      "sha256": "b8dcfb75dee10718a910e10b909751707d716183325ed12e5b1353cb39f246a7"
+    },
+    {
+      "path": "plugins/calibrations/identity/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 2941,
+      "mtime_ns": 1791824787063790900,
+      "device": 15190911442371306337,
+      "inode": 2251799815120859,
+      "sha256": "151faef8a6858d522b3620dcc5c77cb11bd6b291be5470c9ec993b8ae532fc2b"
+    },
+    {
+      "path": "plugins/calibrations/linear/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 3952,
+      "mtime_ns": 1791824787073786700,
+      "device": 15190911442371306337,
+      "inode": 2533274791831701,
+      "sha256": "bca517c4f945d1105920b5bfce52debb83c1b562dfebee24749773074f295932"
+    },
+    {
+      "path": "plugins/exporters/analysis_json/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 8071,
+      "mtime_ns": 1794245984471588400,
+      "device": 15190911442371306337,
+      "inode": 1688849860647801,
+      "sha256": "742cf8120e43bd2ad1e7fbd275628e5474ee9f58ee95c531c6cb9806eb039931"
+    },
+    {
+      "path": "plugins/exporters/chamber_pressure_csv/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 4579,
+      "mtime_ns": 1794245984481708900,
+      "device": 15190911442371306337,
+      "inode": 1688849860647804,
+      "sha256": "bd8117791f78cc692232ccc15b2bdc22966d7014cb30172e1f4dca4d61ebc78f"
+    },
+    {
+      "path": "plugins/exporters/chamber_pressure_curve_png/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 6459,
+      "mtime_ns": 1794245984520243200,
+      "device": 15190911442371306337,
+      "inode": 1688849860647814,
+      "sha256": "f9e94a3d8eb22913d4defe1fb766b558d795326661a8ee91d51531f45f6d218a"
+    },
+    {
+      "path": "plugins/exporters/csv/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 9236,
+      "mtime_ns": 1794245984531722800,
+      "device": 15190911442371306337,
+      "inode": 1688849860647816,
+      "sha256": "0d2a5b7818a905834a603106aeaa395ed97643a8ae2d8fea5e23a71ef446f453"
+    },
+    {
+      "path": "plugins/exporters/openrocket_eng/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 10252,
+      "mtime_ns": 1794245984545599700,
+      "device": 15190911442371306337,
+      "inode": 1688849860647818,
+      "sha256": "a772c8762821300b8bbdb819fdbd8506c9931b24f883286ae43317c44b66684b"
+    },
+    {
+      "path": "plugins/exporters/temperature_csv/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 4456,
+      "mtime_ns": 1794245984561613200,
+      "device": 15190911442371306337,
+      "inode": 1688849860647819,
+      "sha256": "52d3cd1a4f4fe26d8ddb074865e8feda396c81a63f1b59b9d3a1bd75a451549f"
+    },
+    {
+      "path": "plugins/exporters/temperature_curve_png/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 5091,
+      "mtime_ns": 1794245984570933400,
+      "device": 15190911442371306337,
+      "inode": 1688849860647824,
+      "sha256": "836f1eaf86ec6885965b44bf58dba572775e850c7043bd659697fa21cc91c525"
+    },
+    {
+      "path": "plugins/exporters/text_summary/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 26173,
+      "mtime_ns": 1794245984596934500,
+      "device": 15190911442371306337,
+      "inode": 1688849860647832,
+      "sha256": "c77106e204944d36fac67254bc57c4033dd0e78d640ed20ea8467e5c69d5f1f0"
+    },
+    {
+      "path": "plugins/exporters/thrust_curve_png/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 14372,
+      "mtime_ns": 1794245984611981900,
+      "device": 15190911442371306337,
+      "inode": 1688849860647838,
+      "sha256": "4d0d630f629abbb7a7336f264464bbf8f1eeed3d950eee280ba83365ef8e9394"
+    },
+    {
+      "path": "plugins/exporters/treediagram_motor/__pycache__/contract.cpython-314.pyc",
+      "kind": "file",
+      "size": 24158,
+      "mtime_ns": 1793466783514178700,
+      "device": 15190911442371306337,
+      "inode": 3940649674170394,
+      "sha256": "f5ffd13ec2c0a9a4496f48dce7e1ec37258dcaf3f9fcac530b452a28e70fc305"
+    },
+    {
+      "path": "plugins/exporters/treediagram_motor/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 19074,
+      "mtime_ns": 1794245984626138200,
+      "device": 15190911442371306337,
+      "inode": 1688849860647841,
+      "sha256": "2c8fa9234d937fd1f495f3df5226d57f6174952e44ae26c3fa9e92da38f07851"
+    },
+    {
+      "path": "plugins/parsers/generic_delimited/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 15662,
+      "mtime_ns": 1791824787245138200,
+      "device": 15190911442371306337,
+      "inode": 2251799815121975,
+      "sha256": "c3b0a60d09e2d4b80d07ded0705a8d55bf1aa7692e299b1d037bdd842386b46a"
+    },
+    {
+      "path": "plugins/parsers/generic_xlsx/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 18848,
+      "mtime_ns": 1791824787261635900,
+      "device": 15190911442371306337,
+      "inode": 3096224745253946,
+      "sha256": "fcbd689bb3120a40c8bd745580d7deaedd69f404871ee7794d54543d054dcb8d"
+    },
+    {
+      "path": "plugins/parsers/tr_f/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 1453,
+      "mtime_ns": 1791824787284636200,
+      "device": 15190911442371306337,
+      "inode": 3377699721964604,
+      "sha256": "8daf483ac72876073edb78f0112c3ccff1557a8e3b66a1dc9ea0225ab514517b"
+    },
+    {
+      "path": "plugins/parsers/tr_p/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 1476,
+      "mtime_ns": 1791824787301635600,
+      "device": 15190911442371306337,
+      "inode": 2251799815121983,
+      "sha256": "df2224b42bf78f8375173cc8fbe125cfd5794670c6a400b3191c00e063b5d4c2"
+    },
+    {
+      "path": "plugins/parsers/tr_t/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 1462,
+      "mtime_ns": 1791824787312661600,
+      "device": 15190911442371306337,
+      "inode": 3940649675385921,
+      "sha256": "55b536cefdcb938c8055638373e6bb76c8290071f5dced37c2033b4f27d544b3"
+    },
+    {
+      "path": "plugins/processors/vertical_linear_baseline/__pycache__/plugin.cpython-314.pyc",
+      "kind": "file",
+      "size": 11809,
+      "mtime_ns": 1791824787328652900,
+      "device": 15190911442371306337,
+      "inode": 2251799815121987,
+      "sha256": "910ce766cac7035159031edfc0754d6457a1782eaf89e17ceb01166aded7f878"
+    },
+    {
+      "path": "plugins/analyzers/thrust/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1791824787052786400,
+      "device": 15190911442371306337,
+      "inode": 2251799815120841,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/calibrations/identity/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1791824787063790900,
+      "device": 15190911442371306337,
+      "inode": 2251799815120858,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/calibrations/linear/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1791824787074786800,
+      "device": 15190911442371306337,
+      "inode": 2251799815120925,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/exporters/analysis_json/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794245984472590500,
+      "device": 15190911442371306337,
+      "inode": 2533274791831702,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/exporters/chamber_pressure_csv/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794245984484723400,
+      "device": 15190911442371306337,
+      "inode": 2814749768542360,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/exporters/chamber_pressure_curve_png/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794245984521242100,
+      "device": 15190911442371306337,
+      "inode": 2533274791832611,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/exporters/csv/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794245984532729000,
+      "device": 15190911442371306337,
+      "inode": 2251799815121959,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/exporters/openrocket_eng/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794245984547600100,
+      "device": 15190911442371306337,
+      "inode": 2251799815121962,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/exporters/temperature_csv/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794245984562613900,
+      "device": 15190911442371306337,
+      "inode": 4503599628807213,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/exporters/temperature_curve_png/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794245984571933100,
+      "device": 15190911442371306337,
+      "inode": 2251799815121967,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/exporters/text_summary/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794245984597934400,
+      "device": 15190911442371306337,
+      "inode": 2814749768543281,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/exporters/thrust_curve_png/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794245984612981400,
+      "device": 15190911442371306337,
+      "inode": 2533274791832627,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/exporters/treediagram_motor/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1794245984628137600,
+      "device": 15190911442371306337,
+      "inode": 2251799813895130,
+      "children": [
+        "contract.cpython-314.pyc",
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/parsers/generic_delimited/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1791824787246150100,
+      "device": 15190911442371306337,
+      "inode": 2251799815121974,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/parsers/generic_xlsx/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1791824787262636300,
+      "device": 15190911442371306337,
+      "inode": 2533274791832633,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/parsers/tr_f/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1791824787284636200,
+      "device": 15190911442371306337,
+      "inode": 4222124652096571,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/parsers/tr_p/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1791824787302635900,
+      "device": 15190911442371306337,
+      "inode": 5066549582228542,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/parsers/tr_t/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1791824787312661600,
+      "device": 15190911442371306337,
+      "inode": 2251799815121984,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    },
+    {
+      "path": "plugins/processors/vertical_linear_baseline/__pycache__",
+      "kind": "directory",
+      "size": 0,
+      "mtime_ns": 1791824787329637200,
+      "device": 15190911442371306337,
+      "inode": 2251799815121986,
+      "children": [
+        "plugin.cpython-314.pyc"
+      ]
+    }
+  ],
+  "retained": {
+    "plugins/analyzers/thrust/plugin.json": "tracked",
+    "plugins/analyzers/thrust/plugin.py": "tracked",
+    "plugins/analyzers/thrust/i18n/en_US.json": "tracked",
+    "plugins/analyzers/thrust/i18n/zh_CN.json": "tracked",
+    "plugins/calibrations/identity/plugin.json": "tracked",
+    "plugins/calibrations/identity/plugin.py": "tracked",
+    "plugins/calibrations/identity/i18n/en_US.json": "tracked",
+    "plugins/calibrations/identity/i18n/zh_CN.json": "tracked",
+    "plugins/calibrations/linear/plugin.json": "tracked",
+    "plugins/calibrations/linear/plugin.py": "tracked",
+    "plugins/calibrations/linear/i18n/en_US.json": "tracked",
+    "plugins/calibrations/linear/i18n/zh_CN.json": "tracked",
+    "plugins/exporters/analysis_json/plugin.json": "tracked",
+    "plugins/exporters/analysis_json/plugin.py": "tracked",
+    "plugins/exporters/analysis_json/i18n/en_US.json": "tracked",
+    "plugins/exporters/analysis_json/i18n/zh_CN.json": "tracked",
+    "plugins/exporters/chamber_pressure_csv/plugin.json": "tracked",
+    "plugins/exporters/chamber_pressure_csv/plugin.py": "tracked",
+    "plugins/exporters/chamber_pressure_csv/i18n/en_US.json": "tracked",
+    "plugins/exporters/chamber_pressure_csv/i18n/zh_CN.json": "tracked",
+    "plugins/exporters/chamber_pressure_curve_png/plugin.json": "tracked",
+    "plugins/exporters/chamber_pressure_curve_png/plugin.py": "tracked",
+    "plugins/exporters/chamber_pressure_curve_png/i18n/en_US.json": "tracked",
+    "plugins/exporters/chamber_pressure_curve_png/i18n/zh_CN.json": "tracked",
+    "plugins/exporters/csv/plugin.json": "tracked",
+    "plugins/exporters/csv/plugin.py": "tracked",
+    "plugins/exporters/csv/i18n/en_US.json": "tracked",
+    "plugins/exporters/csv/i18n/zh_CN.json": "tracked",
+    "plugins/exporters/openrocket_eng/plugin.json": "tracked",
+    "plugins/exporters/openrocket_eng/plugin.py": "tracked",
+    "plugins/exporters/openrocket_eng/i18n/en_US.json": "tracked",
+    "plugins/exporters/openrocket_eng/i18n/zh_CN.json": "tracked",
+    "plugins/exporters/temperature_csv/plugin.json": "tracked",
+    "plugins/exporters/temperature_csv/plugin.py": "tracked",
+    "plugins/exporters/temperature_csv/i18n/en_US.json": "tracked",
+    "plugins/exporters/temperature_csv/i18n/zh_CN.json": "tracked",
+    "plugins/exporters/temperature_curve_png/plugin.json": "tracked",
+    "plugins/exporters/temperature_curve_png/plugin.py": "tracked",
+    "plugins/exporters/temperature_curve_png/i18n/en_US.json": "tracked",
+    "plugins/exporters/temperature_curve_png/i18n/zh_CN.json": "tracked",
+    "plugins/exporters/text_summary/plugin.json": "tracked",
+    "plugins/exporters/text_summary/plugin.py": "tracked",
+    "plugins/exporters/text_summary/i18n/en_US.json": "tracked",
+    "plugins/exporters/text_summary/i18n/zh_CN.json": "tracked",
+    "plugins/exporters/thrust_curve_png/plugin.json": "tracked",
+    "plugins/exporters/thrust_curve_png/plugin.py": "tracked",
+    "plugins/exporters/thrust_curve_png/i18n/en_US.json": "tracked",
+    "plugins/exporters/thrust_curve_png/i18n/zh_CN.json": "tracked",
+    "plugins/exporters/treediagram_motor/contract.py": "tracked",
+    "plugins/exporters/treediagram_motor/plugin.json": "tracked",
+    "plugins/exporters/treediagram_motor/plugin.py": "tracked",
+    "plugins/exporters/treediagram_motor/i18n/en_US.json": "tracked",
+    "plugins/exporters/treediagram_motor/i18n/zh_CN.json": "tracked",
+    "plugins/parsers/generic_delimited/plugin.json": "tracked",
+    "plugins/parsers/generic_delimited/plugin.py": "tracked",
+    "plugins/parsers/generic_delimited/i18n/en_US.json": "tracked",
+    "plugins/parsers/generic_delimited/i18n/zh_CN.json": "tracked",
+    "plugins/parsers/generic_xlsx/plugin.json": "tracked",
+    "plugins/parsers/generic_xlsx/plugin.py": "tracked",
+    "plugins/parsers/generic_xlsx/i18n/en_US.json": "tracked",
+    "plugins/parsers/generic_xlsx/i18n/zh_CN.json": "tracked",
+    "plugins/parsers/tr_f/plugin.json": "tracked",
+    "plugins/parsers/tr_f/plugin.py": "tracked",
+    "plugins/parsers/tr_f/i18n/en_US.json": "tracked",
+    "plugins/parsers/tr_f/i18n/zh_CN.json": "tracked",
+    "plugins/parsers/tr_p/plugin.json": "tracked",
+    "plugins/parsers/tr_p/plugin.py": "tracked",
+    "plugins/parsers/tr_p/i18n/en_US.json": "tracked",
+    "plugins/parsers/tr_p/i18n/zh_CN.json": "tracked",
+    "plugins/parsers/tr_t/plugin.json": "tracked",
+    "plugins/parsers/tr_t/plugin.py": "tracked",
+    "plugins/parsers/tr_t/i18n/en_US.json": "tracked",
+    "plugins/parsers/tr_t/i18n/zh_CN.json": "tracked",
+    "plugins/processors/vertical_linear_baseline/plugin.json": "tracked",
+    "plugins/processors/vertical_linear_baseline/plugin.py": "tracked",
+    "plugins/processors/vertical_linear_baseline/i18n/en_US.json": "tracked",
+    "plugins/processors/vertical_linear_baseline/i18n/zh_CN.json": "tracked"
+  }
+}
