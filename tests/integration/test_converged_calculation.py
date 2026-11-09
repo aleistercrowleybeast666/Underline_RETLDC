@@ -183,7 +183,10 @@ def _number_draft(window, monkeypatch):
 
 
 @pytest.mark.parametrize("text, valid", [("2.75", True), ("-", False)])
-def test_toolbar_consumes_unfocused_numeric_text(imported_window, monkeypatch, text, valid):
+@pytest.mark.parametrize("button_target", ["toolbar", "panel"])
+def test_primary_buttons_consume_unfocused_numeric_text(
+    imported_window, monkeypatch, text, valid, button_target,
+):
     window = imported_window
     old_processing, old_result = _previous_result(window)
     editor = _number_draft(window, monkeypatch)
@@ -193,7 +196,8 @@ def test_toolbar_consumes_unfocused_numeric_text(imported_window, monkeypatch, t
     editor.selectAll()
     QTest.keyClicks(editor, text)
     assert editor.lineEdit().text() == text
-    button = window.toolbar.widgetForAction(window.calculate_action)
+    button = (window.toolbar.widgetForAction(window.calculate_action)
+              if button_target == "toolbar" else window.process_page.apply_button)
     QTest.mouseClick(button, Qt.MouseButton.LeftButton)
     _task_wait(window)
     if valid:
