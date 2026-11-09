@@ -46,6 +46,7 @@ class TemperatureCsvExporter(ExporterPlugin):
                 "required_analysis_ids": [],
                 "required_capability_ids": ["temperature_ready"],
                 "group_id": "temperature",
+                "output_category": "data",
                 "group_order": 30,
                 "format_order": 10,
                 "locale_qualified": True,

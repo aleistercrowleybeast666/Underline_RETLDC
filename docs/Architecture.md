@@ -192,6 +192,21 @@ visible curve choices are the uncorrected and corrected signals. `Chamber Pressu
 and `Data Explorer` show compatible Project Channels and the same ACTIVE_TEST marker. The GUI
 invokes Core/plugins and never contains copies of formulas or unit conversions.
 
+The primary thrust toolbar and the processing panel share one calculation controller. It captures
+the selected processor, analyzer, calibrated input, regions and motor parameters before starting.
+When processing is needed, processing plus analysis run as one TaskManager operation and publish
+the applied pair together. A failed, cancelled or superseded operation leaves the previous pair
+intact; the editable draft remains independent. Analysis-only updates reuse the applied processed
+curve. The advanced **Only apply processing** command intentionally commits processing alone and
+invalidates analysis. No new result, project schema or plugin API is introduced by this controller.
+
+Export availability still follows the applied pair. The dialog additionally names its source,
+interval and impulse, identifies pending changes, and offers a return to the same calculation
+entry. Explicit export of the previous applied result uses the unchanged ExportSnapshot and
+ExportBatch transactions. Result tables default to physical metrics; duplicate generic statistics
+are a view-only detail. The controls panel uses a 280–360 logical-pixel range, leaving more room
+for the chart while keeping the three panels non-collapsible.
+
 The Session owns the only final Project Test Segmentation. Thrust and Chamber Pressure expose two
 views/editors of that state and synchronize numeric edits, candidate selection, and plot dragging
 in both directions; Temperature is read-only. Both Auto Detect buttons call one controller with an
@@ -283,8 +298,9 @@ The Export dialog may be opened at every workflow stage and lists every register
 schema declares valid generic desktop metadata. Each choice declares stable data capability IDs
 and optional Analyzer IDs. The current capabilities include `project_summary_ready`,
 `thrust_ready`, `physical_force`, `chamber_pressure_ready`, `temperature_ready`, and
-`segmentation_ready`. Formats are sorted by metadata into Overall, Thrust, Chamber Pressure,
-Temperature, then Other; each group uses CSV, PNG, then special-format order where applicable.
+`segmentation_ready`. Optional presentation metadata sorts Reports, Data, Images, Model exchange
+and Other. Scientific `group_id` remains Overall, Thrust, Chamber Pressure or Temperature and
+continues to select the same input owner. The dialog counts selected, available and blocked outputs.
 An option becomes enabled only when its own requirements are met. Its metadata default is applied
 once on first availability and is never silently reapplied after the user unchecks it. All bundled
 formats, including ENG, default on when their own requirements first become complete. Pressure and
@@ -394,6 +410,13 @@ stable-name build output, and smoke-starts the packaged executable once per them
 success. A smoke run also fails when no bundled plugins are found or any bundled plugin cannot be
 loaded. The script never packages source test data, rewrites raw logs, or modifies the user plugin
 root.
+
+Set `UNDERLINE_BUILD_TAG` to a new ASCII letter/digit/underscore/hyphen label (1–64
+characters, starting with a letter or digit) to isolate a candidate under `dist/<tag>/`.
+Its spec, invocation marker and intermediate build stay under `.work/<tag>/package/`.
+Invalid labels stop before preflight or output creation. The ordinary pytest, Ruff, fresh
+build-identity and packaged light/dark smoke gates always run. Unset the variable for the
+legacy stable output location; the historical `UNDERLINE_RC_20261103` option is preserved.
 
 ## v0.0.4 confident preset application
 

@@ -238,6 +238,7 @@ An Exporter opts into the desktop Export Dialog through generic top-level config
     "required_analysis_ids": [],
     "required_capability_ids": ["thrust_ready"],
     "group_id": "thrust",
+    "output_category": "data",
     "group_translation_key": "export.group.thrust",
     "group_order": 10,
     "format_order": 10,
@@ -258,9 +259,11 @@ API v1 plugins for non-desktop clients.
 `temperature_ready`, and `segmentation_ready`. OpenRocket ENG declares the thrust, physical-force,
 and segmentation capabilities and sets `default_selected=true`; a relative analysis in
 raw/count/ADC can unlock compatible reports without making ENG selectable because `physical_force`
-remains incomplete. Overall, thrust,
-pressure, and temperature groups use `group_order` 0/10/20/30; missing group metadata falls back to
-Other at 1000. `format_order` provides CSV 10, PNG 20, and special format 30 ordering. A metadata
+remains incomplete. `group_id` retains the scientific input owner: overall, thrust, chamber
+pressure or temperature. Optional `output_category` arranges desktop choices as `report`, `data`,
+`image`, `model`, then `other`; an absent or unknown category appears under Other. It does not
+change snapshot input resolution, filenames, requirements, or CLI behavior. Within a category,
+`group_order` and `format_order` retain their existing ordering roles. A metadata
 default is applied once when its requirements first become available; selected IDs and initialized
 default IDs are persisted separately so user choices survive later refreshes and Project reopen.
 Each Exporter still validates its declared requirements at execution, including

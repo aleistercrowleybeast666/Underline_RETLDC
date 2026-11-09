@@ -23,6 +23,7 @@ class SchemaForm(QWidget):
     """Render the scalar subset of Plugin API JSON schemas used by the desktop UI."""
 
     value_changed = Signal(str, object)
+    pending_text_changed = Signal()
 
     def __init__(self, translations: TranslationService) -> None:
         super().__init__()
@@ -87,12 +88,18 @@ class SchemaForm(QWidget):
 
     def validated_values(self) -> dict[str, Any]:
         for name, editor in self._editors.items():
+            if isinstance(editor, (QSpinBox, QDoubleSpinBox)) and not editor.hasAcceptableInput():
+                editor.setFocus()
+                raise ValueError(f"{self._labels[name].text()}: {editor.text()}")
+        for editor in self._editors.values():
             if isinstance(editor, (QSpinBox, QDoubleSpinBox)):
-                if not editor.hasAcceptableInput():
-                    editor.setFocus()
-                    raise ValueError(f"{self._labels[name].text()}: {editor.text()}")
                 editor.interpretText()
         return self.values()
+
+    def invalid_inputs(self) -> dict[str, str]:
+        return {name: editor.text() for name, editor in self._editors.items()
+                if isinstance(editor, (QSpinBox, QDoubleSpinBox))
+                and not editor.hasAcceptableInput()}
 
     def set_values(self, values: Mapping[str, Any]) -> None:
         for field_name, value in values.items():
@@ -161,6 +168,7 @@ class SchemaForm(QWidget):
             return checkbox
         if field_type == "integer":
             spin = QSpinBox()
+            spin.lineEdit().textEdited.connect(self.pending_text_changed)
             spin.setRange(
                 int(schema.get("minimum", -2_147_483_648)),
                 int(schema.get("maximum", 2_147_483_647)),
@@ -171,6 +179,7 @@ class SchemaForm(QWidget):
             return spin
         if field_type == "number":
             spin = QDoubleSpinBox()
+            spin.lineEdit().textEdited.connect(self.pending_text_changed)
             spin.setDecimals(12)
             spin.setRange(
                 float(schema.get("minimum", -1.0e100)),

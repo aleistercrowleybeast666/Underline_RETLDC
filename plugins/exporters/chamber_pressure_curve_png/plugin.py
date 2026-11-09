@@ -53,6 +53,7 @@ class ChamberPressurePngExporter(ExporterPlugin):
                     "segmentation_ready",
                 ],
                 "group_id": "chamber_pressure",
+                "output_category": "image",
                 "group_order": 20,
                 "format_order": 20,
                 "locale_qualified": True,

@@ -695,7 +695,13 @@ def test_gui_plugin_combos_schema_forms_and_burn_candidates(tmp_path: Path) -> N
     assert controls_layout.indexOf(window.process_page.interval_editor) == 2
     assert controls_layout.indexOf(window.process_page.polarity_group) == 3
     assert controls_layout.indexOf(window.process_page.processing_group) == 4
-    assert controls_layout.indexOf(window.process_page.baseline_status_group) == 5
+    assert controls_layout.indexOf(window.process_page.advanced_button) == 5
+    assert controls_layout.indexOf(window.process_page.baseline_status_group) == 6
+    assert window.process_page.baseline_status_group.isHidden()
+    window.process_page.advanced_button.click()
+    assert not window.process_page.baseline_status_group.isHidden()
+    window.process_page.advanced_button.click()
+    assert window.process_page.baseline_status_group.isHidden()
     assert window.process_page.fit_button.text() == "Fit View"
     assert window.process_page.candidate_combo.currentData() is None
     assert window.process_page.candidate_combo.currentText() == "Not detected"
@@ -2206,18 +2212,18 @@ def test_unit_mode_axes_results_and_analysis_layout_are_consistent(
     )
     assert not shell.splitter.childrenCollapsible()
     assert all(not shell.splitter.isCollapsible(index) for index in range(3))
-    assert shell.controls_scroll.maximumWidth() == 400
-    assert shell.controls_scroll.minimumWidth() == 320
+    assert shell.controls_scroll.maximumWidth() == 360
+    assert shell.controls_scroll.minimumWidth() == 280
     assert shell.results.minimumWidth() == 220
     assert shell.results.maximumWidth() == 310
     assert shell.plot.minimumWidth() == 250
-    assert shell.controls_scroll.width() >= 320
+    assert shell.controls_scroll.width() >= 280
     assert shell.results.width() >= 220
     assert shell.plot.width() >= 250
     compact_plot_width = shell.plot.width()
     shell.splitter.setSizes([0, 1000, 0])
     app.processEvents()
-    assert shell.controls_scroll.width() >= 320
+    assert shell.controls_scroll.width() >= 280
     assert shell.results.width() >= 220
     assert shell.plot.width() >= 250
 
@@ -2225,7 +2231,7 @@ def test_unit_mode_axes_results_and_analysis_layout_are_consistent(
     app.processEvents()
     pressure_shell = window.chamber_pressure_page.shell
     assert not pressure_shell.splitter.childrenCollapsible()
-    assert pressure_shell.controls_scroll.width() >= 320
+    assert pressure_shell.controls_scroll.width() >= 280
     assert pressure_shell.results.width() >= 220
     pressure_editor = window.chamber_pressure_page.interval_editor
     assert pressure_editor is not None
@@ -2359,12 +2365,13 @@ def test_export_capabilities_group_sorting_and_one_time_defaults(
     )
     dialog._export_options_set((*dialog._options, other))
     assert dialog._options[-1].plugin_id == other.plugin_id
-    group_order = [option.group_id for option in dialog._options]
-    assert group_order == sorted(
-        group_order,
-        key={"overall": 0, "thrust": 10, "chamber_pressure": 20,
-             "temperature": 30, "other": 1000}.get,
+    categories = [option.output_category for option in dialog._options]
+    assert categories == sorted(
+        categories, key={"report": 0, "data": 1, "image": 2, "model": 3, "other": 4}.get,
     )
+    # Presentation categories do not change each exporter’s scientific input owner.
+    assert dialog.export_group_id("builtin.exporter.treediagram_motor") == "thrust"
+    assert dialog.export_group_id("builtin.exporter.chamber_pressure_csv") == "chamber_pressure"
 
     dialog.reset_default_selection()
     capabilities = (

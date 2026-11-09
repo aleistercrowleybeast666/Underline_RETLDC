@@ -46,6 +46,7 @@ class ChamberPressureCsvExporter(ExporterPlugin):
                 "required_analysis_ids": [],
                 "required_capability_ids": ["chamber_pressure_ready"],
                 "group_id": "chamber_pressure",
+                "output_category": "data",
                 "group_order": 20,
                 "format_order": 10,
                 "locale_qualified": True,

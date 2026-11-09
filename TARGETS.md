@@ -1177,7 +1177,8 @@ or formal-export units.
 # 46. Capability-Based Export Target
 
 Exporter desktop metadata declares generic capabilities, grouping, ordering, and a default. The
-dialog sorts Overall, Thrust, Chamber Pressure, Temperature, then Other. An unavailable option is
+dialog sorts Reports, Data, Images, Model exchange, then Other using presentation metadata.
+Scientific input groups retain their existing owners. An unavailable option is
 disabled and unchecked. Each fresh opening selects every available choice, and a localized
 Select All button repeats that selection. Manual unchecks survive refreshes while the dialog is
 open; showing the already-visible window does not reset them. Metadata defaults still apply only

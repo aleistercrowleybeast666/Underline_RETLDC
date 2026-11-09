@@ -54,9 +54,24 @@ the selected imported temperature Channels with one checkbox per curve. The pres
 reports value at test start plus active-test mean, maximum, time to maximum, and minimum. The
 temperature workspace reports the test-start value, active-test maximum, full-record maximum, and
 full-record time to maximum for each selected Channel. These two result tables remain empty until
-the user presses their localized Calculate Analysis Results button. All three analysis pages
-use the same calculation label, right-panel margins, and top-to-bottom Calculate / Results /
-Diagnostics arrangement, with a 2:1 stretch ratio for results and diagnostics. Chamber Pressure
+the user presses the toolbar calculation action. The toolbar follows the selected workspace
+and result source; pressure, temperature and independent source calculations keep their own
+existing input path. For the primary experimental thrust, the first calculation runs processing
+and analysis together. A processing draft changes the action to **Apply and recalculate**;
+otherwise it reads **Calculate Analysis Results** or **Update results**. The whole requested
+operation commits only after both stages succeed. A failure identifies processing or analysis;
+failure, cancellation or a newer draft preserves the previous applied pair. The advanced
+processing section retains **Only apply processing**, which deliberately invalidates analysis
+until it is calculated again. Saving a draft does not apply it.
+
+The result panel shows physical thrust metrics first; its general-statistics checkbox reveals
+the duplicate generic metrics without recomputation. The Export dialog labels the applied
+source, interval and impulse. With a draft it says that new changes are excluded, provides a
+return-to-calculation action, and labels its explicit export button **Export applied results**.
+Export still uses the existing immutable snapshot and atomic multi-file publication.
+
+The three analysis pages share right-panel margins and a Results / Diagnostics arrangement,
+with a 2:1 stretch ratio when diagnostics exist. Chamber Pressure
 and Temperature show diagnostics from selected datasets (once per dataset), plus the existing
 missing-interval notice when applicable. Temperature retains its read-only Test Interval summary;
 pressure retains editable segmentation and its pressure reference. A binding or segmentation

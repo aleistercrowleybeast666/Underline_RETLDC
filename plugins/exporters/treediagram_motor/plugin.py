@@ -122,6 +122,7 @@ class TreeDiagramMotorExporter(ExporterPlugin):
                     "source_identity_ready",
                 ],
                 "group_id": "thrust",
+                "output_category": "model",
                 "group_order": 10,
                 "format_order": 40,
                 "default_selected": True,

@@ -220,6 +220,7 @@ class AnalysisTextExporter(ExporterPlugin):
                 "required_analysis_ids": [],
                 "required_capability_ids": ["project_summary_ready"],
                 "group_id": "overall",
+                "output_category": "report",
                 "group_order": 0,
                 "format_order": 10,
                 "locale_qualified": True,

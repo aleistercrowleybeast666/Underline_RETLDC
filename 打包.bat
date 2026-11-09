@@ -9,6 +9,7 @@ set "DIST_ROOT=%CD%\dist"
 if defined UNDERLINE_RC_20261103 set "DIST_ROOT=%CD%\dist\rc_20261103"
 set "DIST_DIR=%DIST_ROOT%\%APP_NAME%"
 set "WORK_DIR=%CD%\build\%APP_NAME%"
+set "BUILD_ROOT=%CD%\build"
 
 if defined UNDERLINE_RC_20261103 set "WORK_DIR=%LOCALAPPDATA%\UnderlineBuild\rc_20261103"
 
@@ -26,6 +27,12 @@ if not exist "%CD%\plugins" (
     echo ERROR: The bundled plugins directory is missing: %CD%\plugins
     if not defined CI pause
     exit /b 1
+)
+
+rem A validated tag isolates a new candidate without overwriting a previous release.
+if defined UNDERLINE_BUILD_TAG (
+    call :configure_tagged_output
+    if errorlevel 1 exit /b 1
 )
 
 echo [2/8] Running release preflight: pytest...
@@ -62,8 +69,8 @@ if errorlevel 1 (
 
 echo [5/8] Building the one-folder application...
 rem Bind the collected folder to this exact invocation, even if an older EXE exists.
-if not exist "%CD%\build" mkdir "%CD%\build"
-set "BUILD_ID=%CD%\build\underline-build-invocation.txt"
+if not exist "%BUILD_ROOT%" mkdir "%BUILD_ROOT%"
+set "BUILD_ID=%BUILD_ROOT%\underline-build-invocation.txt"
 "%VENV_PYTHON%" -c "import sys,uuid;from pathlib import Path;Path(sys.argv[1]).write_text(uuid.uuid4().hex,encoding='ascii')" "%BUILD_ID%"
 if not errorlevel 0 goto :native_failure
 if errorlevel 1 exit /b 1
@@ -75,7 +82,7 @@ if errorlevel 1 exit /b 1
     --name "%APP_NAME%" ^
     --distpath "%DIST_ROOT%" ^
     --workpath "%WORK_DIR%" ^
-    --specpath "%CD%\build" ^
+    --specpath "%BUILD_ROOT%" ^
     --paths "%CD%\src" ^
     --add-data "%BUILD_ID%;." ^
     --add-data "%CD%\src\underline_retldc\i18n;underline_retldc\i18n" ^
@@ -248,3 +255,16 @@ exit /b 0
 echo ERROR: A native process terminated abnormally. Candidate rejected.
 if not defined CI pause
 exit /b 1
+
+:configure_tagged_output
+"%VENV_PYTHON%" -c "import os,re,sys;sys.exit(0 if re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,63}',os.environ['UNDERLINE_BUILD_TAG']) else 1)"
+if not errorlevel 0 goto :native_failure
+if errorlevel 1 (
+    echo ERROR: UNDERLINE_BUILD_TAG must be 1-64 ASCII letters, digits, underscores or hyphens, beginning with a letter or digit.
+    exit /b 1
+)
+set "DIST_ROOT=%CD%\dist\%UNDERLINE_BUILD_TAG%"
+set "DIST_DIR=%DIST_ROOT%\%APP_NAME%"
+set "BUILD_ROOT=%CD%\.work\%UNDERLINE_BUILD_TAG%\package"
+set "WORK_DIR=%BUILD_ROOT%\%APP_NAME%"
+exit /b 0

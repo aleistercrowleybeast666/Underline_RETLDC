@@ -242,6 +242,7 @@ class MeasurementWorkspacePage(QWidget):
         self.channel_group = QGroupBox()
         channel_layout = QVBoxLayout(self.channel_group)
         self.channel_label = QLabel()
+        self.channel_label.setWordWrap(True)
         self.channel_combo = StandardComboBox()
         self.channel_combo.currentIndexChanged.connect(self._selection_changed)
         self.temperature_list = QListWidget()
@@ -327,6 +328,8 @@ class MeasurementWorkspacePage(QWidget):
                 self.reference_spin = ReferencePressureSpinBox()
                 self.reference_spin.setDecimals(9)
                 self.reference_spin.setRange(-1.0e12, 1.0e12)
+                # The range's longest possible text must not set the sidebar width.
+                self.reference_spin.setMinimumWidth(120)
                 self.reference_spin.valueChanged.connect(self._reference_value_changed)
                 self.reference_visible_check = QCheckBox()
                 self.reference_visible_check.setChecked(True)

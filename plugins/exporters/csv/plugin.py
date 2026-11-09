@@ -52,6 +52,7 @@ class CsvExporter(ExporterPlugin):
                 "required_analysis_ids": [],
                 "required_capability_ids": ["thrust_ready"],
                 "group_id": "thrust",
+                "output_category": "data",
                 "group_order": 10,
                 "format_order": 10,
                 "locale_qualified": True,

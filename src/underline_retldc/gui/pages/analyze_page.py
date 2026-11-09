@@ -4,6 +4,7 @@ from collections.abc import Mapping
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
+    QCheckBox,
     QLabel,
     QPushButton,
     QTableWidgetItem,
@@ -33,9 +34,6 @@ class AnalyzePage(QWidget):
     source_calculate_requested = Signal(object)
 
     METRIC_ORDER = (
-        "peak_value",
-        "average_value",
-        "relative_integral",
         "peak_thrust_n",
         "average_thrust_n",
         "burn_duration_s",
@@ -43,6 +41,9 @@ class AnalyzePage(QWidget):
         "specific_impulse_s",
         "time_to_peak_s",
         "equivalent_mass_change_kg",
+        "peak_value",
+        "average_value",
+        "relative_integral",
     )
 
     def __init__(self, translations: TranslationService) -> None:
@@ -63,6 +64,9 @@ class AnalyzePage(QWidget):
         self.applied_notice.hide()
         self.metrics_group.layout().insertWidget(0, self.applied_notice)
         self.metrics_group.layout().insertWidget(0, self.source_analysis)
+        self.details_check = QCheckBox()
+        self.details_check.toggled.connect(self._results_refresh)
+        self.metrics_group.layout().addWidget(self.details_check)
         self.metrics_table = self.metrics_group.table
         self.metrics_table.setMinimumWidth(0)
 
@@ -80,6 +84,7 @@ class AnalyzePage(QWidget):
         self.source_analysis.retranslate()
         self.calculate_button.setText(t("analyze.calculate"))
         self.metrics_group.setTitle(t("page.analyze"))
+        self.details_check.setText(t("analyze.statistics_details"))
         self.diagnostics_group.setTitle(t("import.diagnostics"))
         self.metrics_table.setHorizontalHeaderLabels(
             [t("workspace.metric"), t("common.value")]
@@ -105,8 +110,14 @@ class AnalyzePage(QWidget):
         if result is None:
             self.metrics_table.setRowCount(0)
             self.diagnostics_group.set_diagnostics(())
+            self.details_check.hide()
             return
-        available = [key for key in self.METRIC_ORDER if key in result.metrics]
+        generic = {"peak_value", "average_value", "relative_integral"}
+        physical = any(result.metrics.get(key) is not None
+                       for key in ("peak_thrust_n", "total_impulse_ns"))
+        self.details_check.setVisible(physical and any(key in result.metrics for key in generic))
+        available = [key for key in self.METRIC_ORDER if key in result.metrics
+                     and (not physical or key not in generic or self.details_check.isChecked())]
         self.metrics_table.setRowCount(len(available))
         for row, key in enumerate(available):
             value = result.metrics[key]

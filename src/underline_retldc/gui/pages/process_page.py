@@ -33,6 +33,7 @@ from underline_retldc.i18n.service import TranslationService
 class ProcessPage(QWidget):
     detect_requested = Signal()
     apply_requested = Signal()
+    apply_only_requested = Signal()
     plugins_requested = Signal()
     regions_changed = Signal(object)
     candidate_selected = Signal(int)
@@ -179,6 +180,12 @@ class ProcessPage(QWidget):
         self.apply_button = QPushButton()
         self.apply_button.setObjectName("primaryButton")
         self.apply_button.clicked.connect(self.apply_requested)
+        self.apply_only_button = QPushButton()
+        self.apply_only_button.clicked.connect(self.apply_only_requested)
+        self.advanced_button = QPushButton()
+        self.advanced_button.setCheckable(True)
+        self.advanced_button.toggled.connect(self.baseline_status_group.setVisible)
+        self.baseline_status_group.hide()
         processing_layout.addRow(self.compensation_label, processor_row)
         processing_layout.addRow(self.processor_form)
         self.draft_status = QLabel()
@@ -188,6 +195,7 @@ class ProcessPage(QWidget):
         processing_layout.addRow(self.draft_status)
         processing_layout.addRow(self.apply_button)
         processing_layout.addRow(self.restore_button)
+        baseline_status_layout.addRow(self.apply_only_button)
         controls_layout.addWidget(self.processing_group)
         for group in (
             self.interval_editor,
@@ -202,9 +210,10 @@ class ProcessPage(QWidget):
             self.interval_editor,
             self.polarity_group,
             self.processing_group,
-            self.baseline_status_group,
         ):
             controls_layout.addWidget(group)
+        controls_layout.addWidget(self.advanced_button)
+        controls_layout.addWidget(self.baseline_status_group)
         self.interval_editor.fit_button.hide()
         self.fit_button = self.display_fit_button
         controls_layout.addStretch(1)
@@ -234,6 +243,8 @@ class ProcessPage(QWidget):
         self.compensation_label.setText(t("process.enable_baseline"))
         self.plugins_button.setText(t("process.plugins"))
         self.apply_button.setText(t("process.apply"))
+        self.apply_only_button.setText(t("process.apply_only"))
+        self.advanced_button.setText(t("process.advanced"))
         self.restore_button.setText(t("process.restore"))
         self.baseline_status_group.setTitle(t("process.baseline_status"))
         self.baseline_status_labels["pre"].setText(t("process.pre_baseline"))
@@ -244,11 +255,7 @@ class ProcessPage(QWidget):
         )
         self.analysis_plot.empty_button.setText(t("workspace.select_thrust"))
         selected_processor = self.processor_id()
-        processor_values = (
-            self.processor_form.values() if self.processor_form.field_names else {}
-        )
-        self._processors_populate(selected_processor)
-        self.processor_form.set_values(processor_values)
+        self._processors_populate(selected_processor, update_form=False)
         self.processor_form.retranslate()
         self._plot_refresh()
 
@@ -412,15 +419,18 @@ class ProcessPage(QWidget):
         preferred_id: str | None,
     ) -> None:
         previous_id = self.processor_id()
+        previous_processor = self._selected_processor()
         previous_values = (
             self.processor_form.values() if self.processor_form.field_names else {}
         )
         self._processors = tuple(processors)
-        self._processors_populate(preferred_id)
-        if preferred_id == previous_id:
+        retain_editor = (preferred_id == previous_id
+                         and previous_processor is self._selected_processor())
+        self._processors_populate(preferred_id, update_form=not retain_editor)
+        if preferred_id == previous_id and not retain_editor:
             self.processor_form.set_values(previous_values)
 
-    def _processors_populate(self, selected: str | None) -> None:
+    def _processors_populate(self, selected: str | None, *, update_form: bool = True) -> None:
         self.processor_combo.blockSignals(True)
         self.processor_combo.clear()
         self.processor_combo.addItem(
@@ -437,7 +447,8 @@ class ProcessPage(QWidget):
         index = self.processor_combo.findData(selected)
         self.processor_combo.setCurrentIndex(max(0, index))
         self.processor_combo.blockSignals(False)
-        self._processor_schema_update()
+        if update_form:
+            self._processor_schema_update()
 
     def _processor_schema_update(self, _index: int | None = None) -> None:
         processor = self._selected_processor()

@@ -46,6 +46,7 @@ class TemperaturePngExporter(ExporterPlugin):
                 "required_analysis_ids": [],
                 "required_capability_ids": ["temperature_ready"],
                 "group_id": "temperature",
+                "output_category": "image",
                 "group_order": 30,
                 "format_order": 20,
                 "locale_qualified": True,

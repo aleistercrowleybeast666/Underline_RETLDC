@@ -72,6 +72,7 @@ class ThrustCurvePngExporter(ExporterPlugin):
                 "required_analysis_ids": [],
                 "required_capability_ids": ["thrust_ready"],
                 "group_id": "thrust",
+                "output_category": "image",
                 "group_order": 10,
                 "format_order": 20,
                 "locale_qualified": True,

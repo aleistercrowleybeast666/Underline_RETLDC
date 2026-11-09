@@ -47,11 +47,13 @@ class ExportOption:
     group_order: int = 1000
     format_order: int = 1000
     default_selected: bool = True
+    output_category: str = "other"
 
 
 class ExportDialog(QDialog):
     export_requested = Signal()
     MAX_VISIBLE_EXPORT_OPTIONS = 10
+    OUTPUT_CATEGORIES = {"report": 0, "data": 1, "image": 2, "model": 3, "other": 4}
 
     EXPORTERS: tuple[ExportOption, ...] = ()
     OUTPUT_LOCALE_FOLLOW_UI = "follow_ui"
@@ -75,6 +77,8 @@ class ExportDialog(QDialog):
         self._default_applied: set[str] = set()
         self._user_touched: set[str] = set()
         self._availability_refreshing = False
+        self._has_processing_draft = False
+        self._has_applied_result = False
         self.setModal(True)
         self.resize(820, 620)
 
@@ -160,6 +164,16 @@ class ExportDialog(QDialog):
         summary_row.addWidget(self.edit_project_parameters)
         destination_layout.addRow(summary_row)
 
+        self.result_notice = QLabel()
+        self.result_notice.setObjectName("warningLabel")
+        self.result_notice.setWordWrap(True)
+        self.result_identity = QLabel()
+        self.result_identity.setWordWrap(True)
+        self.return_to_calculation = QPushButton()
+        destination_layout.addRow(self.result_notice)
+        destination_layout.addRow(self.result_identity)
+        destination_layout.addRow(self.return_to_calculation)
+
         self.export_button = QPushButton()
         self.export_button.setObjectName("primaryButton")
         self.export_button.clicked.connect(self.export_requested)
@@ -240,6 +254,23 @@ class ExportDialog(QDialog):
             self.eng_labels[field_name].setText(t(key))
         self.export_button.setText(t("export.run"))
         self.close_button.setText(t("common.cancel"))
+        self._result_notice_refresh()
+
+    def set_result_state(self, *, draft: bool, has_result: bool, identity: str) -> None:
+        self._has_processing_draft = draft
+        self._has_applied_result = has_result
+        self.result_identity.setText(identity)
+        self.result_identity.setVisible(bool(identity))
+        self._result_notice_refresh()
+
+    def _result_notice_refresh(self) -> None:
+        t = self._translations.translate
+        previous = self._has_processing_draft and self._has_applied_result
+        self.result_notice.setText(t("export.previous_result"))
+        self.result_notice.setVisible(previous)
+        self.return_to_calculation.setText(t("export.return_calculation"))
+        self.return_to_calculation.setVisible(self._has_processing_draft)
+        self.export_button.setText(t("export.run_previous" if previous else "export.run"))
 
     def set_exporters(self, exporters: tuple[Any, ...]) -> None:
         options: list[ExportOption] = []
@@ -296,6 +327,11 @@ class ExportDialog(QDialog):
                         default_selected=bool(
                             metadata.get("default_selected", True)
                         ),
+                        output_category=(
+                            str(metadata.get("output_category", "other"))
+                            if metadata.get("output_category") in self.OUTPUT_CATEGORIES
+                            else "other"
+                        ),
                     )
                 )
             except (KeyError, TypeError, ValueError) as exc:
@@ -322,6 +358,7 @@ class ExportDialog(QDialog):
             sorted(
                 options,
                 key=lambda option: (
+                    self.OUTPUT_CATEGORIES.get(option.output_category, 4),
                     option.group_order,
                     option.format_order,
                     option.display_name.casefold(),
@@ -331,12 +368,12 @@ class ExportDialog(QDialog):
         )
         current_group = None
         for option in self._options:
-            if option.group_id != current_group:
+            if option.output_category != current_group:
                 heading = QLabel()
                 heading.setObjectName("exportGroupHeading")
-                self.group_labels[option.group_id] = heading
+                self.group_labels[option.output_category] = heading
                 self.exporter_list_layout.addWidget(heading)
-                current_group = option.group_id
+                current_group = option.output_category
             checkbox = QCheckBox()
             checked, enabled = previous_state.get(option.plugin_id, (False, False))
             checkbox.setChecked(checked)
@@ -359,12 +396,8 @@ class ExportDialog(QDialog):
 
     def _format_labels_update(self, _index: int | None = None) -> None:
         t = self._translations.translate
-        for option in self._options:
-            heading = self.group_labels.get(option.group_id)
-            if heading is not None:
-                heading.setText(
-                    t(option.group_translation_key, option.group_id.replace("_", " ").title())
-                )
+        for category, heading in self.group_labels.items():
+            heading.setText(t(f"export.category.{category}", category.title()))
         for option in self._options:
             localized_filename = self.export_filename(option.plugin_id)
             label = (
@@ -480,6 +513,12 @@ class ExportDialog(QDialog):
         )
         if hasattr(self, "export_button"):
             self.export_button.setEnabled(bool(self.selected_exporter_ids()))
+        ready = sum(checkbox.isEnabled() for checkbox in self.exporter_checks.values())
+        if self._options:
+            self.availability_label.setText(self._translations.translate(
+                "export.selection_summary", selected=len(self.selected_exporter_ids()),
+                ready=ready, blocked=len(self._options) - ready,
+            ))
         if hasattr(self, "eng_group"):
             motor_options = {
                 option.plugin_id

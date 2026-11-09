@@ -71,6 +71,7 @@ class OpenRocketEngExporter(ExporterPlugin):
                     "segmentation_ready",
                 ],
                 "group_id": "thrust",
+                "output_category": "model",
                 "group_order": 10,
                 "format_order": 30,
                 "default_selected": True,

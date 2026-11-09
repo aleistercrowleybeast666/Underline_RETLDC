@@ -534,11 +534,14 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self.process_page.detect_requested.connect(
             lambda: self._burn_detect("thrust")
         )
-        self.process_page.apply_requested.connect(lambda: self._processing_apply(recalculate=True))
+        self.process_page.apply_requested.connect(self._primary_calculate)
+        self.process_page.apply_only_requested.connect(self._processing_apply)
         self.process_page.restore_button.clicked.connect(self._processing_restore)
         self.process_page.processor_combo.currentIndexChanged.connect(self._document_state_update)
         self.process_page.processor_form.value_changed.connect(self._document_state_update)
+        self.process_page.processor_form.pending_text_changed.connect(self._document_state_update)
         self.export_dialog.edit_project_parameters.clicked.connect(self._motor_editor_focus)
+        self.export_dialog.return_to_calculation.clicked.connect(self._export_calculation_focus)
         self.process_page.plugins_requested.connect(self._plugins_dialog_show)
         self.process_page.regions_changed.connect(self._regions_store)
         self.process_page.candidate_selected.connect(
@@ -578,7 +581,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self.temperature_page.select_channel_requested.connect(
             lambda: self._workspace_select("project")
         )
-        self.analyze_page.calculate_requested.connect(self._analysis_calculate)
+        self.analyze_page.calculate_requested.connect(self._primary_calculate)
         self.export_dialog.export_requested.connect(self._export_execute)
         self.plugins_page.refresh_requested.connect(self._plugins_refresh)
         self.plugins_page.install_requested.connect(self._plugin_install_dialog)
@@ -728,15 +731,54 @@ class MainWindow(QMainWindow, ProjectPipeline):
         if page is None:
             self.calculate_action.setEnabled(False)
             return
-        reason = page.source_analysis.unavailable_reason()
-        ready = (
-            bool(page.source_analysis.config().channels)
-            if page.source_analysis.source_id() is not None
-            else (self.session.processing_result is not None if page is self.analyze_page
-                  else bool(page._selected_series()))
-        )
+        primary_thrust = page is self.analyze_page and page.source_analysis.source_id() is None
+        reason = (self._primary_calculation_blocker() if primary_thrust
+                  else page.source_analysis.unavailable_reason())
+        ready = (not reason if primary_thrust else
+                 bool(page.source_analysis.config().channels)
+                 if page.source_analysis.source_id() is not None
+                 else bool(page._selected_series()))
+        key = ("process.apply" if primary_thrust and self._processing_has_draft()
+               else "analyze.update" if primary_thrust and self.session.analysis_result is not None
+               else "analyze.calculate")
+        self.calculate_action.setText(self.translations.translate(key))
         self.calculate_action.setEnabled(ready and not reason and self._active_task is None)
         self.calculate_action.setToolTip(reason)
+
+    def _primary_calculation_blocker(self) -> str:
+        t = self.translations.translate
+        reference = self.session.project_data.primary_channels.thrust
+        if reference is None:
+            return t("workspace.no_primary_thrust")
+        try:
+            dataset, channel_id = self._calibrated_binding_resolve(reference)
+            channel = dataset.channel(channel_id)
+            if (Quantity_Dimension(channel.quantity) != "force"
+                    or not Unit_AreConvertible(channel.data_unit, "N")):
+                return t("setup.needs_calibration")
+            regions = self._regions_normalize(self.session.regions)
+            if not regions.get("active_test"):
+                return t("analyze.select_interval")
+        except (KeyError, ValueError):
+            return t("analyze.check_inputs")
+        return ""
+
+    def _primary_calculate(self) -> None:
+        if self._active_task is not None:
+            return
+        reason = self._primary_calculation_blocker()
+        if reason:
+            self._error_show(ValueError(reason))
+            return
+        try:
+            self.process_page.processing_config(validate=True)
+        except (KeyError, ValueError) as exc:
+            self._error_show(exc)
+            return
+        if self.session.processing_result is None or self._processing_draft() is not None:
+            self._processing_apply(recalculate=True)
+        else:
+            self._analysis_calculate()
 
     def _calculate_current_workspace(self) -> None:
         page = self._current_calculation_page()
@@ -1666,6 +1708,9 @@ class MainWindow(QMainWindow, ProjectPipeline):
             self._restore_project_document(document, path, undo=True)
 
     def _project_key(self) -> dict[str, Any]:
+        invalid = self.process_page.processor_form.invalid_inputs()
+        if invalid:
+            return {"invalid_processing_input": invalid}
         try:
             # Dirty-state reads must not capture a live viewport into a session
             # that is still restoring the project's saved axes.
@@ -1686,7 +1731,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
     def _document_state_update(self, *_args) -> None:
         if self._saved_key is None:
             return
-        draft = self._processing_draft() is not None
+        draft = self._processing_has_draft()
         result = self.session.analysis_result is not None
         t = self.translations.translate
         self.process_page.restore_button.setVisible(draft)
@@ -1700,6 +1745,34 @@ class MainWindow(QMainWindow, ProjectPipeline):
             status + " · " + t("process.unapplied") if draft else status)
         self.analyze_page.applied_notice.setText(t("process.previous_result"))
         self.analyze_page.applied_notice.setVisible(draft and result)
+        self.process_page.apply_button.setText(t(
+            "process.apply" if draft else "analyze.update" if result else "analyze.calculate"))
+        self._calculation_action_refresh()
+        self._export_result_notice_update()
+
+    def _export_result_notice_update(self) -> None:
+        session = self.session
+        result = session.analysis_result
+        reference = session.project_data.primary_channels.thrust
+        source = session.project_data.sources.get(reference.source_id) if reference else None
+        interval = session.analyzer_config
+        identity = ""
+        if result is not None and source is not None:
+            identity = self.translations.translate(
+                "export.result_identity", source=source.path.name,
+                start=interval.get("ignition", "—"), end=interval.get("burnout", "—"),
+                impulse=result.metrics.get("total_impulse_ns", "—"),
+            )
+        self.export_dialog.set_result_state(
+            draft=self._processing_has_draft(), has_result=result is not None,
+            identity=identity,
+        )
+
+    def _export_calculation_focus(self) -> None:
+        self.export_dialog.reject()
+        self._workspace_select("thrust_analysis")
+        self.analyze_page.source_analysis.source_combo.setCurrentIndex(0)
+        self.process_page.processor_combo.setFocus()
 
     def _leave_decision(self):
         buttons = QMessageBox.StandardButton
@@ -3340,6 +3413,10 @@ class MainWindow(QMainWindow, ProjectPipeline):
             return None
         return {"plugin_id": plugin_id, "parameters": values}
 
+    def _processing_has_draft(self) -> bool:
+        return (bool(self.process_page.processor_form.invalid_inputs())
+                or self._processing_draft() is not None)
+
     def _processing_restore(self) -> None:
         # Regions are a separate project owner; restoring form fields must not rewind them.
         self.process_page.set_processing_config(
@@ -3356,9 +3433,15 @@ class MainWindow(QMainWindow, ProjectPipeline):
             return
         try:
             dataset, input_channel_id = self._oriented_thrust_resolve(binding)
-            config = self.process_page.processing_config(validate=True)
+            config = deepcopy(self.process_page.processing_config(validate=True))
             plugin_id = self.process_page.processor_id()
             processor = self.registry.get(plugin_id) if plugin_id is not None else None
+            parameters = self.session.motor_parameters
+            analyzer = self.registry.get(THRUST_ANALYZER_ID) if recalculate else None
+            if recalculate:
+                reason = self._primary_calculation_blocker()
+                if reason:
+                    raise ValueError(reason)
         except (KeyError, ValueError) as exc:
             self._error_show(exc)
             return
@@ -3367,6 +3450,9 @@ class MainWindow(QMainWindow, ProjectPipeline):
         regions = deepcopy(session.regions)
         polarity = session.thrust_polarity
         calibrated = session.calibrated_streams.get(binding.stream_id)
+        t = self.translations.translate
+        processing_failure = t("process.failed")
+        analysis_failure = t("analyze.failed")
 
         def valid() -> bool:
             return (self.session is session and session.regions == regions
@@ -3374,39 +3460,86 @@ class MainWindow(QMainWindow, ProjectPipeline):
                     and session.project_data.primary_channels.thrust == binding
                     and session.calibrated_streams.get(binding.stream_id) is calibrated
                     and self.process_page.processor_id() == plugin_id
-                    and self.process_page.processing_config() == config)
+                    and not self.process_page.processor_form.invalid_inputs()
+                    and self.process_page.processing_config() == config
+                    and (not recalculate or session.motor_parameters == parameters))
 
-        def operation(context: TaskContext) -> ProcessingResult:
-            if processor is None:
+        def operation(
+            context: TaskContext,
+        ) -> tuple[ProcessingResult, AnalysisResult | None, dict[str, Any]]:
+            try:
                 context.raise_if_cancelled()
-                result = Processing_Passthrough(
-                    dataset,
-                    input_channel_id=input_channel_id,
+                processing = (
+                    Processing_Passthrough(dataset, input_channel_id=input_channel_id)
+                    if processor is None else processor.process(dataset, config, context)
                 )
-                context.report_progress(1.0, "Processing pass-through complete")
-                return result
-            return processor.process(dataset, config, context)
+                context.raise_if_cancelled()
+            except TaskCancelledError:
+                raise
+            except Exception as exc:
+                raise ValueError(f"{processing_failure}: {exc}") from exc
+            if analyzer is None:
+                return processing, None, {}
+            try:
+                analysis_config = self._thrust_analysis_config(processing, regions, parameters)
+                result = analyzer.analyze(processing.dataset, analysis_config, context)
+                context.raise_if_cancelled()
+                analysis = replace(result, metadata={
+                    **result.metadata, "motor_parameters": parameters.to_dict(),
+                    "mass_source": "project",
+                })
+            except TaskCancelledError:
+                raise
+            except Exception as exc:
+                raise ValueError(f"{analysis_failure}: {exc}") from exc
+            return processing, analysis, analysis_config
 
-        def success(result: ProcessingResult) -> None:
+        def success(
+            completed: tuple[ProcessingResult, AnalysisResult | None, dict[str, Any]],
+        ) -> None:
+            # Keep the old applied pair intact until the entire requested operation succeeds.
+            result, analysis, analysis_config = completed
             self._source_analysis_invalidate(processed_only=True)
             self.session.reset_after_processing()
             self.session.processor_id = plugin_id
             self.session.processor_config = dict(config)
             self.session.processing_result = result
+            if analysis is not None:
+                self.session.analyzer_id = THRUST_ANALYZER_ID
+                self.session.analyzer_config = analysis_config
+                self.session.analysis_result = analysis
             self._primary_channels_update()
             self.process_page.set_processing_metadata(result.metadata)
             self._measurement_workspaces_update()
-            self.analyze_page.clear_result()
+            if analysis is None:
+                self.analyze_page.clear_result()
+            else:
+                self.analyze_page.set_result(analysis)
             self._export_availability_update()
             self.statusBar().showMessage(
-                self.translations.translate("status.processing_applied"), 5000
+                self.translations.translate(
+                    "status.analysis_complete" if analysis is not None
+                    else "status.processing_applied"
+                ), 5000,
             )
 
-            if recalculate and regions.get("active_test"):
-                self._analysis_calculate()
+        self._task_start(t("status.calculating" if recalculate else "status.processing"),
+                         operation, success, valid=valid)
 
-        self._task_start(self.translations.translate("status.processing"), operation, success,
-                         valid=valid)
+    @staticmethod
+    def _thrust_analysis_config(
+        processing: ProcessingResult,
+        regions: Mapping[str, list[float]],
+        parameters: MotorPhysicalParameters,
+    ) -> dict[str, Any]:
+        return {
+            **parameters.to_dict(),
+            "channel_id": "thrust_processed",
+            "ignition": regions["active_test"][0],
+            "burnout": regions["active_test"][1],
+            "propellant_mass_kg": parameters.propellant_mass_kg,
+            "equivalent_mass_change_kg": processing.metadata.get("equivalent_mass_change_kg"),
+        }
 
     def _analysis_calculate(self) -> None:
         processing = self.session.processing_result
@@ -3415,20 +3548,10 @@ class MainWindow(QMainWindow, ProjectPipeline):
             return
         try:
             regions = self._regions_normalize(self.session.regions)
-            metadata = dict(self.session.motor_metadata)
-            parameters = MotorPhysicalParameters.from_metadata(metadata)
+            parameters = self.session.motor_parameters
             plugin_id = THRUST_ANALYZER_ID
             analyzer = self.registry.get(plugin_id)
-            config: dict[str, Any] = {
-                **parameters.to_dict(),
-                "channel_id": "thrust_processed",
-                "ignition": regions["active_test"][0],
-                "burnout": regions["active_test"][1],
-                "propellant_mass_kg": metadata.get("propellant_mass_kg"),
-                "equivalent_mass_change_kg": processing.metadata.get(
-                    "equivalent_mass_change_kg"
-                ),
-            }
+            config = self._thrust_analysis_config(processing, regions, parameters)
         except (KeyError, ValueError) as exc:
             self._error_show(exc)
             return
@@ -3759,9 +3882,10 @@ class MainWindow(QMainWindow, ProjectPipeline):
     def _project_save_path(
         self, path: Path, *, after_save: Callable[[], None] | None = None
     ) -> None:
-        submitted = self._project_key()
         was_untitled = self.session.project_path is None
         try:
+            self.process_page.processor_form.validated_values()
+            submitted = self._project_key()
             document_template = self._project_document_create()
             if was_untitled or not document_template.export_settings.get("directory"):
                 export_settings = dict(document_template.export_settings)
