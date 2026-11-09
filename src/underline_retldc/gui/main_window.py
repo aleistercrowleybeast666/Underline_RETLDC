@@ -738,12 +738,15 @@ class MainWindow(QMainWindow, ProjectPipeline):
                  bool(page.source_analysis.config().channels)
                  if page.source_analysis.source_id() is not None
                  else bool(page._selected_series()))
+        relative = primary_thrust and self._primary_relative_only()
         key = ("process.apply" if primary_thrust and self._processing_has_draft()
+               else "analyze.calculate_relative" if relative
                else "analyze.update" if primary_thrust and self.session.analysis_result is not None
                else "analyze.calculate")
         self.calculate_action.setText(self.translations.translate(key))
         self.calculate_action.setEnabled(ready and not reason and self._active_task is None)
-        self.calculate_action.setToolTip(reason)
+        self.calculate_action.setToolTip(
+            reason or (self.translations.translate("analyze.relative_only") if relative else ""))
 
     def _primary_calculation_blocker(self) -> str:
         t = self.translations.translate
@@ -753,15 +756,24 @@ class MainWindow(QMainWindow, ProjectPipeline):
         try:
             dataset, channel_id = self._calibrated_binding_resolve(reference)
             channel = dataset.channel(channel_id)
-            if (Quantity_Dimension(channel.quantity) != "force"
-                    or not Unit_AreConvertible(channel.data_unit, "N")):
-                return t("setup.needs_calibration")
+            if Quantity_Dimension(channel.quantity) != "force":
+                return t("analyze.check_inputs")
             regions = self._regions_normalize(self.session.regions)
             if not regions.get("active_test"):
                 return t("analyze.select_interval")
         except (KeyError, ValueError):
             return t("analyze.check_inputs")
         return ""
+
+    def _primary_relative_only(self) -> bool:
+        reference = self.session.project_data.primary_channels.thrust
+        if reference is None:
+            return False
+        try:
+            dataset, channel_id = self._calibrated_binding_resolve(reference)
+            return not Unit_AreConvertible(dataset.channel(channel_id).data_unit, "N")
+        except (KeyError, ValueError):
+            return False
 
     def _primary_calculate(self) -> None:
         if self._active_task is not None:
@@ -1746,7 +1758,9 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self.analyze_page.applied_notice.setText(t("process.previous_result"))
         self.analyze_page.applied_notice.setVisible(draft and result)
         self.process_page.apply_button.setText(t(
-            "process.apply" if draft else "analyze.update" if result else "analyze.calculate"))
+            "process.apply" if draft else "analyze.calculate_relative"
+            if self._primary_relative_only() else "analyze.update" if result
+            else "analyze.calculate"))
         self._calculation_action_refresh()
         self._export_result_notice_update()
 
@@ -1758,10 +1772,11 @@ class MainWindow(QMainWindow, ProjectPipeline):
         interval = session.analyzer_config
         identity = ""
         if result is not None and source is not None:
+            impulse = result.metrics.get("total_impulse_ns")
             identity = self.translations.translate(
                 "export.result_identity", source=source.path.name,
                 start=interval.get("ignition", "—"), end=interval.get("burnout", "—"),
-                impulse=result.metrics.get("total_impulse_ns", "—"),
+                impulse=impulse if impulse is not None else "—",
             )
         self.export_dialog.set_result_state(
             draft=self._processing_has_draft(), has_result=result is not None,

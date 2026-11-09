@@ -12,7 +12,7 @@ from underline_retldc.i18n.service import TranslationService
 
 
 @pytest.fixture
-def imported_window(tmp_path, monkeypatch):
+def imported_window(tmp_path, monkeypatch, request):
     _application()
     window = _window(
         TranslationService("en_US"), SettingsService(tmp_path / "settings.ini"), tmp_path,
@@ -32,7 +32,7 @@ def imported_window(tmp_path, monkeypatch):
         "columns": [
             {"column": 0, "usage": "time"},
             {"column": 1, "usage": "data", "channel_id": "thrust",
-             "quantity": "force", "role": "thrust", "unit": "N"},
+             "quantity": "force", "role": "thrust", "unit": getattr(request, "param", "N")},
         ], "invalid_row_policy": "error",
     }
     window.import_page.set_source_path(path)
@@ -67,6 +67,28 @@ def test_first_toolbar_calculation_processes_and_analyzes(imported_window):
     _task_wait(window)
     assert window.session.processing_result is not None
     assert window.session.analysis_result.metrics["total_impulse_ns"] == pytest.approx(220)
+    assert not window._test_errors
+
+
+@pytest.mark.parametrize("imported_window", ["ADC"], indirect=True)
+def test_nonphysical_primary_keeps_relative_analysis_without_physical_export(imported_window):
+    window = imported_window
+    assert window.calculate_action.isEnabled()
+    assert window.calculate_action.text() == "Calculate relative statistics"
+    window.calculate_action.trigger()
+    _task_wait(window)
+    result = window.session.analysis_result
+    assert result.metrics["relative_integral"] == pytest.approx(220)
+    assert result.metrics["total_impulse_ns"] is None
+    assert result.metrics["specific_impulse_s"] is None
+    assert result.metadata["physical_force_available"] is False
+    assert any(item.code == "analysis.force_unit_not_physical" for item in result.diagnostics)
+    window.export_action.trigger()
+    assert "None" not in window.export_dialog.result_identity.text()
+    assert window.export_dialog.exporter_checks["builtin.exporter.analysis_txt"].isEnabled()
+    assert not window.export_dialog.exporter_checks["builtin.exporter.openrocket_eng"].isEnabled()
+    assert not window.export_dialog.exporter_checks[
+        "builtin.exporter.treediagram_motor"].isEnabled()
     assert not window._test_errors
 
 

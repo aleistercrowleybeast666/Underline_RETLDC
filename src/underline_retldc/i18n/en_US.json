@@ -634,6 +634,8 @@
   "export.project_motor_summary": "Propellant {propellant_mass_kg} kg · Total {total_motor_mass_kg} kg · Diameter {diameter_mm} mm · Length {length_mm} mm",
   "import.source_summary": "{file} · Channels: {channels} · {status}",
   "analyze.update": "Update results",
+  "analyze.calculate_relative": "Calculate relative statistics",
+  "analyze.relative_only": "Calibration is needed for physical thrust, impulse and model exports. Relative statistics remain available.",
   "analyze.select_interval": "Select the test interval before calculating.",
   "analyze.check_inputs": "Check the primary thrust channel, calibration and test interval.",
   "analyze.failed": "Analysis failed; previous applied results were retained",

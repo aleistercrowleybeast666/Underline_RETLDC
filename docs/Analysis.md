@@ -63,6 +63,9 @@ operation commits only after both stages succeed. A failure identifies processin
 failure, cancellation or a newer draft preserves the previous applied pair. The advanced
 processing section retains **Only apply processing**, which deliberately invalidates analysis
 until it is calculated again. Saving a draft does not apply it.
+Nonphysical raw/count/ADC inputs retain the analyzer's existing relative statistics, explicitly
+labelled by the primary action. Calibration warnings remain visible, physical metrics remain
+unavailable, and physical model exports stay disabled until Quantity and Unit are valid.
 
 The result panel shows physical thrust metrics first; its general-statistics checkbox reveals
 the duplicate generic metrics without recomputation. The Export dialog labels the applied
