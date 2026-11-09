@@ -510,3 +510,14 @@ Manual plugin refresh queues during active work and uses TaskManager when idle. 
 loaded implementations stay pinned when adding plugins. Modified loaded files require an
 application restart. The CLI discovers required project and export implementations from
 trusted roots. Project JSON only names IDs and cannot register or execute local code.
+
+## Repository artifact hygiene
+
+`tools/check_repository_artifacts.py --base <commit>` reviews added or modified Git blobs,
+and `--staged` reviews the index. Push and pull-request CI use the same check. Temporary
+workspaces, environments, generated build trees, and binary/archive products are rejected;
+changed blobs larger than 2 MiB are rejected. Historical blobs are not reclassified.
+`tools/repository_artifacts.json` documents the small original test-fixture allowance;
+it never permits workspace paths or bypasses the size limit. Keep deliverables in ignored
+`dist/` and reproducible temporary work in the task's `.work/` directory. This check is
+preventive and does not delete any local files or rewrite Git history.

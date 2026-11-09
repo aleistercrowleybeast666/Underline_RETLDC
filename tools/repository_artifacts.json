@@ -1,0 +1,6 @@
+[
+  {
+    "path": "tests/fixtures/*",
+    "reason": "Small original import/export regression inputs; workspace and size limits still apply."
+  }
+]

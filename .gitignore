@@ -5,6 +5,9 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .work/
+.qa/
+.test-tmp/
+.codex-remote-attachments/
 .coverage
 htmlcov/
 dist/
