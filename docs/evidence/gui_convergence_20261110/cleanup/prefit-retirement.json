@@ -1,0 +1,110 @@
+{
+  "completion_date": "2026-11-11",
+  "owner": "gui-convergence-20261110 preceding portable retirement",
+  "source_head": "7557378fd36614ea205bf32fb4e319bf1b525224",
+  "original_scopes": [
+    "dist/gui-convergence-20261110/Underline_RETLDC",
+    ".work/gui-convergence-20261110/package",
+    "dist/gui-convergence-20261110/Underline_RETLDC_GUI_20261110_Windows_Portable.zip"
+  ],
+  "preview_sha256": "578b2b7ef695e73117afe626cf08205973138448c9cb83be82c6cb3d842f1d77",
+  "archives": [
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\Underline_RETLDC_GUI_20261110_PreFit_Windows_Portable.zip",
+      "size": 98650426,
+      "sha256": "aa47c148ed9eaf81948f9f1b0b316cd41d19761d4194401ea927025027a367d6",
+      "mtime_ns": "1794250749733976800",
+      "device": "15190911442371306337",
+      "inode": "1125899906927410"
+    },
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\Underline_RETLDC_GUI_20261110_PreFit_Build.zip",
+      "size": 46482985,
+      "sha256": "600d39bb1084580d6e23baf642987611d510f419f3b661cc0754e22d7ac48f3f",
+      "mtime_ns": "1794395872131929900",
+      "device": "15190911442371306337",
+      "inode": "1125899906927412"
+    }
+  ],
+  "physical_restore": {
+    "every_path_size_sha256_verified": true,
+    "root": "D:\\SilverStar_Archive\\20261110\\task\\underline\\verified-physical-restore",
+    "portable_files": 891,
+    "restored_copies_removed_after_verification": true,
+    "package_files": 13
+  },
+  "removed_files": 905,
+  "removed_empty_directories": 405,
+  "logical_bytes_removed": 387115321,
+  "failures": [],
+  "native_file_identity_checked": true,
+  "protected_source_input_count": 472,
+  "protected_inputs_unchanged": true,
+  "final_candidate_retained": "dist/gui-convergence-20261110-fit",
+  "final_candidate_executable_sha256": "87e4d65154db99cad5f07587a8c7bd6af35351d2cb83637ff99dae46474b3840",
+  "archive_access_range_same": true,
+  "acl_modified_during_resumed_run": false,
+  "free_bytes_before_apply": 33973370880,
+  "free_bytes_after_apply": 34381037568,
+  "disk_interval_delta_bytes": 407666688,
+  "disk_interval_note": "Concurrent cleanup/builds on D: prevent exclusive attribution.",
+  "post_cleanup_cli": "post-retirement-cli.json",
+  "audit_files": [
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\post_retirement_verify.py",
+      "size": 2186,
+      "sha256": "dbf02264faefbb23af9cb0618c5ffc69f813f0543c33d076dc2a8a0ab9957326"
+    },
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\post-retirement-cli.json",
+      "size": 1978,
+      "sha256": "070dc6d0f3715e4dc3187bb20a5b9a095477689d6c57e7240ce138259ba7d453"
+    },
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\post-retirement-final_fit.log",
+      "size": 259,
+      "sha256": "d5935d4f8b27e7f7fe66dcd871530b52948bea97f96d912bdbf8f9fd9c671336"
+    },
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\post-retirement-source.log",
+      "size": 256,
+      "sha256": "766140389d0b96c0f9405196e30451fd17d872f5356a34fc4084a703885b69a4"
+    },
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\RESTORE_RECEIPT.json",
+      "size": 1932,
+      "sha256": "1dbf4e9c13dcb2d7a9cde2e0b3b38239ef357a0f47a9afef38370a04bd1adbbc"
+    },
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\retire_prefit_package.ps1",
+      "size": 16099,
+      "sha256": "ce22a68d60b7fd0eed553f31a47abd93a87f60169ed9d1eb86232af50c58b313"
+    },
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\retired-package-preview.json",
+      "size": 396927,
+      "sha256": "578b2b7ef695e73117afe626cf08205973138448c9cb83be82c6cb3d842f1d77"
+    },
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\RETIREMENT_RECEIPT.json",
+      "size": 262751,
+      "sha256": "2e2d042dde0d0e8b3c78ce15b3eaec692f873112122262db35fea3b3ea05eb44"
+    },
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\Underline_RETLDC_GUI_20261110_PreFit_Build.zip",
+      "size": 46482985,
+      "sha256": "600d39bb1084580d6e23baf642987611d510f419f3b661cc0754e22d7ac48f3f"
+    },
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\Underline_RETLDC_GUI_20261110_PreFit_Windows_Portable.zip",
+      "size": 98650426,
+      "sha256": "aa47c148ed9eaf81948f9f1b0b316cd41d19761d4194401ea927025027a367d6"
+    },
+    {
+      "path": "D:\\SilverStar_Archive\\20261110\\task\\underline\\verified_file_identity.ps1",
+      "size": 2387,
+      "sha256": "e6a0dae2ce681e5da12fee125e5e73b88252317a25f36c432e159d36ff948f7c"
+    }
+  ],
+  "formal_json_format": "LF-normalized summary; raw receipts and CLI logs are unchanged in the external audit archive."
+}

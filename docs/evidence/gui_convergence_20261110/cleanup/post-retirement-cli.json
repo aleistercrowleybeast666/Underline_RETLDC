@@ -1,0 +1,40 @@
+{
+  "source_commit": "7557378fd36614ea205bf32fb4e319bf1b525224",
+  "retired_directories_absent": true,
+  "source_and_project_unchanged": true,
+  "final_executable_sha256": "87e4d65154db99cad5f07587a8c7bd6af35351d2cb83637ff99dae46474b3840",
+  "results": [
+    {
+      "entry": "source",
+      "command": [
+        "D:\\python_software\\Underline_RETLDC\\.venv\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "underline_retldc.cli",
+        "export",
+        "D:\\python_software\\Underline_RETLDC\\docs\\evidence\\gui_convergence_20261110\\integration\\Synthetic_20261110.retldc.json",
+        "D:\\python_software\\Underline_RETLDC\\.work\\gui-convergence-20261110\\post-retirement-source.tdmotor.json",
+        "--relocate",
+        "source_1=D:\\python_software\\Underline_RETLDC\\docs\\evidence\\gui_convergence_20261110\\integration\\synthetic_20261110.csv"
+      ],
+      "exit_code": 0,
+      "output_sha256": "eed976bb0d95d90f680a6b72988e42b2a93b5342d5756a1d4a0a437930f017e3",
+      "log_sha256": "766140389d0b96c0f9405196e30451fd17d872f5356a34fc4084a703885b69a4"
+    },
+    {
+      "entry": "final_fit",
+      "command": [
+        "D:\\python_software\\Underline_RETLDC\\dist\\gui-convergence-20261110-fit\\Underline_RETLDC\\Underline_RETLDC.exe",
+        "export",
+        "D:\\python_software\\Underline_RETLDC\\docs\\evidence\\gui_convergence_20261110\\integration\\Synthetic_20261110.retldc.json",
+        "D:\\python_software\\Underline_RETLDC\\.work\\gui-convergence-20261110\\post-retirement-final_fit.tdmotor.json",
+        "--relocate",
+        "source_1=D:\\python_software\\Underline_RETLDC\\docs\\evidence\\gui_convergence_20261110\\integration\\synthetic_20261110.csv"
+      ],
+      "exit_code": 0,
+      "output_sha256": "eed976bb0d95d90f680a6b72988e42b2a93b5342d5756a1d4a0a437930f017e3",
+      "log_sha256": "d5935d4f8b27e7f7fe66dcd871530b52948bea97f96d912bdbf8f9fd9c671336"
+    }
+  ]
+}
