@@ -1,0 +1,99 @@
+{
+  "date": "2026-11-16",
+  "baseline": "239ce7b5092da213c69b2c5dfceb797a0c239f33",
+  "branch": "codex/release-candidate-20261103",
+  "qt_platform": "offscreen",
+  "file_identity_kind": "Working-tree bytes during execution; Git may normalize line endings",
+  "runtime": {
+    "python": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]",
+    "pyside6": "6.11.1"
+  },
+  "full": {
+    "command": ".venv/Scripts/python.exe -m pytest -q --basetemp=.work/defaults-ux-20261116/final-full-tmp -o cache_dir=.work/defaults-ux-20261116/pytest-cache --junitxml=.work/defaults-ux-20261116/final-full.xml",
+    "label": "Final implementation including Return/Apply protection",
+    "tests": 420,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 714.888,
+    "log_sha256": "2e0b4b542b92f754c189c1a55bd0393965317523517638386102a717b8b27c0c",
+    "junit_sha256": "2d4793f4e4f11483b7406858a74a84a316dc8409c752975e5c6cdb696b160b0d"
+  },
+  "targeted": {
+    "label": "Complete defaults UX file, final implementation",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 47.944,
+    "log_sha256": "c4374c42412d81d25791acb6ed9aa4291681e7a4085ceb2f718c1a9b6686c8b0",
+    "junit_sha256": "b46252995730a32469d8e4b87951243fb0ca1def09c502324061f1a50b2a6419"
+  },
+  "prior_full": {
+    "label": "Candidate before Return/Apply protection; superseded",
+    "tests": 419,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 642.669,
+    "log_sha256": "f3154fb82a33ca912b6d80b9a88f91603b82d31f63f1b847ce45e9faf4ee8a52",
+    "junit_sha256": "9d008196beda41b263c0628ed9f4c97e64842cc0823fff43b6a3f6d4bffb4025"
+  },
+  "smokes": [
+    {
+      "command": ".venv/Scripts/python.exe main.py --smoke-test --locale zh_CN --theme light",
+      "exit": 0,
+      "private_settings": true,
+      "phases_sha256": "ddedeccd080c93addfff7ea2751f0126c64672269d5835b83b7fa4eed7a4614f"
+    },
+    {
+      "command": ".venv/Scripts/python.exe main.py --smoke-test --locale en_US --theme dark",
+      "exit": 0,
+      "private_settings": true,
+      "phases_sha256": "085b7b00772dc551e40fa00ada6dd7acef9bc021dc1e98850288ea20c77f08ab"
+    }
+  ],
+  "final_test_bound_files": [
+    {
+      "path": "src/underline_retldc/gui/main_window.py",
+      "size": 226570,
+      "sha256": "e737626c4a6e26c0a61bc1e69b8d7eccd0509cf9dbc683e4d8dc3d522230a907"
+    },
+    {
+      "path": "src/underline_retldc/gui/pages/process_page.py",
+      "size": 30923,
+      "sha256": "c910c04fbdd7dbdf98816580fe126f9d5c884f35db6a13735f133bc383377bc7"
+    },
+    {
+      "path": "src/underline_retldc/gui/pages/setup_page.py",
+      "size": 29023,
+      "sha256": "5a6f807971c7cd5beade0303e340a21b3a673bc4e4fffeb5bb659a58afaff989"
+    },
+    {
+      "path": "src/underline_retldc/gui/schema_form.py",
+      "size": 10189,
+      "sha256": "0c8934fe93fc6076238f07073241605bb3e60e759c7873f2a208e68c82c073b7"
+    },
+    {
+      "path": "src/underline_retldc/i18n/en_US.json",
+      "size": 42483,
+      "sha256": "e629ab56abe3b1485e39098b5d2854db1831b1c0ba517efb5a32469ae482b259"
+    },
+    {
+      "path": "src/underline_retldc/i18n/zh_CN.json",
+      "size": 40426,
+      "sha256": "ff3a6dc8ca3e2b9d9534f2a532a7ef8383a1fc8d56e48042a31067fc6c918e62"
+    },
+    {
+      "path": "tests/integration/test_defaults_ux.py",
+      "size": 12371,
+      "sha256": "c1ce1889fbc6bde5186ac0406381dd43e1c67ed0f32e594a8b9850bfe0d6654e"
+    }
+  ],
+  "preserved_untracked_showcase_sha256": "482606c54b1ae66f2a721267c3dcf6eed8b82c08d7e08a8fbe0e61e286d5ce2a",
+  "local_evidence": ".work/defaults-ux-20261116",
+  "limits": [
+    "No native desktop/high-DPI visual validation in this task.",
+    "Existing portable artifacts unchanged; no new package built."
+  ]
+}

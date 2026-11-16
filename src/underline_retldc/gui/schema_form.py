@@ -107,6 +107,18 @@ class SchemaForm(QWidget):
             if editor is not None and value is not None:
                 self._editor_value_set(editor, value)
 
+    def default_values(self, *, preserve: tuple[str, ...] = ()) -> dict[str, Any]:
+        """Return only declared scalar defaults owned by this form's schema."""
+        return {
+            name: schema["default"] for name, schema in self._properties.items()
+            if name not in preserve and schema.get("default") is not None
+            and "x-ui-source" not in schema
+        }
+
+    def restore_defaults(self, *, preserve: tuple[str, ...] = ()) -> None:
+        # Undeclared/nullable defaults and externally supplied inputs stay unchanged.
+        self.set_values(self.default_values(preserve=preserve))
+
     def retranslate(self) -> None:
         for field_name, label in self._labels.items():
             property_schema = self._properties[field_name]

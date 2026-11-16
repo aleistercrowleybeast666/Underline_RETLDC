@@ -43,6 +43,18 @@ no model parameters and advertises same-as-input behavior through `requirements(
 plugin declares input compatibility and output behavior; adding another scalar model does not
 require an ID-specific GUI branch.
 
+**Restore model parameter defaults** uses declared scalar defaults from the selected plugin's
+parameter schema. It keeps the selected channel/model, input and output units, quantity and
+source data. Fields with no declared default, a nullable default or an externally supplied input
+stay unchanged; a model without restorable parameters has a disabled reset button. This is a
+draft edit: Cancel restores the applied configuration, and Apply validates/commits through the
+usual calibration path. Imported calibration provenance remains available and reports modified
+parameters when applicable. The defaults are convenience values, not a sensor calibration.
+
+Apply consumes valid numeric text even before Enter or focus loss. Invalid or intermediate text
+stays visible and blocks application. Language/theme changes keep the same editors and pending
+text; they do not rebuild the calibration draft.
+
 Calibration may validly map `raw→N`, `count→Pa`, or `V→N`. It must perform the mathematical
 mapping, not only change a Unit label. The Unit Registry handles only same-dimension conversions
 such as Pa→MPa and K→°C, and refuses direct conversion from raw/count/ADC.

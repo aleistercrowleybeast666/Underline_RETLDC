@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
 
 from underline_retldc.core.calibration import CalibrationDocument
 from underline_retldc.core.channel import Channel
+from underline_retldc.core.motor_parameters import MotorPhysicalParameters
 from underline_retldc.core.pipeline import Calibration_OutputChannelId
 from underline_retldc.core.units import (
     Quantity_KnownIds,
@@ -101,9 +102,15 @@ class SetupPage(QWidget):
         self.identity_notice.setObjectName("warningLabel")
         self.identity_notice.setWordWrap(True)
         self.calibration_form = SchemaForm(translations)
+        self.calibration_defaults = QPushButton()
+        self.calibration_defaults.clicked.connect(self._calibration_defaults_restore)
+        self.calibration_defaults_hint = QLabel()
+        self.calibration_defaults_hint.setWordWrap(True)
         calibration_layout.addRow(self.calibration_label, self.calibration_combo)
         calibration_layout.addRow(self.identity_notice)
         calibration_layout.addRow(self.calibration_form)
+        calibration_layout.addRow(self.calibration_defaults)
+        calibration_layout.addRow(self.calibration_defaults_hint)
 
         self.apply_button = QPushButton()
         self.apply_button.setObjectName("primaryButton")
@@ -207,11 +214,28 @@ class SetupPage(QWidget):
         for field in drafts.values():
             field.textChanged.connect(reason.hide)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply
-                                   | QDialogButtonBox.StandardButton.Cancel, parent=dialog)
+                                   | QDialogButtonBox.StandardButton.Cancel
+                                   | QDialogButtonBox.StandardButton.RestoreDefaults, parent=dialog)
         buttons.button(QDialogButtonBox.StandardButton.Apply).setText(
             self._translations.translate("common.apply"))
+        buttons.button(QDialogButtonBox.StandardButton.Apply).setDefault(True)
         buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(
             self._translations.translate("common.cancel"))
+        restore = buttons.button(QDialogButtonBox.StandardButton.RestoreDefaults)
+        # Reset is always explicit: Return while editing must never erase the draft.
+        restore.setAutoDefault(False)
+        restore.setDefault(False)
+        restore.setText(self._translations.translate("motor.restore_defaults"))
+        hint = QLabel(self._translations.translate("motor.restore_defaults_hint"))
+        hint.setWordWrap(True)
+        form.addRow(hint)
+        restore.setToolTip(hint.text())
+
+        def restore_physical_defaults() -> None:
+            for name, value in MotorPhysicalParameters().to_dict().items():
+                drafts[name].setText("" if value is None else str(value))
+
+        restore.clicked.connect(restore_physical_defaults)
         form.addRow(buttons)
         buttons.rejected.connect(dialog.reject)
 
@@ -285,6 +309,9 @@ class SetupPage(QWidget):
         self.calibration_label.setText(t("setup.calibration"))
         self.identity_notice.setText(t("setup.identity_notice"))
         self.calibration_form.retranslate()
+        self.calibration_defaults.setText(t("setup.restore_defaults"))
+        self.calibration_defaults_hint.setText(t("setup.restore_defaults_hint"))
+        self.calibration_defaults.setToolTip(self.calibration_defaults_hint.text())
         self.apply_button.setText(t("setup.apply_calibration"))
         self.load_button.setText(t("setup.load_calibration"))
         self.save_button.setText(t("setup.save_calibration"))
@@ -302,7 +329,7 @@ class SetupPage(QWidget):
         }
         for field_name, key in motor_keys.items():
             self.motor_labels[field_name].setText(t(key))
-        self._populate_calibrations(self.calibration_id())
+        self._populate_calibrations(self.calibration_id(), update_form=False)
 
         self._motor_summary_update()
 
@@ -426,7 +453,7 @@ class SetupPage(QWidget):
         self._display_preferences = dict(preferences)
         self._channel_update()
 
-    def _populate_calibrations(self, selected: str | None) -> None:
+    def _populate_calibrations(self, selected: str | None, *, update_form: bool = True) -> None:
         previous_id = self.calibration_id()
         previous_values = (
             self.calibration_form.values()
@@ -446,6 +473,8 @@ class SetupPage(QWidget):
         index = self.calibration_combo.findData(selected)
         self.calibration_combo.setCurrentIndex(max(0, index))
         self.calibration_combo.blockSignals(False)
+        if not update_form:
+            return
         self._schema_update()
         if selected == previous_id:
             self.calibration_form.set_values(previous_values)
@@ -464,6 +493,7 @@ class SetupPage(QWidget):
         if plugin is None:
             self.calibration_form.set_schema({"type": "object", "properties": {}})
             self.identity_notice.setVisible(False)
+            self.calibration_defaults.setEnabled(False)
             return
         self.identity_notice.setVisible(
             plugin.descriptor.plugin_id == "builtin.calibration.identity"
@@ -499,15 +529,21 @@ class SetupPage(QWidget):
         self.calibration_form.set_schema(schema)
         self._channel_details_update(self.channel_details_button.isChecked())
         self._calibration_output_defaults_update()
+        self.calibration_defaults.setEnabled(bool(
+            self.calibration_form.default_values(preserve=("quantity", "unit"))))
+
+    def _calibration_defaults_restore(self) -> None:
+        self.calibration_form.restore_defaults(preserve=("quantity", "unit"))
 
     def calibration_id(self) -> str | None:
         return self.calibration_combo.currentData()
 
-    def calibration_config(self) -> dict[str, Any]:
+    def calibration_config(self, *, validate: bool = False) -> dict[str, Any]:
         plugin_id = self.calibration_id()
         if plugin_id is None:
             raise ValueError("Select a calibration model")
-        values = self.calibration_form.values()
+        values = (self.calibration_form.validated_values() if validate
+                  else self.calibration_form.values())
         quantity = str(values.pop("quantity", "")).strip()
         unit = str(values.pop("unit", "")).strip()
         values.pop("output_quantity", None)

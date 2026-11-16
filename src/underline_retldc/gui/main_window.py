@@ -537,6 +537,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
         self.process_page.apply_requested.connect(self._primary_calculate)
         self.process_page.apply_only_requested.connect(self._processing_apply)
         self.process_page.restore_button.clicked.connect(self._processing_restore)
+        self.process_page.defaults_button.clicked.connect(self._processing_defaults_restore)
         self.process_page.processor_combo.currentIndexChanged.connect(self._document_state_update)
         self.process_page.processor_form.value_changed.connect(self._document_state_update)
         self.process_page.processor_form.pending_text_changed.connect(self._document_state_update)
@@ -2987,7 +2988,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
         existing_states = self._active_channel_calibrations()
         try:
             plugin_id = self.setup_page.calibration_id()
-            config = self.setup_page.calibration_config()
+            config = self.setup_page.calibration_config(validate=True)
             if plugin_id is None:
                 raise ValueError("Select a calibration model")
             model = self.registry.get(plugin_id)
@@ -3149,6 +3150,7 @@ class MainWindow(QMainWindow, ProjectPipeline):
                          valid=lambda: self.setup_page.calibration_epoch == epoch
                          and self._active_stream() is active_stream
                          and self.setup_page.calibration_id() == plugin_id
+                         and not self.setup_page.calibration_form.invalid_inputs()
                          and self.setup_page.calibration_config() == config
                          and self.setup_page.channel_interpretation() == interpretation)
 
@@ -3443,6 +3445,11 @@ class MainWindow(QMainWindow, ProjectPipeline):
             {key: value for key, value in self.session.processor_config.items()
              if key != "regions"},
         )
+        self._document_state_update()
+
+    def _processing_defaults_restore(self) -> None:
+        defaults = AnalysisSession()
+        self.process_page.set_processing_config(defaults.processor_id, defaults.processor_config)
         self._document_state_update()
 
     def _processing_apply(self, *, recalculate: bool = False) -> None:

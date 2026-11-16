@@ -63,6 +63,11 @@ operation commits only after both stages succeed. A failure identifies processin
 failure, cancellation or a newer draft preserves the previous applied pair. The advanced
 processing section retains **Only apply processing**, which deliberately invalidates analysis
 until it is calculated again. Saving a draft does not apply it.
+**Restore default correction: None** resets only the correction draft, using the new-session
+default. It keeps the primary channel, raw arrays, polarity, motor parameters and PRE/ACTIVE_TEST/
+POST. **Restore applied values** cancels this draft; **Apply and recalculate** commits through
+the existing atomic pipeline. The previous result remains labelled as an applied result until a
+successful calculation replaces it. A running operation cannot publish over a changed draft.
 Nonphysical raw/count/ADC inputs retain the analyzer's existing relative statistics, explicitly
 labelled by the primary action. Calibration warnings remain visible, physical metrics remain
 unavailable, and physical model exports stay disabled until Quantity and Unit are valid.
@@ -85,6 +90,12 @@ pressure retains editable segmentation and its pressure reference. A binding or 
 change invalidates the saved completion state and requires recalculation. Reset Chart restores the
 complete data-driven automatic X/Y range after zoom or pan and preserves PRE/ACTIVE_TEST/POST
 because those markers are shared Project state, not disposable viewport annotations.
+
+The motor property dialog also offers **Restore physical defaults**. The model's defaults are
+unknown mass and dimensions (`None`), never guessed numeric values. This modifies only the open
+draft and keeps designation, manufacturer and delay. Cancel preserves the project; Apply uses
+the shared motor-parameter owner and invalidates dependent results without changing source data,
+processing or segmentation. Missing mass keeps specific impulse unavailable after recalculation.
 
 The chamber-pressure PNG export is stricter than the interactive full-record view: it requires a
 valid ACTIVE_TEST and clips both plotted samples and the X-axis to that interval. PRE and POST remain
