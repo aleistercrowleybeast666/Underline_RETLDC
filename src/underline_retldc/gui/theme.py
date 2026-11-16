@@ -3,11 +3,12 @@ from __future__ import annotations
 import ctypes
 import sys
 
-from PySide6.QtCore import QEvent, QObject, Qt
+from PySide6.QtCore import QEvent, QObject, Qt, QTimer
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPalette, QPen
-from PySide6.QtWidgets import QApplication, QProxyStyle, QStyle, QStyleOption, QWidget
+from PySide6.QtWidgets import QApplication, QMessageBox, QProxyStyle, QStyle, QStyleOption, QWidget
 
 from underline_retldc.app.settings import THEME_DARK, THEME_LIGHT, Theme_Normalize
+from underline_retldc.gui.dialog_geometry import Dialog_CenterOnOwner
 
 LIGHT_STYLE_SHEET = """
 QWidget {
@@ -534,6 +535,9 @@ class WindowThemeFilter(QObject):
             and watched.isWindow()
         ):
             Window_TitleBarApply(watched)
+            if isinstance(watched, QMessageBox) and not watched.property('ownerCentered'):
+                watched.setProperty('ownerCentered', True)
+                QTimer.singleShot(0, watched, lambda: Dialog_CenterOnOwner(watched))
         return super().eventFilter(watched, event)
 
 

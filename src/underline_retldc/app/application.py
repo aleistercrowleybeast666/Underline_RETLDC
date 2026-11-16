@@ -16,7 +16,6 @@ from underline_retldc.app.settings import SettingsService
 from underline_retldc.app.version import NAME, PRODUCT_NAME, __version__
 from underline_retldc.core.registry import PluginLoadResult
 from underline_retldc.gui.main_window import MainWindow
-from underline_retldc.gui.theme import Theme_Apply
 from underline_retldc.i18n.service import TranslationService
 
 
@@ -109,7 +108,8 @@ def main(argv: list[str] | None = None) -> int:
         else (Path(diagnostics.phase_stream.name).parent / "settings.ini"
               if diagnostics is not None else None)
     )
-    Theme_Apply(app, options.theme or settings.theme())
+    # MainWindow owns initial theme setup, including its explicit CLI override.
+    # Applying it here too constructs and replaces the Qt proxy style twice.
     locale = options.locale or settings.locale()
     translations = TranslationService(locale)
     if options.smoke_test and bool(getattr(sys, "frozen", False)):
