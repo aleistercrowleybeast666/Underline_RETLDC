@@ -17,3 +17,5 @@ SHA256：`fd187372111ebe2158f239dcc93f0200dace1ad95cc6bfa92a3dfd08e6f32a0c`。�
 未完成项：当前电脑的 Computer Use 原生抓屏辅助进程返回 `Computer Use helper already has an active request`，因此本轮没有完成便携包的原生桌面视觉复验，也不宣称解决了物理显示链路问题。工具已退出。硬件项另列：真实传感器单位/标定、测量精度、发动机试验真实性均未在本轮采集证据。
 
 原有发布包未覆盖。用户原有未跟踪文件 `docs/Repository_Showcase_Review_20261016.md` 保留，SHA256仍为 `482606c54b1ae66f2a721267c3dcf6eed8b82c08d7e08a8fbe0e61e286d5ce2a`。当前任务生成目录有独立标签；旧 `.work`、用户工程和源数据不在清理范围。
+
+本轮清理已执行：逐项核对绝对路径、无链接/联接、文件数和 SHA256 后，仅删除上述新任务的可再生产物，共 16 个文件、51389317 字节。Underline 对应本次 PyInstaller 中间目录；TreeDiagram 对应本次独立 wheel 安装验证副本。正式 dist、验证输入/结果、完整日志和历史输出保留。完整记录见 [清理清单](cleanup-inventory.json) 与 [执行结果](cleanup-result.json)。

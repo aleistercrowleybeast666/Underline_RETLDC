@@ -1,0 +1,87 @@
+{
+  "owner": "platform-finish-20261116 root",
+  "target": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC",
+  "purpose": "Fresh task reproducible package intermediate; protected dist and evidence already retained",
+  "files": [
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\Analysis-00.toc",
+      "bytes": 399129,
+      "sha256": "d472a17e5ed754a511c2f88780032b48adac03f82920a339fd9cfb72dfaf8e41"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\base_library.zip",
+      "bytes": 1389034,
+      "sha256": "5c845fbcd25fe0104f0a1cb8e8f805f2e4f14b2283ae04d636fbc0184fac9e19"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\COLLECT-00.toc",
+      "bytes": 84566,
+      "sha256": "73a1f370705ec7f386a52fa719295d8ed7135fd57c360a3d91f036cedb04cca6"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\EXE-00.toc",
+      "bytes": 4665,
+      "sha256": "d0ca929589358929c492c50ce0bc137ad596b22ddf6806f10886ea6c0814675b"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\PKG-00.toc",
+      "bytes": 2849,
+      "sha256": "6e0d4665ebe4992494a2a39dcd5208c7bb045c1992c3de83110e989d3d172f78"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\PYZ-00.pyz",
+      "bytes": 15277684,
+      "sha256": "7880557d975d87c2a99e635cc19a28d9c10f59ed7b24807fb3b7fb2c65c8ae3c"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\PYZ-00.toc",
+      "bytes": 273343,
+      "sha256": "d022fe59d184fbddb9953029f8c15f12fec6ccc49a8fe399d4076f7eee373606"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\Underline_RETLDC.exe",
+      "bytes": 15654065,
+      "sha256": "0967c20b5e6bc3d0f4d10ae82446d8648645a9955b0e78550c99e1596372e0af"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\Underline_RETLDC.pkg",
+      "bytes": 15310001,
+      "sha256": "4bbefbca13c0508dffc202742ec0be36db868df0a6b979923bd439d863d042cc"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\warn-Underline_RETLDC.txt",
+      "bytes": 51791,
+      "sha256": "d0dad51ba2d5123fe9ca677770645bf7d991f6dafcc81b856b477e9dd220e1d2"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\xref-Underline_RETLDC.html",
+      "bytes": 2896154,
+      "sha256": "60ce8706aef3cd568d0bc7908cdb512450b9802f8b9b4dd832e40ff83f11b434"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\localpycs\\pyimod01_archive.pyc",
+      "bytes": 5054,
+      "sha256": "0c44c665d1bc6e077a4793dcf9bedec5ddac57abcb754411167b875fb39fccf8"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\localpycs\\pyimod02_importers.pyc",
+      "bytes": 32335,
+      "sha256": "27bae24580f1805e52f68a7c6bd0d1c9cebd80d1efc66ce366f3234e1a61a0cd"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\localpycs\\pyimod03_ctypes.pyc",
+      "bytes": 6635,
+      "sha256": "66bed04c82d1254bc24c5d1bf5c1f234ad675254191bf5650e6d413d029a42de"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\localpycs\\pyimod04_pywin32.pyc",
+      "bytes": 1705,
+      "sha256": "93206026c67599403e465f7b641a099c8c23274e4a2e54e98188f6379440f57a"
+    },
+    {
+      "path": "D:\\python_software\\Underline_RETLDC\\.work\\platform_finish_20261117\\package\\Underline_RETLDC\\Underline_RETLDC\\localpycs\\struct.pyc",
+      "bytes": 307,
+      "sha256": "075a093b134138f03a690b4269dc591f8d4ffc4bb308f88fde2d400e5a7142ba"
+    }
+  ]
+}
