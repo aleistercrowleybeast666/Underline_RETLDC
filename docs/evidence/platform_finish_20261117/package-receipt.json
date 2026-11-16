@@ -1,0 +1,16 @@
+{
+  "source_commit": "df9446f1db40ced01d24d76e466013123dd28796",
+  "archive": "D:\\python_software\\Underline_RETLDC\\dist\\platform_finish_20261117\\Underline_RETLDC_platform_finish_20261117_Windows_x64.zip",
+  "archive_sha256": "fd187372111ebe2158f239dcc93f0200dace1ad95cc6bfa92a3dfd08e6f32a0c",
+  "archive_bytes": 98659243,
+  "files": 891,
+  "exe_sha256": "0967c20b5e6bc3d0f4d10ae82446d8648645a9955b0e78550c99e1596372e0af",
+  "release_preflight": {
+    "pytest": 421,
+    "ruff_exit": 0,
+    "packaged_light_smoke_exit": 0,
+    "packaged_dark_smoke_exit": 0,
+    "pack_exit": 0
+  },
+  "scope": "Software/Qt offscreen smoke; native WGC unavailable, no hardware test"
+}
